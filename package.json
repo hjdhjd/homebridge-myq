@@ -1,0 +1,25 @@
+{
+  "name": "homebridge-liftmaster2",
+  "version": "0.1.0",
+  "description": "LiftMaster plugin for HomeBridge (API 2.0): https://github.com/nfarina/homebridge",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/luisiam/homebridge-liftmaster2.git"
+  },
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "author": "Luis Iam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/luisiam/homebridge-liftmaster2/issues"
+  },
+  "homepage": "https://github.com/luisiam/homebridge-liftmaster2#readme",
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.3.0"
+  },
+  "dependencies": {
+    "request": ">=2.49.0"
+  }
+}
