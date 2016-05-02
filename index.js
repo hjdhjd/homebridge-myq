@@ -129,10 +129,10 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
 LiftMasterPlatform.prototype.removeAccessory = function(accessory) {
   if (accessory) {
     var deviceID = accessory.context.deviceID;
+    this.log("[" + accessory.name + "] Removed from HomeBridge.");
     this.api.unregisterPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
     delete this.accessories[deviceID];
     delete this.foundOpeners[deviceID];
-    this.log("[" + accessory.name + "] Removed from HomeBridge.");
   }
 }
 
