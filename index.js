@@ -50,9 +50,12 @@ LiftMasterPlatform.prototype.configureAccessory = function(accessory) {
 
 // Method to setup accesories from config.json
 LiftMasterPlatform.prototype.didFinishLaunching = function() {
-  // Add or update accessory in HomeKit
   if (this.username && this.password) {
+    // Add or update accessory in HomeKit
     this.addAccessory();
+
+    // Start polling
+    this.periodicUpdate();
   } else {
     this.log("Please setup login information!")	  
   }
@@ -220,7 +223,7 @@ LiftMasterPlatform.prototype.getCurrentState = function(deviceID, callback) {
   // Retrieve latest state from server
   this.updateState(function(error) {
     if (!error) {
-      var thisOpener = this.foundOpeners[deviceID];
+      var thisOpener = self.foundOpeners[deviceID];
       var name = "[" + thisOpener.name + "] ";
 
       self.log(name + "Getting current state: " + self.doorState[thisOpener.currentState]);
@@ -582,6 +585,13 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function(context, req
         if (this.username && this.password) {
           // Add or update accessory in HomeKit
           this.addAccessory();
+
+          // Reset polling
+          this.count = this.shortPollDuration / this.shortPoll;
+          if (this.tout) {
+            clearTimeout(this.tout);
+            this.periodicUpdate();
+          }
 
           var respDict = {
             "type": "Interface",
