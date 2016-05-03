@@ -91,7 +91,7 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
     var uuid = UUIDGen.generate(deviceID);
 
     // Setup accessory as GARAGE_DOOR_OPENER (4) category.
-    var newAccessory = new Accessory(name, uuid, 4);
+    var newAccessory = new Accessory("MyQ " + name, uuid, 4);
 
     // Store and initialize variables into context
     newAccessory.context.deviceID = deviceID;
@@ -132,7 +132,7 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
 LiftMasterPlatform.prototype.removeAccessory = function(accessory) {
   if (accessory) {
     var deviceID = accessory.context.deviceID;
-    this.log("[" + accessory.displayName + "] Removed from HomeBridge.");
+    this.log("Removed from HomeBridge.");
     this.api.unregisterPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
     delete this.accessories[deviceID];
     delete this.foundOpeners[deviceID];
@@ -224,9 +224,8 @@ LiftMasterPlatform.prototype.getCurrentState = function(deviceID, callback) {
   this.updateState(function(error) {
     if (!error) {
       var thisOpener = self.foundOpeners[deviceID];
-      var name = "[" + self.accessories[deviceID].displayName + "] ";
 
-      self.log(name + "Getting current state: " + self.doorState[thisOpener.currentState]);
+      self.log("Getting current state: " + self.doorState[thisOpener.currentState]);
       callback(null, thisOpener.currentState);
     } else {
       callback(error);
@@ -293,9 +292,7 @@ LiftMasterPlatform.prototype.updateState = function(callback) {
 
 // Method to handle identify request
 LiftMasterPlatform.prototype.identify = function(deviceID, paired, callback) {
-  var name = "[" + self.accessories[deviceID].displayName + "] ";
-
-  this.log(name + "Identify requested!");
+  this.log("Identify requested!");
   callback();
 }
 
@@ -461,8 +458,6 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
 // Send opener target state to the server
 LiftMasterPlatform.prototype.setState = function(deviceID, state, callback) {
   var self = this;
-  var thisOpener = this.foundOpeners[deviceID];
-  var name = "[" + thisOpener.name + "] ";
   var liftmasterState = (state + "") == "1" ? "0" : "1";
 
   // Querystring params
@@ -498,7 +493,7 @@ LiftMasterPlatform.prototype.setState = function(deviceID, state, callback) {
     if (!err && response.statusCode == 200) {
 
       if (json["ReturnCode"] == "0") {
-        self.log(name + "State was successfully set to " + self.doorState[state]);
+        self.log("State was successfully set to " + self.doorState[state]);
 
         // Set short polling interval
         self.count = 0;
@@ -509,16 +504,16 @@ LiftMasterPlatform.prototype.setState = function(deviceID, state, callback) {
 
         callback();
       } else {
-        self.log(name + "Bad return code: " + json["ReturnCode"]);
-        self.log(name + "Raw response " + JSON.stringify(json));
+        self.log("Bad return code: " + json["ReturnCode"]);
+        self.log("Raw response " + JSON.stringify(json));
         callback("Unknown Error");
       }
     } else {
-      self.log(name + "Error '"+err+"' setting door state: " + JSON.stringify(json));
+      self.log("Error '"+err+"' setting door state: " + JSON.stringify(json));
       callback(err);
     }
   }).on('error', function(err) {
-    self.log(name + err);
+    self.log(err);
     callback(err);
   });
 }
