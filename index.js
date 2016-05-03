@@ -377,15 +377,21 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
           var thisDeviceID = device.MyQDeviceId;
           var thisDoorName = "Unknown";
           var thisDoorState = 2;
+          var nameFound = false;
+          var stateFound = false;
 
           for (var j = 0; j < device.Attributes.length; j ++) {
             var thisAttributeSet = device.Attributes[j];
             if (thisAttributeSet.AttributeDisplayName == "desc") {
               thisDoorName = thisAttributeSet.Value;
-              break;
+              nameFound = true;
             }
             if (thisAttributeSet.AttributeDisplayName == "doorstate") {
               thisDoorState = thisAttributeSet.Value;
+              stateFound = true;
+            }
+            if (nameFound && stateFound) {
+              break;
             }
           }
 
