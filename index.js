@@ -132,7 +132,7 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
 LiftMasterPlatform.prototype.removeAccessory = function(accessory) {
   if (accessory) {
     var deviceID = accessory.context.deviceID;
-    this.log("[" + accessory.name + "] Removed from HomeBridge.");
+    this.log("[" + accessory.displayName + "] Removed from HomeBridge.");
     this.api.unregisterPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
     delete this.accessories[deviceID];
     delete this.foundOpeners[deviceID];
@@ -224,7 +224,7 @@ LiftMasterPlatform.prototype.getCurrentState = function(deviceID, callback) {
   this.updateState(function(error) {
     if (!error) {
       var thisOpener = self.foundOpeners[deviceID];
-      var name = "[" + thisOpener.name + "] ";
+      var name = "[" + self.accessories[deviceID].displayName + "] ";
 
       self.log(name + "Getting current state: " + self.doorState[thisOpener.currentState]);
       callback(null, thisOpener.currentState);
@@ -293,8 +293,7 @@ LiftMasterPlatform.prototype.updateState = function(callback) {
 
 // Method to handle identify request
 LiftMasterPlatform.prototype.identify = function(deviceID, paired, callback) {
-  var thisOpener = this.foundOpeners[deviceID];
-  var name = "[" + thisOpener.name + "] ";
+  var name = "[" + self.accessories[deviceID].displayName + "] ";
 
   this.log(name + "Identify requested!");
   callback();
