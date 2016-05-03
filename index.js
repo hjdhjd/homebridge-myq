@@ -361,76 +361,79 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
   }, function(err, response, body) {
 
     if (!err && response.statusCode == 200) {
-
-      // Parse and interpret the response
-      var json = JSON.parse(body);
-      var devices = json["Devices"];
-
-      // Look through the array of devices for all the openers
-      for (var i = 0; i < devices.length; i++) {
-        var device = devices[i];
-
-        if (device["MyQDeviceTypeName"] == "Garage Door Opener WGDO" || device["MyQDeviceTypeName"] == "GarageDoorOpener" || device["MyQDeviceTypeName"] == "VGDO") {
-          var thisDeviceID = device.MyQDeviceId;
-          var thisDoorName = "Unknown";
-          var thisDoorState = 2;
-          var nameFound = false;
-          var stateFound = false;
-
-          for (var j = 0; j < device.Attributes.length; j ++) {
-            var thisAttributeSet = device.Attributes[j];
-            if (thisAttributeSet.AttributeDisplayName == "desc") {
-              thisDoorName = thisAttributeSet.Value;
-              nameFound = true;
+      try {
+        // Parse and interpret the response
+        var json = JSON.parse(body);
+        var devices = json["Devices"];
+        
+        // Look through the array of devices for all the openers
+        for (var i = 0; i < devices.length; i++) {
+          var device = devices[i];
+        
+          if (device["MyQDeviceTypeName"] == "Garage Door Opener WGDO" || device["MyQDeviceTypeName"] == "GarageDoorOpener" || device["MyQDeviceTypeName"] == "VGDO") {
+            var thisDeviceID = device.MyQDeviceId;
+            var thisDoorName = "Unknown";
+            var thisDoorState = 2;
+            var nameFound = false;
+            var stateFound = false;
+        
+            for (var j = 0; j < device.Attributes.length; j ++) {
+              var thisAttributeSet = device.Attributes[j];
+              if (thisAttributeSet.AttributeDisplayName == "desc") {
+                thisDoorName = thisAttributeSet.Value;
+                nameFound = true;
+              }
+              if (thisAttributeSet.AttributeDisplayName == "doorstate") {
+                thisDoorState = thisAttributeSet.Value;
+                stateFound = true;
+              }
+              if (nameFound && stateFound) {
+                break;
+              }
             }
-            if (thisAttributeSet.AttributeDisplayName == "doorstate") {
-              thisDoorState = thisAttributeSet.Value;
-              stateFound = true;
+        
+            var thisOpener = self.foundOpeners[thisDeviceID];
+        
+            // Initialization for new opener
+            if (!thisOpener) {
+              thisOpener = {};
+              thisOpener.initialState = Characteristic.CurrentDoorState.CLOSED;
+              thisOpener.currentState = Characteristic.CurrentDoorState.CLOSED;
             }
-            if (nameFound && stateFound) {
-              break;
+        
+            thisOpener.name = thisDoorName;
+            thisOpener.serial = device.SerialNumber;
+        
+            // Determine the current door state
+            if (thisDoorState == 2) {
+              thisOpener.initialState = Characteristic.CurrentDoorState.CLOSED;
+              var newState = Characteristic.CurrentDoorState.CLOSED;
+            } else if (thisDoorState == 3) {
+              var newState = Characteristic.CurrentDoorState.STOPPED;
+            } else if (thisDoorState == 5 || (thisDoorState == 8 && thisOpener.initialState == Characteristic.CurrentDoorState.OPEN)) {
+              var newState = Characteristic.CurrentDoorState.CLOSING;
+            } else if (thisDoorState == 4 || (thisDoorState == 8 && thisOpener.initialState == Characteristic.CurrentDoorState.CLOSED)) {
+              var newState = Characteristic.CurrentDoorState.OPENING;
+            } else if (thisDoorState == 1 || thisDoorState == 9) {
+              thisOpener.initialState = Characteristic.CurrentDoorState.OPEN;
+              var newState = Characteristic.CurrentDoorState.OPEN;
             }
+        
+            // Detect for state changes
+            if (newState != thisOpener.currentState) {
+              self.count = 0;
+              thisOpener.currentState = newState;
+            }
+        
+            self.foundOpeners[thisDeviceID] = thisOpener;
+        
+            // Set validData hint after we found an opener
+            self.validData = true;
           }
-
-          var thisOpener = self.foundOpeners[thisDeviceID];
-
-          // Initialization for new opener
-          if (!thisOpener) {
-            thisOpener = {};
-            thisOpener.initialState = Characteristic.CurrentDoorState.CLOSED;
-            thisOpener.currentState = Characteristic.CurrentDoorState.CLOSED;
-          }
-
-          thisOpener.name = thisDoorName;
-          thisOpener.serial = device.SerialNumber;
-
-          // Determine the current door state
-          if (thisDoorState == 2) {
-            thisOpener.initialState = Characteristic.CurrentDoorState.CLOSED;
-            var newState = Characteristic.CurrentDoorState.CLOSED;
-          } else if (thisDoorState == 3) {
-            var newState = Characteristic.CurrentDoorState.STOPPED;
-          } else if (thisDoorState == 5 || (thisDoorState == 8 && thisOpener.initialState == Characteristic.CurrentDoorState.OPEN)) {
-            var newState = Characteristic.CurrentDoorState.CLOSING;
-          } else if (thisDoorState == 4 || (thisDoorState == 8 && thisOpener.initialState == Characteristic.CurrentDoorState.CLOSED)) {
-            var newState = Characteristic.CurrentDoorState.OPENING;
-          } else if (thisDoorState == 1 || thisDoorState == 9) {
-            thisOpener.initialState = Characteristic.CurrentDoorState.OPEN;
-            var newState = Characteristic.CurrentDoorState.OPEN;
-          }
-
-          // Detect for state changes
-          if (newState != thisOpener.currentState) {
-            self.count = 0;
-            thisOpener.currentState = newState;
-          }
-
-          self.foundOpeners[thisDeviceID] = thisOpener;
-
-          // Set validData hint after we found an opener
-          self.validData = true;
         }
-      }
+      } catch (error) {
+        self.validData = false;
+	  }
 
       // Did we have valid data?
       if (self.validData) {
@@ -442,7 +445,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
 
         callback();
       } else {
-        self.log("Error: Couldn't find a door device, or the ID you specified isn't associated with your account");
+        self.log("Error: Couldn't find a door device.");
         callback("Missing Device ID");
       }
     } else {
