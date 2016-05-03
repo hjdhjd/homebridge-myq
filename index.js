@@ -144,15 +144,15 @@ LiftMasterPlatform.prototype.setService = function(accessory) {
   accessory
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.CurrentDoorState)
-    .on('get', this.getCurrentState.bind(this, accessory.context.deviceID))
+    .on('get', this.getCurrentState.bind(this, accessory.context.deviceID, accessory.displayName))
 
   accessory
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
     .on('get', this.getTargetState.bind(this, accessory.context.deviceID))
-    .on('set', this.setTargetState.bind(this, accessory.context.deviceID));
+    .on('set', this.setTargetState.bind(this, accessory.context.deviceID, accessory.displayName));
 
-  accessory.on('identify', this.identify.bind(this, accessory.context.deviceID));
+  accessory.on('identify', this.identify.bind(this, accessory.context.deviceID, accessory.displayName));
 
   return accessory;
 }
@@ -186,19 +186,19 @@ LiftMasterPlatform.prototype.getInitState = function(accessory) {
 }
 
 // Method to set target door state
-LiftMasterPlatform.prototype.setTargetState = function(deviceID, state, callback) {
+LiftMasterPlatform.prototype.setTargetState = function(deviceID, name, state, callback) {
   var self = this;
   
   if (this.validData) {
     // Set the state directly if current data is valid
-    this.setState(deviceID, state, function(error) {
+    this.setState(deviceID, name, state, function(error) {
       callback(error);
     });
   } else {
     // Login again if current data is not valid
     this.login(function(loginError) {
       if (!loginError) {
-        self.setState(deviceID, state, function(setStateError) {
+        self.setState(deviceID, name, state, function(setStateError) {
           callback(setStateError);
         });
       } else {
@@ -217,7 +217,7 @@ LiftMasterPlatform.prototype.getTargetState = function(deviceID, callback) {
 }
 
 // Method to get current door state
-LiftMasterPlatform.prototype.getCurrentState = function(deviceID, callback) {
+LiftMasterPlatform.prototype.getCurrentState = function(deviceID, name, callback) {
   var self = this;
 
   // Retrieve latest state from server
@@ -225,7 +225,7 @@ LiftMasterPlatform.prototype.getCurrentState = function(deviceID, callback) {
     if (!error) {
       var thisOpener = self.foundOpeners[deviceID];
 
-      self.log("Getting current state: " + self.doorState[thisOpener.currentState]);
+      self.log("[" + name + "] Getting current state: " + self.doorState[thisOpener.currentState]);
       callback(null, thisOpener.currentState);
     } else {
       callback(error);
@@ -291,8 +291,8 @@ LiftMasterPlatform.prototype.updateState = function(callback) {
 }
 
 // Method to handle identify request
-LiftMasterPlatform.prototype.identify = function(deviceID, paired, callback) {
-  this.log("Identify requested!");
+LiftMasterPlatform.prototype.identify = function(deviceID, name, paired, callback) {
+  this.log("[" + name + "] Identify requested!");
   callback();
 }
 
@@ -456,7 +456,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
 }
 
 // Send opener target state to the server
-LiftMasterPlatform.prototype.setState = function(deviceID, state, callback) {
+LiftMasterPlatform.prototype.setState = function(deviceID, name, state, callback) {
   var self = this;
   var liftmasterState = (state + "") == "1" ? "0" : "1";
 
@@ -493,7 +493,7 @@ LiftMasterPlatform.prototype.setState = function(deviceID, state, callback) {
     if (!err && response.statusCode == 200) {
 
       if (json["ReturnCode"] == "0") {
-        self.log("State was successfully set to " + self.doorState[state]);
+        self.log("[" + name + "] State was successfully set to " + self.doorState[state]);
 
         // Set short polling interval
         self.count = 0;
@@ -504,16 +504,16 @@ LiftMasterPlatform.prototype.setState = function(deviceID, state, callback) {
 
         callback();
       } else {
-        self.log("Bad return code: " + json["ReturnCode"]);
-        self.log("Raw response " + JSON.stringify(json));
+        self.log("[" + name + "] Bad return code: " + json["ReturnCode"]);
+        self.log("[" + name + "] Raw response " + JSON.stringify(json));
         callback("Unknown Error");
       }
     } else {
-      self.log("Error '"+err+"' setting door state: " + JSON.stringify(json));
+      self.log("[" + name + "] Error '"+err+"' setting door state: " + JSON.stringify(json));
       callback(err);
     }
   }).on('error', function(err) {
-    self.log(err);
+    self.log("[" + name + "] " + err);
     callback(err);
   });
 }
