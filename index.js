@@ -40,9 +40,6 @@ function LiftMasterPlatform(log, config, api) {
 
 // Method to restore accessories from cache
 LiftMasterPlatform.prototype.configureAccessory = function(accessory) {
-  // Accessory is not reachable before logged in
-  accessory.reachable = false;
-
   accessory = this.setService(accessory);
 
   var accessoryID = accessory.context.deviceID;
@@ -93,6 +90,9 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
 
     // Setup accessory as GARAGE_DOOR_OPENER (4) category.
     var newAccessory = new Accessory("MyQ " + name, uuid, 4);
+
+    // Accessory is reachable after it's found in the server
+    newAccessory.reachable = true;
 
     // Store and initialize variables into context
     newAccessory.context.deviceID = deviceID;
@@ -260,7 +260,7 @@ LiftMasterPlatform.prototype.periodicUpdate = function() {
       } else {
         // Re-login after short polling interval if error occurs
         self.count = self.maxCount - 1;
-	  }
+      }
 
       // Setup next polling
       self.periodicUpdate();
