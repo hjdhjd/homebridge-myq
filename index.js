@@ -22,7 +22,8 @@ function LiftMasterPlatform(log, config, api) {
   this.shortPoll = parseInt(this.config.shortPoll, 10) || 5;
   this.shortPollDuration = parseInt(this.config.shortPollDuration, 10) || 120;
   this.tout = null;
-  this.count = this.shortPollDuration / this.shortPoll;
+  this.maxCount = this.shortPollDuration / this.shortPoll;
+  this.count = this.maxCount;
   this.validData = false;
 
   this.accessories = {};
@@ -188,24 +189,17 @@ LiftMasterPlatform.prototype.getInitState = function(accessory) {
 // Method to set target door state
 LiftMasterPlatform.prototype.setTargetState = function(deviceID, name, state, callback) {
   var self = this;
-  
-  if (this.validData) {
-    // Set the state directly if current data is valid
-    this.setState(deviceID, name, state, function(error) {
-      callback(error);
-    });
-  } else {
-    // Login again if current data is not valid
-    this.login(function(loginError) {
-      if (!loginError) {
-        self.setState(deviceID, name, state, function(setStateError) {
-          callback(setStateError);
-        });
-      } else {
-        callback(loginError);
-      }
-    });
-  }
+
+  // Always re-login for setting the state
+  this.login(function(loginError) {
+    if (!loginError) {
+      self.setState(deviceID, name, state, function(setStateError) {
+        callback(setStateError);
+      });
+    } else {
+      callback(loginError);
+    }
+  });
 }
 
 // Method to get target door state
@@ -238,7 +232,7 @@ LiftMasterPlatform.prototype.periodicUpdate = function() {
   var self = this;
 
   // Determine polling interval
-  if (this.count * this.shortPoll < this.shortPollDuration) {
+  if (this.count  < this.maxCount) {
     this.count++;
     var refresh = this.shortPoll;
   } else {
@@ -263,10 +257,13 @@ LiftMasterPlatform.prototype.periodicUpdate = function() {
             .getCharacteristic(Characteristic.TargetDoorState)
             .getValue();
         }
+      } else {
+        // Re-login after short polling interval if error occurs
+        self.count = self.maxCount - 1;
+	  }
 
-        // Setup next polling
-        self.periodicUpdate();
-      }
+      // Setup next polling
+      self.periodicUpdate();
     });
   }, refresh * 1000);
 }
@@ -279,13 +276,9 @@ LiftMasterPlatform.prototype.updateState = function(callback) {
       callback(error);
     });
   } else {
-    // Login again if current data is not valid
+    // Re-login if current data is not valid
     this.login(function(error) {
-      if (!error) {
-        callback();
-      } else {
-        callback(error);
-      }
+      callback(error);
     });
   }
 }
@@ -431,9 +424,9 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
             self.validData = true;
           }
         }
-      } catch (error) {
-        self.validData = false;
-	  }
+      } catch (err) {
+        self.log("Error '" + err + "'");
+      }
 
       // Did we have valid data?
       if (self.validData) {
@@ -449,11 +442,11 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
         callback("Missing Device ID");
       }
     } else {
-      self.log("Error '"+err+"' getting devices: " + body);
+      self.log("Error '" + err + "' getting devices: " + body);
       callback(err);
     }
   }).on('error', function(err) {
-    self.log(err);
+    self.log("Error '" + err + "'");
     callback(err);
   });
 }
@@ -590,7 +583,8 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function(context, req
           this.addAccessory();
 
           // Reset polling
-          this.count = this.shortPollDuration / this.shortPoll;
+          this.maxCount = this.shortPollDuration / this.shortPoll;
+		  this.count = this.maxCount;
           if (this.tout) {
             clearTimeout(this.tout);
             this.periodicUpdate();
