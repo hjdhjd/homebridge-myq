@@ -100,6 +100,9 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
     // Setup HomeKit security system service
     newAccessory.addService(Service.GarageDoorOpener, name);
 
+    // Setup HomeKit accessory information
+    newAccessory = this.setAccessoryInfo(newAccessory);
+
     // Setup listeners for different security system events
     newAccessory = this.setService(newAccessory);
 
@@ -113,16 +116,10 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
     var newAccessory = this.accessories[deviceID];
 
     // Accessory is reachable after it's found in the server
-    newAccessory.reachable = true;
-
-    // Update variables in context
-    newAccessory.context.deviceID = deviceID;
+    newAccessory.updateReachability(true);
 
     // Retrieve initial state
     newAccessory = this.getInitState(newAccessory);
-
-    // Update accessory in HomeKit
-    this.api.updatePlatformAccessories([newAccessory]);
   }
 
   // Store accessory in cache
@@ -158,8 +155,8 @@ LiftMasterPlatform.prototype.setService = function(accessory) {
   return accessory;
 }
 
-// Method to retrieve initial state
-LiftMasterPlatform.prototype.getInitState = function(accessory) {
+// Method to set HomeKit accessory information
+LiftMasterPlatform.prototype.setAccessoryInfo = function(accessory) {
   var thisOpener = this.foundOpeners[accessory.context.deviceID];
 
   if (this.manufacturer) {
@@ -173,6 +170,13 @@ LiftMasterPlatform.prototype.getInitState = function(accessory) {
       .getService(Service.AccessoryInformation)
       .setCharacteristic(Characteristic.SerialNumber, thisOpener.serial);
   }
+
+  return accessory;
+}
+
+// Method to retrieve initial state
+LiftMasterPlatform.prototype.getInitState = function(accessory) {
+  var thisOpener = this.foundOpeners[accessory.context.deviceID];
 
   accessory
     .getService(Service.GarageDoorOpener)
