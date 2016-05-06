@@ -52,6 +52,13 @@ LiftMasterPlatform.prototype.didFinishLaunching = function() {
     // Add or update accessory in HomeKit
     this.addAccessory();
 
+    // Remove extra accessories in cache
+    for (var deviceID in this.accessories) {
+      if (!this.foundOpeners[deviceID]) {
+        this.removeAccessory(this.accessories[deviceID]);
+      }
+    }
+
     // Start polling
     this.periodicUpdate();
   } else {
@@ -69,13 +76,6 @@ LiftMasterPlatform.prototype.addAccessory = function() {
       for (var deviceID in self.foundOpeners) {
         var thisOpener = self.foundOpeners[deviceID];
         self.configureOpener(deviceID, thisOpener.name);
-      }
-
-      // Remove HomeKit accessory which does not exist in the server
-      for (var deviceID in self.accessories) {
-        if (!self.foundOpeners[deviceID]) {
-          self.removeAccessory(self.accessories[deviceID]);
-        }
       }
     } else {
       self.log(error);
