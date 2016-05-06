@@ -133,7 +133,6 @@ LiftMasterPlatform.prototype.removeAccessory = function(accessory) {
     this.log("Removed from HomeBridge.");
     this.api.unregisterPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
     delete this.accessories[deviceID];
-    delete this.foundOpeners[deviceID];
   }
 }
 
