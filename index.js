@@ -91,7 +91,7 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
     // Setup accessory as GARAGE_DOOR_OPENER (4) category.
     var newAccessory = new Accessory("MyQ " + name, uuid, 4);
 
-    // Accessory is reachable after it's found in the server
+    // New accessory found in the server is always reachable
     newAccessory.reachable = true;
 
     // Store and initialize variables into context
