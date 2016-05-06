@@ -155,7 +155,7 @@ LiftMasterPlatform.prototype.setService = function(accessory) {
   return accessory;
 }
 
-// Method to set HomeKit accessory information
+// Method to setup HomeKit accessory information
 LiftMasterPlatform.prototype.setAccessoryInfo = function(accessory) {
   var thisOpener = this.foundOpeners[accessory.context.deviceID];
 
