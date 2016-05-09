@@ -62,7 +62,7 @@ LiftMasterPlatform.prototype.didFinishLaunching = function() {
     // Start polling
     this.periodicUpdate();
   } else {
-    this.log("Please setup login information!")	  
+    this.log("Please setup MyQ login information!")	  
   }
 }
 
@@ -130,7 +130,7 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
 LiftMasterPlatform.prototype.removeAccessory = function(accessory) {
   if (accessory) {
     var deviceID = accessory.context.deviceID;
-    this.log("Removed from HomeBridge.");
+    this.log("[" + accessory.displayName + "] Removed from HomeBridge.");
     this.api.unregisterPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
     delete this.accessories[deviceID];
   }
@@ -317,10 +317,10 @@ LiftMasterPlatform.prototype.login = function(callback) {
       self.userId = json["UserId"];
       self.securityToken = json["SecurityToken"];
       self.manufacturer = json["BrandName"].toString();
-      self.log("Logged in with user ID " + self.userId);
+      self.log("Logged in with MyQ user ID " + self.userId);
       self.getDevice(callback);
     } else {
-      self.log("Error '"+err+"' logging in: " + body);
+      self.log("Error '"+err+"' logging in to MyQ: " + body);
       callback(err);
     }
   }).on('error', function(err) {
@@ -441,11 +441,11 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
 
         callback();
       } else {
-        self.log("Error: Couldn't find a door device.");
-        callback("Missing Device ID");
+        self.log("Error: Couldn't find a MyQ door device.");
+        callback("Missing MyQ Device ID");
       }
     } else {
-      self.log("Error '" + err + "' getting devices: " + body);
+      self.log("Error '" + err + "' getting MyQ devices: " + body);
       callback(err);
     }
   }).on('error', function(err) {
