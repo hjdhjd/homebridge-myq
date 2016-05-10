@@ -40,8 +40,7 @@ function LiftMasterPlatform(log, config, api) {
 
 // Method to restore accessories from cache
 LiftMasterPlatform.prototype.configureAccessory = function(accessory) {
-  accessory = this.setService(accessory);
-
+  this.setService(accessory);
   var accessoryID = accessory.context.deviceID;
   this.accessories[accessoryID] = accessory;
 }
