@@ -52,13 +52,6 @@ LiftMasterPlatform.prototype.didFinishLaunching = function() {
     // Add or update accessory in HomeKit
     this.addAccessory();
 
-    // Remove extra accessories in cache
-    for (var deviceID in this.accessories) {
-      if (!this.foundOpeners[deviceID]) {
-        this.removeAccessory(this.accessories[deviceID]);
-      }
-    }
-
     // Start polling
     this.periodicUpdate();
   } else {
@@ -76,6 +69,13 @@ LiftMasterPlatform.prototype.addAccessory = function() {
       for (var deviceID in self.foundOpeners) {
         var thisOpener = self.foundOpeners[deviceID];
         self.configureOpener(deviceID, thisOpener.name);
+      }
+
+      // Remove extra accessories in cache
+      for (var deviceID in this.accessories) {
+        if (!this.foundOpeners[deviceID]) {
+          this.removeAccessory(this.accessories[deviceID]);
+        }
       }
     } else {
       self.log(error);
@@ -101,10 +101,10 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
     newAccessory.addService(Service.GarageDoorOpener, name);
 
     // Setup HomeKit accessory information
-    newAccessory = this.setAccessoryInfo(newAccessory);
+    this.setAccessoryInfo(newAccessory);
 
     // Setup listeners for different security system events
-    newAccessory = this.setService(newAccessory);
+    this.setService(newAccessory);
 
     // Register accessory in HomeKit
     this.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [newAccessory]);
@@ -117,7 +117,7 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
   }
 
   // Retrieve initial state
-  newAccessory = this.getInitState(newAccessory);
+  this.getInitState(newAccessory);
 
   // Store accessory in cache
   this.accessories[deviceID] = newAccessory;
@@ -147,8 +147,6 @@ LiftMasterPlatform.prototype.setService = function(accessory) {
     .on('set', this.setTargetState.bind(this, accessory.context.deviceID, accessory.displayName));
 
   accessory.on('identify', this.identify.bind(this, accessory.context.deviceID, accessory.displayName));
-
-  return accessory;
 }
 
 // Method to setup HomeKit accessory information
@@ -166,8 +164,6 @@ LiftMasterPlatform.prototype.setAccessoryInfo = function(accessory) {
       .getService(Service.AccessoryInformation)
       .setCharacteristic(Characteristic.SerialNumber, thisOpener.serial);
   }
-
-  return accessory;
 }
 
 // Method to retrieve initial state
@@ -182,8 +178,6 @@ LiftMasterPlatform.prototype.getInitState = function(accessory) {
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
     .getValue();
-
-  return accessory;
 }
 
 // Method to set target door state
