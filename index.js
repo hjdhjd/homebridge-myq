@@ -106,9 +106,6 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
     // Setup listeners for different security system events
     newAccessory = this.setService(newAccessory);
 
-    // Retrieve initial state
-    newAccessory = this.getInitState(newAccessory);
-
     // Register accessory in HomeKit
     this.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [newAccessory]);
   } else {
@@ -117,10 +114,10 @@ LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
 
     // Accessory is reachable after it's found in the server
     newAccessory.updateReachability(true);
-
-    // Retrieve initial state
-    newAccessory = this.getInitState(newAccessory);
   }
+
+  // Retrieve initial state
+  newAccessory = this.getInitState(newAccessory);
 
   // Store accessory in cache
   this.accessories[deviceID] = newAccessory;
