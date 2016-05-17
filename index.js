@@ -27,7 +27,6 @@ function LiftMasterPlatform(log, config, api) {
   this.validData = false;
 
   this.accessories = {};
-  this.foundOpeners = {};
 
   if (api) {
     this.api = api;
@@ -54,7 +53,7 @@ LiftMasterPlatform.prototype.didFinishLaunching = function() {
     // Start polling
     this.periodicUpdate();
   } else {
-    this.log("Please setup MyQ login information!")	  
+    this.log("[MyQ] Please setup MyQ login information!")
   }
 }
 
@@ -64,62 +63,20 @@ LiftMasterPlatform.prototype.addAccessory = function() {
 
   this.login(function(error){
     if (!error) {
-      // Add or update HomeKit accessory from the server
-      for (var deviceID in self.foundOpeners) {
-        var thisOpener = self.foundOpeners[deviceID];
-        self.configureOpener(deviceID, thisOpener.name);
-      }
-
-      // Remove extra accessories in cache
-      for (var deviceID in this.accessories) {
-        if (!this.foundOpeners[deviceID]) {
-          this.removeAccessory(this.accessories[deviceID]);
+      for (var deviceID in self.accessories) {
+        var accessory = self.accessories[deviceID];
+        if (!accessory.reachable) {
+          // Remove extra accessories in cache
+          self.removeAccessory(accessory);
+        } else {
+          // Update inital state
+          self.updateDoorStates(accessory);
         }
       }
     } else {
-      self.log(error);
+      self.log("[MyQ] " + error);
     }
   });
-}
-
-// Method to configure opener info for HomeKit
-LiftMasterPlatform.prototype.configureOpener = function(deviceID, name) {
-  if (!this.accessories[deviceID]) {
-    var uuid = UUIDGen.generate(deviceID);
-
-    // Setup accessory as GARAGE_DOOR_OPENER (4) category.
-    var newAccessory = new Accessory("MyQ " + name, uuid, 4);
-
-    // New accessory found in the server is always reachable
-    newAccessory.reachable = true;
-
-    // Store and initialize variables into context
-    newAccessory.context.deviceID = deviceID;
-
-    // Setup HomeKit security system service
-    newAccessory.addService(Service.GarageDoorOpener, name);
-
-    // Setup HomeKit accessory information
-    this.setAccessoryInfo(newAccessory);
-
-    // Setup listeners for different security system events
-    this.setService(newAccessory);
-
-    // Register accessory in HomeKit
-    this.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [newAccessory]);
-  } else {
-    // Retrieve accessory from cache
-    var newAccessory = this.accessories[deviceID];
-
-    // Accessory is reachable after it's found in the server
-    newAccessory.updateReachability(true);
-  }
-
-  // Retrieve initial state
-  this.getInitState(newAccessory);
-
-  // Store accessory in cache
-  this.accessories[deviceID] = newAccessory;
 }
 
 // Method to remove accessories from HomeKit
@@ -137,56 +94,40 @@ LiftMasterPlatform.prototype.setService = function(accessory) {
   accessory
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.CurrentDoorState)
-    .on('get', this.getCurrentState.bind(this, accessory.context.deviceID, accessory.displayName))
+    .on('get', this.getCurrentState.bind(this, accessory.context, accessory.displayName));
 
   accessory
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
-    .on('get', this.getTargetState.bind(this, accessory.context.deviceID))
-    .on('set', this.setTargetState.bind(this, accessory.context.deviceID, accessory.displayName));
+    .on('get', this.getTargetState.bind(this, accessory.context.currentState))
+    .on('set', this.setTargetState.bind(this, accessory.context, accessory.displayName));
 
-  accessory.on('identify', this.identify.bind(this, accessory.context.deviceID, accessory.displayName));
+  accessory.on('identify', this.identify.bind(this, accessory.displayName));
 }
 
 // Method to setup HomeKit accessory information
 LiftMasterPlatform.prototype.setAccessoryInfo = function(accessory) {
-  var thisOpener = this.foundOpeners[accessory.context.deviceID];
-
   if (this.manufacturer) {
   accessory
     .getService(Service.AccessoryInformation)
     .setCharacteristic(Characteristic.Manufacturer, this.manufacturer);
   }
 
-  if (thisOpener.serial) {
+  if (accessory.context.serialNumber) {
     accessory
       .getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.SerialNumber, thisOpener.serial);
+      .setCharacteristic(Characteristic.SerialNumber, accessory.context.serialNumber);
   }
 }
 
-// Method to retrieve initial state
-LiftMasterPlatform.prototype.getInitState = function(accessory) {
-  var thisOpener = this.foundOpeners[accessory.context.deviceID];
-
-  accessory
-    .getService(Service.GarageDoorOpener)
-    .setCharacteristic(Characteristic.CurrentDoorState, thisOpener.currentState);
-
-  accessory
-    .getService(Service.GarageDoorOpener)
-    .getCharacteristic(Characteristic.TargetDoorState)
-    .getValue();
-}
-
 // Method to set target door state
-LiftMasterPlatform.prototype.setTargetState = function(deviceID, name, state, callback) {
+LiftMasterPlatform.prototype.setTargetState = function(thisOpener, name, state, callback) {
   var self = this;
 
   // Always re-login for setting the state
   this.login(function(loginError) {
     if (!loginError) {
-      self.setState(deviceID, name, state, function(setStateError) {
+      self.setState(thisOpener, name, state, function(setStateError) {
         callback(setStateError);
       });
     } else {
@@ -196,22 +137,18 @@ LiftMasterPlatform.prototype.setTargetState = function(deviceID, name, state, ca
 }
 
 // Method to get target door state
-LiftMasterPlatform.prototype.getTargetState = function(deviceID, callback) {
-  var thisOpener = this.foundOpeners[deviceID];
-
+LiftMasterPlatform.prototype.getTargetState = function(currentState, callback) {
   // Get target state directly from cache
-  callback(null, thisOpener.currentState % 2);
+  callback(null, currentState % 2);
 }
 
 // Method to get current door state
-LiftMasterPlatform.prototype.getCurrentState = function(deviceID, name, callback) {
+LiftMasterPlatform.prototype.getCurrentState = function(thisOpener, name, callback) {
   var self = this;
 
   // Retrieve latest state from server
   this.updateState(function(error) {
     if (!error) {
-      var thisOpener = self.foundOpeners[deviceID];
-
       self.log("[" + name + "] Getting current state: " + self.doorState[thisOpener.currentState]);
       callback(null, thisOpener.currentState);
     } else {
@@ -239,16 +176,8 @@ LiftMasterPlatform.prototype.periodicUpdate = function() {
       if (!error) {
         // Update states for all HomeKit accessories
         for (var deviceID in self.accessories) {
-          var thisOpener = self.foundOpeners[deviceID];
-
-          self.accessories[deviceID]
-            .getService(Service.GarageDoorOpener)
-            .setCharacteristic(Characteristic.CurrentDoorState, thisOpener.currentState);
-        
-          self.accessories[deviceID]
-            .getService(Service.GarageDoorOpener)
-            .getCharacteristic(Characteristic.TargetDoorState)
-            .getValue();
+          var accessory = self.accessories[deviceID];
+          self.updateDoorStates(accessory);
         }
       } else {
         // Re-login after short polling interval if error occurs
@@ -259,6 +188,18 @@ LiftMasterPlatform.prototype.periodicUpdate = function() {
       self.periodicUpdate();
     });
   }, refresh * 1000);
+}
+
+// Method to update door state in HomeKit
+LiftMasterPlatform.prototype.updateDoorStates = function(accessory) {
+  accessory
+    .getService(Service.GarageDoorOpener)
+    .setCharacteristic(Characteristic.CurrentDoorState, accessory.context.currentState);
+  
+  accessory
+    .getService(Service.GarageDoorOpener)
+    .getCharacteristic(Characteristic.TargetDoorState)
+    .getValue();
 }
 
 // Method to retrieve door state from the server
@@ -277,7 +218,7 @@ LiftMasterPlatform.prototype.updateState = function(callback) {
 }
 
 // Method to handle identify request
-LiftMasterPlatform.prototype.identify = function(deviceID, name, paired, callback) {
+LiftMasterPlatform.prototype.identify = function(name, paired, callback) {
   this.log("[" + name + "] Identify requested!");
   callback();
 }
@@ -307,14 +248,14 @@ LiftMasterPlatform.prototype.login = function(callback) {
       self.userId = json["UserId"];
       self.securityToken = json["SecurityToken"];
       self.manufacturer = json["BrandName"].toString();
-      self.log("Logged in with MyQ user ID " + self.userId);
+      self.log("[MyQ] Logged in with MyQ user ID " + self.userId);
       self.getDevice(callback);
     } else {
-      self.log("Error '"+err+"' logging in to MyQ: " + body);
+      self.log("[MyQ] Error '"+err+"' logging in to MyQ: " + body);
       callback(err);
     }
   }).on('error', function(err) {
-    self.log(err);
+    self.log("[MyQ] " + err);
     callback(err);
   });
 }
@@ -351,18 +292,19 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
         // Parse and interpret the response
         var json = JSON.parse(body);
         var devices = json["Devices"];
-        
+
         // Look through the array of devices for all the openers
         for (var i = 0; i < devices.length; i++) {
           var device = devices[i];
-        
+
           if (device["MyQDeviceTypeName"] == "Garage Door Opener WGDO" || device["MyQDeviceTypeName"] == "GarageDoorOpener" || device["MyQDeviceTypeName"] == "VGDO") {
             var thisDeviceID = device.MyQDeviceId;
+            var thisSerialNumber = device.SerialNumber;
             var thisDoorName = "Unknown";
             var thisDoorState = 2;
             var nameFound = false;
             var stateFound = false;
-        
+
             for (var j = 0; j < device.Attributes.length; j ++) {
               var thisAttributeSet = device.Attributes[j];
               if (thisAttributeSet.AttributeDisplayName == "desc") {
@@ -377,48 +319,72 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
                 break;
               }
             }
-        
-            var thisOpener = self.foundOpeners[thisDeviceID];
-        
-            // Initialization for new opener
-            if (!thisOpener) {
-              thisOpener = {};
-              thisOpener.initialState = Characteristic.CurrentDoorState.CLOSED;
-              thisOpener.currentState = Characteristic.CurrentDoorState.CLOSED;
+
+            // Initialization for opener
+            if (!self.accessories[thisDeviceID]) {
+              var uuid = UUIDGen.generate(thisDeviceID);
+
+              // Setup accessory as GARAGE_DOOR_OPENER (4) category.
+              var newAccessory = new Accessory("MyQ " + thisDoorName, uuid, 4);
+
+              // New accessory found in the server is always reachable
+              newAccessory.reachable = true;
+
+              // Store and initialize variables into context
+              newAccessory.context.deviceID = thisDeviceID;
+              newAccessory.context.initialState = Characteristic.CurrentDoorState.CLOSED;
+              newAccessory.context.currentState = Characteristic.CurrentDoorState.CLOSED;
+              newAccessory.context.serialNumber = thisSerialNumber;
+
+              // Setup HomeKit security system service
+              newAccessory.addService(Service.GarageDoorOpener, thisDoorName);
+
+              // Setup HomeKit accessory information
+              self.setAccessoryInfo(newAccessory);
+
+              // Setup listeners for different security system events
+              self.setService(newAccessory);
+
+              // Register accessory in HomeKit
+              self.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [newAccessory]);
+            } else {
+              // Retrieve accessory from cache
+              var newAccessory = self.accessories[thisDeviceID];
+
+              // Accessory is reachable after it's found in the server
+              newAccessory.updateReachability(true);
             }
-        
-            thisOpener.name = thisDoorName;
-            thisOpener.serial = device.SerialNumber;
-        
+
             // Determine the current door state
             if (thisDoorState == 2) {
-              thisOpener.initialState = Characteristic.CurrentDoorState.CLOSED;
+              newAccessory.context.initialState = Characteristic.CurrentDoorState.CLOSED;
               var newState = Characteristic.CurrentDoorState.CLOSED;
             } else if (thisDoorState == 3) {
               var newState = Characteristic.CurrentDoorState.STOPPED;
-            } else if (thisDoorState == 5 || (thisDoorState == 8 && thisOpener.initialState == Characteristic.CurrentDoorState.OPEN)) {
+            } else if (thisDoorState == 5 || (thisDoorState == 8 && newAccessory.context.initialState == Characteristic.CurrentDoorState.OPEN)) {
               var newState = Characteristic.CurrentDoorState.CLOSING;
-            } else if (thisDoorState == 4 || (thisDoorState == 8 && thisOpener.initialState == Characteristic.CurrentDoorState.CLOSED)) {
+            } else if (thisDoorState == 4 || (thisDoorState == 8 && newAccessory.context.initialState == Characteristic.CurrentDoorState.CLOSED)) {
               var newState = Characteristic.CurrentDoorState.OPENING;
             } else if (thisDoorState == 1 || thisDoorState == 9) {
-              thisOpener.initialState = Characteristic.CurrentDoorState.OPEN;
+              newAccessory.context.initialState = Characteristic.CurrentDoorState.OPEN;
               var newState = Characteristic.CurrentDoorState.OPEN;
             }
-        
+
             // Detect for state changes
-            if (newState != thisOpener.currentState) {
+            if (newState != newAccessory.context.currentState) {
               self.count = 0;
-              thisOpener.currentState = newState;
+              newAccessory.context.currentState = newState;
             }
-        
-            self.foundOpeners[thisDeviceID] = thisOpener;
-        
+
+            // Store accessory in cache
+            self.accessories[thisDeviceID] = newAccessory;
+
             // Set validData hint after we found an opener
             self.validData = true;
           }
         }
       } catch (err) {
-        self.log("Error '" + err + "'");
+        self.log("[MyQ] Error '" + err + "'");
       }
 
       // Did we have valid data?
@@ -431,21 +397,21 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
 
         callback();
       } else {
-        self.log("Error: Couldn't find a MyQ door device.");
+        self.log("[MyQ] Error: Couldn't find a MyQ door device.");
         callback("Missing MyQ Device ID");
       }
     } else {
-      self.log("Error '" + err + "' getting MyQ devices: " + body);
+      self.log("[MyQ] Error '" + err + "' getting MyQ devices: " + body);
       callback(err);
     }
   }).on('error', function(err) {
-    self.log("Error '" + err + "'");
+    self.log("[MyQ] Error '" + err + "'");
     callback(err);
   });
 }
 
 // Send opener target state to the server
-LiftMasterPlatform.prototype.setState = function(deviceID, name, state, callback) {
+LiftMasterPlatform.prototype.setState = function(thisOpener, name, state, callback) {
   var self = this;
   var liftmasterState = (state + "") == "1" ? "0" : "1";
 
@@ -468,7 +434,7 @@ LiftMasterPlatform.prototype.setState = function(deviceID, name, state, callback
     AttributeValue: liftmasterState,
     ApplicationId: APP_ID,
     SecurityToken: this.securityToken,
-    MyQDeviceId: deviceID
+    MyQDeviceId: thisOpener.deviceID
   };
 
   // Send the state request to liftmaster
