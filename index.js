@@ -99,7 +99,7 @@ LiftMasterPlatform.prototype.setService = function(accessory) {
   accessory
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
-    .on('get', this.getTargetState.bind(this, accessory.context.currentState))
+    .on('get', this.getTargetState.bind(this, accessory.context))
     .on('set', this.setTargetState.bind(this, accessory.context, accessory.displayName));
 
   accessory.on('identify', this.identify.bind(this, accessory.displayName));
@@ -137,9 +137,9 @@ LiftMasterPlatform.prototype.setTargetState = function(thisOpener, name, state, 
 }
 
 // Method to get target door state
-LiftMasterPlatform.prototype.getTargetState = function(currentState, callback) {
+LiftMasterPlatform.prototype.getTargetState = function(thisOpener, callback) {
   // Get target state directly from cache
-  callback(null, currentState % 2);
+  callback(null, thisOpener.currentState % 2);
 }
 
 // Method to get current door state
@@ -298,8 +298,8 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
           var device = devices[i];
 
           if (device["MyQDeviceTypeName"] == "Garage Door Opener WGDO" || device["MyQDeviceTypeName"] == "GarageDoorOpener" || device["MyQDeviceTypeName"] == "VGDO") {
-            var thisDeviceID = device.MyQDeviceId;
-            var thisSerialNumber = device.SerialNumber;
+            var thisDeviceID = device.MyQDeviceId.toString();
+            var thisSerialNumber = device.SerialNumber.toString();
             var thisDoorName = "Unknown";
             var thisDoorState = 2;
             var nameFound = false;
