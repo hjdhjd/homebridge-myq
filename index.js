@@ -94,15 +94,15 @@ LiftMasterPlatform.prototype.setService = function(accessory) {
   accessory
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.CurrentDoorState)
-    .on('get', this.getCurrentState.bind(this, accessory.context, accessory.displayName));
+    .on('get', this.getCurrentState.bind(this, accessory));
 
   accessory
     .getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
-    .on('get', this.getTargetState.bind(this, accessory.context))
-    .on('set', this.setTargetState.bind(this, accessory.context, accessory.displayName));
+    .on('get', this.getTargetState.bind(this, accessory))
+    .on('set', this.setTargetState.bind(this, accessory));
 
-  accessory.on('identify', this.identify.bind(this, accessory.displayName));
+  accessory.on('identify', this.identify.bind(this, accessory));
 }
 
 // Method to setup HomeKit accessory information
@@ -121,13 +121,13 @@ LiftMasterPlatform.prototype.setAccessoryInfo = function(accessory) {
 }
 
 // Method to set target door state
-LiftMasterPlatform.prototype.setTargetState = function(thisOpener, name, state, callback) {
+LiftMasterPlatform.prototype.setTargetState = function(accessory, state, callback) {
   var self = this;
 
   // Always re-login for setting the state
   this.login(function(loginError) {
     if (!loginError) {
-      self.setState(thisOpener, name, state, function(setStateError) {
+      self.setState(accessory, state, function(setStateError) {
         callback(setStateError);
       });
     } else {
@@ -137,14 +137,16 @@ LiftMasterPlatform.prototype.setTargetState = function(thisOpener, name, state, 
 }
 
 // Method to get target door state
-LiftMasterPlatform.prototype.getTargetState = function(thisOpener, callback) {
+LiftMasterPlatform.prototype.getTargetState = function(accessory, callback) {
   // Get target state directly from cache
-  callback(null, thisOpener.currentState % 2);
+  callback(null, accessory.context.currentState % 2);
 }
 
 // Method to get current door state
-LiftMasterPlatform.prototype.getCurrentState = function(thisOpener, name, callback) {
+LiftMasterPlatform.prototype.getCurrentState = function(accessory, callback) {
   var self = this;
+  var thisOpener = accessory.context;
+  var name = accessory.displayName;
 
   // Retrieve latest state from server
   this.updateState(function(error) {
@@ -218,8 +220,8 @@ LiftMasterPlatform.prototype.updateState = function(callback) {
 }
 
 // Method to handle identify request
-LiftMasterPlatform.prototype.identify = function(name, paired, callback) {
-  this.log("[" + name + "] Identify requested!");
+LiftMasterPlatform.prototype.identify = function(accessory, paired, callback) {
+  this.log("[" + accessory.displayName + "] Identify requested!");
   callback();
 }
 
@@ -411,8 +413,10 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
 }
 
 // Send opener target state to the server
-LiftMasterPlatform.prototype.setState = function(thisOpener, name, state, callback) {
+LiftMasterPlatform.prototype.setState = function(accessory, state, callback) {
   var self = this;
+  var thisOpener = accessory.context;
+  var name = accessory.displayName;
   var liftmasterState = (state + "") == "1" ? "0" : "1";
 
   // Querystring params
