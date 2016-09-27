@@ -555,7 +555,7 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function(context, req
 
           // Reset polling
           this.maxCount = this.shortPollDuration / this.shortPoll;
-		  this.count = this.maxCount;
+          this.count = this.maxCount;
           if (this.tout) {
             clearTimeout(this.tout);
             this.periodicUpdate();
