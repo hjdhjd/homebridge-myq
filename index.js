@@ -118,6 +118,12 @@ LiftMasterPlatform.prototype.setAccessoryInfo = function(accessory) {
       .getService(Service.AccessoryInformation)
       .setCharacteristic(Characteristic.SerialNumber, accessory.context.serialNumber);
   }
+
+  if (accessory.context.model) {
+    accessory
+      .getService(Service.AccessoryInformation)
+      .setCharacteristic(Characteristic.Model, accessory.context.model);
+  }
 }
 
 // Method to set target door state
@@ -302,6 +308,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
           if (device["MyQDeviceTypeName"] == "Garage Door Opener WGDO" || device["MyQDeviceTypeName"] == "GarageDoorOpener" || device["MyQDeviceTypeName"] == "VGDO") {
             var thisDeviceID = device.MyQDeviceId.toString();
             var thisSerialNumber = device.SerialNumber.toString();
+			var thisModel = device.MyQDeviceTypeName.toString();
             var thisDoorName = "Unknown";
             var thisDoorState = 2;
             var nameFound = false;
@@ -337,6 +344,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
               newAccessory.context.initialState = Characteristic.CurrentDoorState.CLOSED;
               newAccessory.context.currentState = Characteristic.CurrentDoorState.CLOSED;
               newAccessory.context.serialNumber = thisSerialNumber;
+			  newAccessory.context.model = thisModel;
 
               // Setup HomeKit security system service
               newAccessory.addService(Service.GarageDoorOpener, thisDoorName);
