@@ -1,4 +1,6 @@
 var request = require("request");
+var chalk = require("chalk");
+var util = require("util");
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
@@ -15,6 +17,7 @@ var APP_ID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
 
 function LiftMasterPlatform(log, config, api) {
   this.log = log;
+  this.platformLog = function(msg) {log(chalk.cyan("[MyQ]") + " " + msg);};
   this.config = config || {"platform": "LiftMaster2"};
   this.username = this.config.username;
   this.password = this.config.password;
@@ -53,7 +56,7 @@ LiftMasterPlatform.prototype.didFinishLaunching = function() {
     // Start polling
     this.periodicUpdate();
   } else {
-    this.log("[MyQ] Please setup MyQ login information!")
+    this.platformLog("Please setup MyQ login information!")
   }
 }
 
@@ -74,7 +77,7 @@ LiftMasterPlatform.prototype.addAccessory = function() {
         }
       }
     } else {
-      self.log("[MyQ] " + error);
+      self.platformLog(error);
     }
   });
 }
@@ -83,7 +86,7 @@ LiftMasterPlatform.prototype.addAccessory = function() {
 LiftMasterPlatform.prototype.removeAccessory = function(accessory) {
   if (accessory) {
     var deviceID = accessory.context.deviceID;
-    this.log("[" + accessory.displayName + "] Removed from HomeBridge.");
+    accessory.context.log("Removed from HomeBridge.");
     this.api.unregisterPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
     delete this.accessories[deviceID];
   }
@@ -157,7 +160,7 @@ LiftMasterPlatform.prototype.getCurrentState = function(accessory, callback) {
   // Retrieve latest state from server
   this.updateState(function(error) {
     if (!error) {
-      self.log("[" + name + "] Getting current state: " + self.doorState[thisOpener.currentState]);
+      thisOpener.log("Getting current state: " + self.doorState[thisOpener.currentState]);
       callback(null, thisOpener.currentState);
     } else {
       callback(error);
@@ -227,7 +230,7 @@ LiftMasterPlatform.prototype.updateState = function(callback) {
 
 // Method to handle identify request
 LiftMasterPlatform.prototype.identify = function(accessory, paired, callback) {
-  this.log("[" + accessory.displayName + "] Identify requested!");
+  accessory.context.log("Identify requested!");
   callback();
 }
 
@@ -256,14 +259,14 @@ LiftMasterPlatform.prototype.login = function(callback) {
       self.userId = json["UserId"];
       self.securityToken = json["SecurityToken"];
       self.manufacturer = json["BrandName"].toString();
-      self.log("[MyQ] Logged in with MyQ user ID " + self.userId);
+      self.platformLog("Logged in with MyQ user ID " + self.userId);
       self.getDevice(callback);
     } else {
-      self.log("[MyQ] Error '"+err+"' logging in to MyQ: " + body);
+      self.platformLog("Error '"+err+"' logging in to MyQ: " + body);
       callback(err);
     }
   }).on('error', function(err) {
-    self.log("[MyQ] " + err);
+    self.platformLog(err);
     callback(err);
   });
 }
@@ -345,6 +348,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
               newAccessory.context.currentState = Characteristic.CurrentDoorState.CLOSED;
               newAccessory.context.serialNumber = thisSerialNumber;
 			  newAccessory.context.model = thisModel;
+              newAccessory.context.log = function(msg) {log(chalk.cyan("[" + newAccessory.displayName + "]") + " " + msg);};
 
               // Setup HomeKit security system service
               newAccessory.addService(Service.GarageDoorOpener, thisDoorName);
@@ -360,6 +364,12 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
             } else {
               // Retrieve accessory from cache
               var newAccessory = self.accessories[thisDeviceID];
+
+              // Update context
+              newAccessory.context.deviceID = thisDeviceID;
+              newAccessory.context.serialNumber = thisSerialNumber;
+			  newAccessory.context.model = thisModel;
+              newAccessory.context.log = function(msg) {self.log(chalk.cyan("[" + newAccessory.displayName + "]") + " " + msg);};
 
               // Accessory is reachable after it's found in the server
               newAccessory.updateReachability(true);
@@ -394,7 +404,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
           }
         }
       } catch (err) {
-        self.log("[MyQ] Error '" + err + "'");
+        self.platformLog("Error '" + err + "'");
       }
 
       // Did we have valid data?
@@ -407,15 +417,15 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
 
         callback();
       } else {
-        self.log("[MyQ] Error: Couldn't find a MyQ door device.");
+        self.platformLog("Error: Couldn't find a MyQ door device.");
         callback("Missing MyQ Device ID");
       }
     } else {
-      self.log("[MyQ] Error '" + err + "' getting MyQ devices: " + body);
+      self.platformLog("Error '" + err + "' getting MyQ devices: " + body);
       callback(err);
     }
   }).on('error', function(err) {
-    self.log("[MyQ] Error '" + err + "'");
+    self.platformLog("Error '" + err + "'");
     callback(err);
   });
 }
@@ -460,7 +470,7 @@ LiftMasterPlatform.prototype.setState = function(accessory, state, callback) {
     if (!err && response.statusCode == 200) {
 
       if (json["ReturnCode"] == "0") {
-        self.log("[" + name + "] State was successfully set to " + self.doorState[state]);
+        thisOpener.log("State was successfully set to " + self.doorState[state]);
 
         // Set short polling interval
         self.count = 0;
@@ -471,16 +481,16 @@ LiftMasterPlatform.prototype.setState = function(accessory, state, callback) {
 
         callback();
       } else {
-        self.log("[" + name + "] Bad return code: " + json["ReturnCode"]);
-        self.log("[" + name + "] Raw response " + JSON.stringify(json));
+        thisOpener.log("Bad return code: " + json["ReturnCode"]);
+        thisOpener.log("Raw response " + JSON.stringify(json));
         callback("Unknown Error");
       }
     } else {
-      self.log("[" + name + "] Error '"+err+"' setting door state: " + JSON.stringify(json));
+      thisOpener.log("Error '"+err+"' setting door state: " + JSON.stringify(json));
       callback(err);
     }
   }).on('error', function(err) {
-    self.log("[" + name + "] " + err);
+    thisOpener.log(err);
     callback(err);
   });
 }
