@@ -1,6 +1,5 @@
 var request = require("request");
 var chalk = require("chalk");
-var util = require("util");
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function(homebridge) {
