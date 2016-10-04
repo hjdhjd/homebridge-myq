@@ -16,7 +16,7 @@ var APP_ID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
 
 function LiftMasterPlatform(log, config, api) {
   this.log = log;
-  this.platformLog = function(msg) {log(chalk.cyan("[MyQ]") + " " + msg);};
+  this.platformLog = function(msg) {log(chalk.cyan("[MyQ]"), msg);};
   this.config = config || {"platform": "LiftMaster2"};
   this.username = this.config.username;
   this.password = this.config.password;
@@ -307,7 +307,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
         for (var i = 0; i < devices.length; i++) {
           var device = devices[i];
 
-          if (device["MyQDeviceTypeName"] == "Garage Door Opener WGDO" || device["MyQDeviceTypeName"] == "GarageDoorOpener" || device["MyQDeviceTypeName"] == "VGDO") {
+          if (device["MyQDeviceTypeName"] == "Garage Door Opener WGDO" || device["MyQDeviceTypeName"] == "GarageDoorOpener" || device["MyQDeviceTypeName"] == "VGDO" || device["MyQDeviceTypeName"] == "Gate") {
             var thisDeviceID = device.MyQDeviceId.toString();
             var thisSerialNumber = device.SerialNumber.toString();
             var thisModel = device.MyQDeviceTypeName.toString();
@@ -347,7 +347,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
               newAccessory.context.currentState = Characteristic.CurrentDoorState.CLOSED;
               newAccessory.context.serialNumber = thisSerialNumber;
               newAccessory.context.model = thisModel;
-              newAccessory.context.log = function(msg) {self.log(chalk.cyan("[" + newAccessory.displayName + "]") + " " + msg);};
+              newAccessory.context.log = function(msg) {self.log(chalk.cyan("[" + newAccessory.displayName + "]"), msg);};
 
               // Setup HomeKit security system service
               newAccessory.addService(Service.GarageDoorOpener, thisDoorName);
@@ -368,7 +368,7 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
               newAccessory.context.deviceID = thisDeviceID;
               newAccessory.context.serialNumber = thisSerialNumber;
               newAccessory.context.model = thisModel;
-              newAccessory.context.log = function(msg) {self.log(chalk.cyan("[" + newAccessory.displayName + "]") + " " + msg);};
+              newAccessory.context.log = function(msg) {self.log(chalk.cyan("[" + newAccessory.displayName + "]"), msg);};
 
               // Accessory is reachable after it's found in the server
               newAccessory.updateReachability(true);
