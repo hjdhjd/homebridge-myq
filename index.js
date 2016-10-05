@@ -41,8 +41,11 @@ function LiftMasterPlatform(log, config, api) {
 
 // Method to restore accessories from cache
 LiftMasterPlatform.prototype.configureAccessory = function(accessory) {
-  this.setService(accessory);
+  var self = this;
   var accessoryID = accessory.context.deviceID;
+
+  accessory.context.log = function(msg) {self.log(chalk.cyan("[" + accessory.displayName + "]"), msg);};
+  this.setService(accessory);
   this.accessories[accessoryID] = accessory;
 }
 
@@ -368,7 +371,6 @@ LiftMasterPlatform.prototype.getDevice = function(callback) {
               newAccessory.context.deviceID = thisDeviceID;
               newAccessory.context.serialNumber = thisSerialNumber;
               newAccessory.context.model = thisModel;
-              newAccessory.context.log = function(msg) {self.log(chalk.cyan("[" + newAccessory.displayName + "]"), msg);};
 
               // Accessory is reachable after it's found in the server
               newAccessory.updateReachability(true);
