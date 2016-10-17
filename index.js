@@ -253,11 +253,26 @@ LiftMasterPlatform.prototype.login = function (callback) {
 
       // parse and interpret the response
       var json = JSON.parse(body);
+<<<<<<< HEAD
+      
+      // 'The user is locked out. (207)' or 
+      // 'The username or password you entered is incorrect. Try again. (203)' or ...
+      if (json["ReturnCode"] > 200) { 
+        callback(" Error '"+json["ErrorMessage"]+"' when attempting login to MyQ.");
+      } else {
+        self.userId = json["UserId"];
+        self.securityToken = json["SecurityToken"];
+        self.manufacturer = json["BrandName"].toString();
+        self.log("[MyQ] Logged in with MyQ user ID " + self.userId);
+        self.getDevice(callback);
+      }
+=======
       self.userId = json["UserId"];
       self.securityToken = json["SecurityToken"];
       self.manufacturer = json["BrandName"].toString();
       self.platformLog("Logged in with MyQ user ID " + self.userId);
       self.getDevice(callback);
+>>>>>>> refs/remotes/origin/master
     } else {
       self.platformLog("Error '" + err + "' logging in to MyQ: " + body);
       callback(err);
@@ -561,7 +576,11 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
 
           // Reset polling
           this.maxCount = this.shortPollDuration / this.shortPoll;
+<<<<<<< HEAD
+      this.count = this.maxCount;
+=======
           this.count = this.maxCount;
+>>>>>>> refs/remotes/origin/master
           if (this.tout) {
             clearTimeout(this.tout);
             this.periodicUpdate();
@@ -604,3 +623,7 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
     }
   }
 }
+<<<<<<< HEAD
+
+=======
+>>>>>>> refs/remotes/origin/master
