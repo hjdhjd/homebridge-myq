@@ -191,21 +191,22 @@ LiftMasterPlatform.prototype.periodicUpdate = function () {
 
   // Setup periodic update with polling interval
   this.tout = setTimeout(function () {
+    var self = this;
     this.tout = null
     this.updateState(function (error) {
       if (!error) {
         // Update states for all HomeKit accessories
-        for (var deviceID in this.accessories) {
-          var accessory = this.accessories[deviceID];
-          this.updateDoorStates(accessory);
+        for (var deviceID in self.accessories) {
+          var accessory = self.accessories[deviceID];
+          self.updateDoorStates(accessory);
         }
       } else {
         // Re-login after short polling interval if error occurs
-        this.count = this.maxCount - 1;
+        self.count = self.maxCount - 1;
       }
 
       // Setup next polling
-      this.periodicUpdate();
+      self.periodicUpdate();
     });
   }.bind(this), refresh * 1000);
 }
