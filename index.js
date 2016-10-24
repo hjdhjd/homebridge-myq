@@ -321,7 +321,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               if (thisAttributeSet.AttributeDisplayName === "doorstate") {
                 thisDoorState = thisAttributeSet.Value;
                 stateFound = true;
-                self.log("State Found" + thisAttributeSet.Value + ", " + thisDoorState);
+                self.log("State Found: " + thisAttributeSet.Value + ", " + thisDoorState);
               }
               if (nameFound && stateFound) {
                 self.log("Both name and state are found. Breaking the loop.");
