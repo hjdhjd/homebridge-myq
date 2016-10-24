@@ -316,20 +316,13 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               if (thisAttributeSet.AttributeDisplayName === "desc") {
                 thisDoorName = thisAttributeSet.Value;
                 nameFound = true;
-                self.log("Name Found: " + thisAttributeSet.Value + ", " + thisDoorName);
               }
               if (thisAttributeSet.AttributeDisplayName === "doorstate") {
                 thisDoorState = thisAttributeSet.Value;
                 stateFound = true;
-                self.log("State Found: " + thisAttributeSet.Value + ", " + thisDoorState);
               }
-              if (nameFound && stateFound) {
-                self.log("Both name and state are found. Breaking the loop.");
-                break;
-              }
+              if (nameFound && stateFound) break;
             }
-
-            self.log("Name and state before init: " + thisDoorName + ", " + thisDoorState);
 
             // Initialization for opener
             if (!self.accessories[thisDeviceID]) {
@@ -373,8 +366,6 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               newAccessory.updateReachability(true);
             }
 
-            self.log("Name and state after init: " + thisDoorName + ", " + thisDoorState);
-
             // Determine the current door state
             if (thisDoorState === "2") {
               newAccessory.context.initialState = Characteristic.CurrentDoorState.CLOSED;
@@ -389,8 +380,6 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               newAccessory.context.initialState = Characteristic.CurrentDoorState.OPEN;
               var newState = Characteristic.CurrentDoorState.OPEN;
             }
-
-            self.log("HomeKit state: " + newState);
 
             // Detect for state changes
             if (newState !== newAccessory.context.currentState) {
