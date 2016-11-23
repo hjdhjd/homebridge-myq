@@ -460,7 +460,7 @@ LiftMasterPlatform.prototype.setState = function (accessory, state, callback) {
     if (!err && response.statusCode === 200) {
 
       if (json["ReturnCode"] === "0") {
-        self.log(thisOpener.name + " is successfully set to " + self.doorState[state]);
+        self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
         // Set short polling interval
         self.count = 0;
