@@ -333,7 +333,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               newAccessory.reachable = true;
 
               // Store and initialize variables into context
-			  newAccessory.context.name = thisDoorName;
+              newAccessory.context.name = thisDoorName;
               newAccessory.context.deviceID = thisDeviceID;
               newAccessory.context.initialState = Characteristic.CurrentDoorState.CLOSED;
               newAccessory.context.currentState = Characteristic.CurrentDoorState.CLOSED;
@@ -356,7 +356,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               var newAccessory = self.accessories[thisDeviceID];
 
               // Update context
-			  newAccessory.context.name = thisDoorName;
+              newAccessory.context.name = thisDoorName;
               newAccessory.context.deviceID = thisDeviceID;
               newAccessory.context.serialNumber = thisSerialNumber;
               newAccessory.context.model = thisModel;
