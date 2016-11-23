@@ -181,6 +181,8 @@ LiftMasterPlatform.prototype.identify = function (accessory, paired, callback) {
 
 // Method for state periodic update
 LiftMasterPlatform.prototype.periodicUpdate = function () {
+  var self = this;
+
   // Determine polling interval
   if (this.count  < this.maxCount) {
     this.count++;
@@ -191,9 +193,8 @@ LiftMasterPlatform.prototype.periodicUpdate = function () {
 
   // Setup periodic update with polling interval
   this.tout = setTimeout(function () {
-    var self = this;
-    this.tout = null
-    this.updateState(function (error) {
+    self.tout = null
+    self.updateState(function (error) {
       if (!error) {
         // Update states for all HomeKit accessories
         for (var deviceID in self.accessories) {
@@ -208,7 +209,7 @@ LiftMasterPlatform.prototype.periodicUpdate = function () {
       // Setup next polling
       self.periodicUpdate();
     });
-  }.bind(this), refresh * 1000);
+  }, refresh * 1000);
 }
 
 // Method to retrieve door state from the server
