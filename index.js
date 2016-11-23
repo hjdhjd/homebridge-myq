@@ -75,8 +75,6 @@ LiftMasterPlatform.prototype.addAccessory = function () {
           self.updateDoorStates(accessory);
         }
       }
-    } else {
-      self.log(error);
     }
   });
 }
