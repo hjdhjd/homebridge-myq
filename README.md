@@ -23,6 +23,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 ```
 "platforms": [{
     "platform": "LiftMaster2",
+    "name": "MyQ",
     "username": "email@email.com",
     "password": "password",
     "longPoll": 300,
@@ -35,6 +36,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 | Fields            | Description                                                   | Required |
 |-------------------|---------------------------------------------------------------|----------|
 | platform          | Must always be `LiftMaster2`.                                 | Yes      |
+| name              | For logging purposes.                                         | No       |
 | username          | Your MyQ account email.                                       | Yes      |
 | password          | Your MyQ account password.                                    | Yes      |
 | longPoll          | Normal polling interval in `s` (Default 300s).                | No       |
