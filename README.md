@@ -26,6 +26,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
     "name": "MyQ",
     "username": "email@email.com",
     "password": "password",
+    "polling": true,
     "longPoll": 300,
     "shortPoll": 5,
     "shortPollDuration": 120
@@ -39,6 +40,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 | name              | For logging purposes.                                         | No       |
 | username          | Your MyQ account email.                                       | Yes      |
 | password          | Your MyQ account password.                                    | Yes      |
+| polling           | State polling (Default false).                                | No       |
 | longPoll          | Normal polling interval in `s` (Default 300s).                | No       |
 | shortPoll         | Polling interval in `s` when door state changes (Default 5s). | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll` (Default 120s).            | No       |

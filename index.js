@@ -18,10 +18,14 @@ function LiftMasterPlatform(log, config, api) {
   this.config = config || {"platform": "LiftMaster2"};
   this.username = this.config.username;
   this.password = this.config.password;
+  if (this.config.polling === true || (typeof(this.config.polling) === "string" && this.config.polling.toUpperCase() === "TRUE")) {
+    this.polling = true;
+  } else {
+    this.polling = false;
+  }
   this.longPoll = parseInt(this.config.longPoll, 10) || 300;
   this.shortPoll = parseInt(this.config.shortPoll, 10) || 5;
   this.shortPollDuration = parseInt(this.config.shortPollDuration, 10) || 120;
-  this.tout = null;
   this.maxCount = this.shortPollDuration / this.shortPoll;
   this.count = this.maxCount;
   this.validData = false;
@@ -39,7 +43,6 @@ function LiftMasterPlatform(log, config, api) {
 
 // Method to restore accessories from cache
 LiftMasterPlatform.prototype.configureAccessory = function (accessory) {
-  var self = this;
   var accessoryID = accessory.context.deviceID;
 
   this.setService(accessory);
@@ -53,7 +56,7 @@ LiftMasterPlatform.prototype.didFinishLaunching = function () {
     this.addAccessory();
 
     // Start polling
-    this.periodicUpdate();
+    if (this.polling) this.statePolling();
   } else {
     this.log("Please setup MyQ login information!")
   }
@@ -105,20 +108,10 @@ LiftMasterPlatform.prototype.setService = function (accessory) {
 
 // Method to setup HomeKit accessory information
 LiftMasterPlatform.prototype.setAccessoryInfo = function (accessory) {
-  if (this.manufacturer) {
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Manufacturer, this.manufacturer);
-  }
-
-  if (accessory.context.serialNumber) {
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.SerialNumber, accessory.context.serialNumber);
-  }
-
-  if (accessory.context.model) {
-    accessory.getService(Service.AccessoryInformation)
-      .setCharacteristic(Characteristic.Model, accessory.context.model);
-  }
+  accessory.getService(Service.AccessoryInformation)
+    .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
+    .setCharacteristic(Characteristic.Model, accessory.context.model)
+    .setCharacteristic(Characteristic.SerialNumber, accessory.context.serial);
 }
 
 // Method to update door state in HomeKit
@@ -175,8 +168,11 @@ LiftMasterPlatform.prototype.identify = function (accessory, paired, callback) {
 }
 
 // Method for state periodic update
-LiftMasterPlatform.prototype.periodicUpdate = function () {
+LiftMasterPlatform.prototype.statePolling = function () {
   var self = this;
+
+  // Clear polling
+  clearTimeout(this.tout);
 
   // Determine polling interval
   if (this.count  < this.maxCount) {
@@ -188,7 +184,6 @@ LiftMasterPlatform.prototype.periodicUpdate = function () {
 
   // Setup periodic update with polling interval
   this.tout = setTimeout(function () {
-    self.tout = null
     self.updateState(function (error) {
       if (!error) {
         // Update states for all HomeKit accessories
@@ -202,7 +197,7 @@ LiftMasterPlatform.prototype.periodicUpdate = function () {
       }
 
       // Setup next polling
-      self.periodicUpdate();
+      self.statePolling();
     });
   }, refresh * 1000);
 }
@@ -331,12 +326,8 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               newAccessory.reachable = true;
 
               // Store and initialize variables into context
-              newAccessory.context.name = thisDoorName;
-              newAccessory.context.deviceID = thisDeviceID;
               newAccessory.context.initialState = Characteristic.CurrentDoorState.CLOSED;
               newAccessory.context.currentState = Characteristic.CurrentDoorState.CLOSED;
-              newAccessory.context.serialNumber = thisSerialNumber;
-              newAccessory.context.model = thisModel;
 
               // Setup HomeKit security system service
               newAccessory.addService(Service.GarageDoorOpener, thisDoorName);
@@ -353,15 +344,15 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               // Retrieve accessory from cache
               var newAccessory = self.accessories[thisDeviceID];
 
-              // Update context
-              newAccessory.context.name = thisDoorName;
-              newAccessory.context.deviceID = thisDeviceID;
-              newAccessory.context.serialNumber = thisSerialNumber;
-              newAccessory.context.model = thisModel;
-
               // Accessory is reachable after it's found in the server
               newAccessory.updateReachability(true);
             }
+
+            // Update context
+            newAccessory.context.name = thisDoorName;
+            newAccessory.context.deviceID = thisDeviceID;
+            newAccessory.context.serial = thisSerialNumber;
+            newAccessory.context.model = thisModel;
 
             // Determine the current door state
             if (thisDoorState === "2") {
@@ -398,10 +389,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
       // Did we have valid data?
       if (self.validData) {
         // Set short polling interval when state changes
-        if (self.tout && self.count === 0) {
-          clearTimeout(self.tout);
-          self.periodicUpdate();
-        }
+        if (self.polling) self.statePolling();
 
         callback();
       } else {
@@ -461,10 +449,9 @@ LiftMasterPlatform.prototype.setState = function (accessory, state, callback) {
         self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
         // Set short polling interval
-        self.count = 0;
-        if (self.tout) {
-          clearTimeout(self.tout);
-          self.periodicUpdate();
+        if (self.polling) {
+          self.count = 0;
+          self.statePolling();
         }
 
         callback();
@@ -519,6 +506,10 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
             "placeholder": this.password ? "Leave blank if unchanged" : "password",
             "secure": true
           }, {
+            "id": "polling",
+            "title": "Enable Polling (true/false)",
+            "placeholder": this.polling.toString(),
+          }, {
             "id": "longPoll",
             "title": "Long Polling Interval",
             "placeholder": this.longPoll.toString(),
@@ -542,6 +533,11 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
         // Setup info for adding or updating accessory
         this.username = userInputs.username || this.username;
         this.password = userInputs.password || this.password;
+        if (userInputs.polling.toUpperCase() === "TRUE") {
+          this.polling = true;
+        } else if (userInputs.polling.toUpperCase() === "FALSE") {
+          this.polling = false;
+        }
         this.longPoll = parseInt(userInputs.longPoll, 10) || this.longPoll;
         this.shortPoll = parseInt(userInputs.shortPoll, 10) || this.shortPoll;
         this.shortPollDuration = parseInt(userInputs.shortPollDuration, 10) || this.shortPollDuration;
@@ -552,12 +548,10 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
           this.addAccessory();
 
           // Reset polling
-          this.maxCount = this.shortPollDuration / this.shortPoll;
-          this.count = this.maxCount;
-
-          if (this.tout) {
-            clearTimeout(this.tout);
-            this.periodicUpdate();
+          if (this.polling) {
+            this.maxCount = this.shortPollDuration / this.shortPoll;
+            this.count = this.maxCount;
+            this.statePolling();
           }
 
           var respDict = {
@@ -589,6 +583,7 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
         var newConfig = this.config;
         newConfig.username = this.username;
         newConfig.password = this.password;
+        newConfig.polling = this.polling;
         newConfig.longPoll = this.longPoll;
         newConfig.shortPoll = this.shortPoll;
         newConfig.shortPollDuration = this.shortPollDuration;
