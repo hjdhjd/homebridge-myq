@@ -204,7 +204,7 @@ LiftMasterPlatform.prototype.statePolling = function () {
 
 // Method to retrieve door state from the server
 LiftMasterPlatform.prototype.updateState = function (callback) {
-  if (this.validData) {
+  if (this.validData && this.polling) {
     // Refresh data directly from sever if current data is valid
     this.getDevice(callback);
   } else {
