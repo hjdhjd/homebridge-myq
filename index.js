@@ -101,11 +101,11 @@ LiftMasterPlatform.prototype.setService = function (accessory) {
 }
 
 // Method to setup HomeKit accessory information
-LiftMasterPlatform.prototype.setAccessoryInfo = function (accessory) {
+LiftMasterPlatform.prototype.setAccessoryInfo = function (accessory, model, serial) {
   accessory.getService(Service.AccessoryInformation)
     .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
-    .setCharacteristic(Characteristic.Model, accessory.context.model)
-    .setCharacteristic(Characteristic.SerialNumber, accessory.context.serial);
+    .setCharacteristic(Characteristic.Model, model)
+    .setCharacteristic(Characteristic.SerialNumber, serial);
 }
 
 // Method to update door state in HomeKit
@@ -180,25 +180,24 @@ LiftMasterPlatform.prototype.login = function (callback) {
     url: "https://myqexternal.myqdevice.com/api/user/validatewithculture",
     qs: query
   }, function (err, response, body) {
+	// parse and interpret the response
+    var json = JSON.parse(body);
 
-    if (!err && response.statusCode === 200) {
-      // parse and interpret the response
-      var json = JSON.parse(body);
-      
+    if (!err && response.statusCode === 200) {      
       // Check for MyQ Error Codes
-      if (json["ReturnCode"] > 200) { 
-        self.log(json["ErrorMessage"]);
-        callback(json["ErrorMessage"]);
+      if (json.ReturnCode > 200) { 
+        self.log(json.ErrorMessage);
+        callback(json.ErrorMessage);
       } else {
-        self.userId = json["UserId"];
-        self.securityToken = json["SecurityToken"];
-        self.manufacturer = json["BrandName"].toString();
+        self.userId = json.UserId;
+        self.securityToken = json.SecurityToken;
+        self.manufacturer = json.BrandName.toString();
         self.log("Logged in with MyQ user ID " + self.userId);
         self.getDevice(callback);
       }
     } else {
       self.log("Error '" + err + "' logging in to MyQ: " + body);
-      callback(err);
+      callback(err || new Error(json.ErrorMessage));
     }
   }).on('error', function (err) {
     self.log(err);
@@ -232,12 +231,12 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
     qs: query,
     headers: headers
   }, function (err, response, body) {
+    // parse and interpret the response
+    var json = JSON.parse(body);
 
     if (!err && response.statusCode === 200) {
       try {
-        // Parse and interpret the response
-        var json = JSON.parse(body);
-        var devices = json["Devices"];
+        var devices = json.Devices;
 
         // Look through the array of devices for all the openers
         for (var i = 0; i < devices.length; i++) {
@@ -246,7 +245,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
           if (deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
             var thisDeviceID = device.MyQDeviceId.toString();
-            var thisSerialNumber = device.SerialNumber.toString();
+            var thisSerial = device.SerialNumber.toString();
             var thisModel = deviceType.toString();
             var thisDoorName = "Unknown";
             var thisDoorState = "2";
@@ -282,7 +281,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               accessory.reachable = true;
 
               // Setup HomeKit accessory information
-              self.setAccessoryInfo(accessory);
+              self.setAccessoryInfo(accessory, thisModel, thisSerial);
 
               // Setup listeners for different security system events
               self.setService(accessory);
@@ -298,8 +297,6 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
             var cache = accessory.context;
             cache.name = thisDoorName;
             cache.deviceID = thisDeviceID;
-            cache.serial = thisSerialNumber;
-            cache.model = thisModel;
             if (cache.initialState === undefined) {
               cache.initialState = Characteristic.CurrentDoorState.CLOSED;
               cache.currentState = Characteristic.CurrentDoorState.CLOSED;
@@ -345,12 +342,13 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
         callback();
       } else {
-        self.log("Error: Couldn't find a MyQ door device.");
-        callback("Missing MyQ Device ID");
+        var parseErr = "Error: Couldn't find a MyQ door device."
+        self.log(parseErr);
+        callback(new Error(parseErr));
       }
     } else {
       self.log("Error '" + err + "' getting MyQ devices: " + body);
-      callback(err);
+      callback(err || new Error(json.ErrorMessage));
     }
   }).on('error', function (err) {
     self.log("Error '" + err + "'");
@@ -396,8 +394,7 @@ LiftMasterPlatform.prototype.setState = function (accessory, state, callback) {
     json: true
   }, function (err, response, json) {
     if (!err && response.statusCode === 200) {
-
-      if (json["ReturnCode"] === "0") {
+      if (json.ReturnCode === "0") {
         self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
         // Set short polling interval
@@ -408,13 +405,13 @@ LiftMasterPlatform.prototype.setState = function (accessory, state, callback) {
 
         callback();
       } else {
-        self.log("Bad return code: " + json["ReturnCode"]);
+        self.log("Bad return code: " + json.ReturnCode);
         self.log("Raw response " + JSON.stringify(json));
-        callback("Unknown Error");
+        callback(new Error("Unknown Error"));
       }
     } else {
       self.log("Error '" + err + "' setting " + thisOpener.name + " state: " + JSON.stringify(json));
-      callback(err);
+      callback(err || new Error(json.ErrorMessage));
     }
   }).on('error', function (err) {
     self.log(err);
