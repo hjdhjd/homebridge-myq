@@ -18,6 +18,8 @@ function LiftMasterPlatform(log, config, api) {
   this.config = config || {"platform": "LiftMaster2"};
   this.username = this.config.username;
   this.password = this.config.password;
+  this.openDuration = parseInt(this.config.openDuration, 10) || 15;
+  this.closeDuration = parseInt(this.config.closeDuration, 10) || 25;
   this.polling = this.config.polling === true;
   this.longPoll = parseInt(this.config.longPoll, 10) || 300;
   this.shortPoll = parseInt(this.config.shortPoll, 10) || 5;
@@ -50,7 +52,7 @@ LiftMasterPlatform.prototype.didFinishLaunching = function () {
     this.addAccessory();
 
     // Start polling
-    if (this.polling) this.statePolling();
+    if (this.polling) this.statePolling(0);
   } else {
     this.log("Please setup MyQ login information!")
   }
@@ -90,12 +92,12 @@ LiftMasterPlatform.prototype.removeAccessory = function (accessory) {
 LiftMasterPlatform.prototype.setService = function (accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.CurrentDoorState)
-    .on('get', this.getCurrentState.bind(this, accessory));
+    .on('get', this.getCurrentState.bind(this, accessory.context));
 
   accessory.getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
-    .on('get', this.getTargetState.bind(this, accessory))
-    .on('set', this.setTargetState.bind(this, accessory));
+    .on('get', this.getTargetState.bind(this, accessory.context))
+    .on('set', this.setTargetState.bind(this, accessory.context));
 
   accessory.on('identify', this.identify.bind(this, accessory));
 }
@@ -130,9 +132,9 @@ LiftMasterPlatform.prototype.updateState = function (callback) {
 }
 
 // Method for state periodic update
-LiftMasterPlatform.prototype.statePolling = function () {
+LiftMasterPlatform.prototype.statePolling = function (delay) {
   var self = this;
-  var refresh = this.longPoll;
+  var refresh = this.longPoll + delay;
 
   // Clear polling
   clearTimeout(this.tout);
@@ -140,7 +142,7 @@ LiftMasterPlatform.prototype.statePolling = function () {
   // Determine polling interval
   if (this.count  < this.maxCount) {
     this.count++;
-    refresh = this.shortPoll;
+    refresh = this.shortPoll + delay;
   }
 
   // Setup periodic update with polling interval
@@ -158,7 +160,7 @@ LiftMasterPlatform.prototype.statePolling = function () {
       }
 
       // Setup next polling
-      self.statePolling();
+      self.statePolling(0);
     });
   }, refresh * 1000);
 }
@@ -288,6 +290,9 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
               // Register new accessory in HomeKit
               self.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
+
+              // Store accessory in cache
+              self.accessories[thisDeviceID] = accessory;
             }
 
             // Accessory is reachable after it's found in the server
@@ -297,24 +302,15 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
             var cache = accessory.context;
             cache.name = thisDoorName;
             cache.deviceID = thisDeviceID;
-            if (cache.initialState === undefined) {
-              cache.initialState = Characteristic.CurrentDoorState.CLOSED;
-              cache.currentState = Characteristic.CurrentDoorState.CLOSED;
-            }
+            if (cache.currentState === undefined) cache.currentState = Characteristic.CurrentDoorState.CLOSED;
 
             // Determine the current door state
             var newState;
             if (thisDoorState === "2") {
-              cache.initialState = Characteristic.CurrentDoorState.CLOSED;
               newState = Characteristic.CurrentDoorState.CLOSED;
             } else if (thisDoorState === "3") {
               newState = Characteristic.CurrentDoorState.STOPPED;
-            } else if (thisDoorState === "5" || (thisDoorState === "8" && cache.initialState === Characteristic.CurrentDoorState.OPEN)) {
-              newState = Characteristic.CurrentDoorState.CLOSING;
-            } else if (thisDoorState === "4" || (thisDoorState === "8" && cache.initialState === Characteristic.CurrentDoorState.CLOSED)) {
-              newState = Characteristic.CurrentDoorState.OPENING;
-            } else if (thisDoorState === "1" || thisDoorState === "9") {
-              cache.initialState = Characteristic.CurrentDoorState.OPEN;
+            } else {
               newState = Characteristic.CurrentDoorState.OPEN;
             }
 
@@ -323,9 +319,6 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               self.count = 0;
               cache.currentState = newState;
             }
-
-            // Store accessory in cache
-            self.accessories[thisDeviceID] = accessory;
 
             // Set validData hint after we found an opener
             self.validData = true;
@@ -338,7 +331,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
       // Did we have valid data?
       if (self.validData) {
         // Set short polling interval when state changes
-        if (self.polling) self.statePolling();
+        if (self.polling) self.statePolling(0);
 
         callback();
       } else {
@@ -357,11 +350,11 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 }
 
 // Send opener target state to the server
-LiftMasterPlatform.prototype.setState = function (accessory, state, callback) {
+LiftMasterPlatform.prototype.setState = function (thisOpener, state, callback) {
   var self = this;
-  var thisOpener = accessory.context;
-  var name = accessory.displayName;
+  var thisAccessory = this.accessories[thisOpener.deviceID];
   var liftmasterState = state === 1 ? "0" : "1";
+  var updateDelay = state === 1 ? this.closeDuration : this.openDuration;
 
   // Querystring params
   var query = {
@@ -397,10 +390,17 @@ LiftMasterPlatform.prototype.setState = function (accessory, state, callback) {
       if (json.ReturnCode === "0") {
         self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
-        // Set short polling interval
         if (self.polling) {
+          // Set short polling interval
           self.count = 0;
-          self.statePolling();
+          self.statePolling(updateDelay - self.shortPoll);
+        } else {
+          // Update door state after updateDelay
+          setTimeout(function () {
+            self.updateState(function (error) {
+              if (!error) self.updateDoorStates(thisAccessory);
+            });
+          }, updateDelay * 1000);
         }
 
         callback();
@@ -420,13 +420,13 @@ LiftMasterPlatform.prototype.setState = function (accessory, state, callback) {
 }
 
 // Method to set target door state
-LiftMasterPlatform.prototype.setTargetState = function (accessory, state, callback) {
+LiftMasterPlatform.prototype.setTargetState = function (thisOpener, state, callback) {
   var self = this;
 
   // Always re-login for setting the state
   this.login(function (loginError) {
     if (!loginError) {
-      self.setState(accessory, state, callback);
+      self.setState(thisOpener, state, callback);
     } else {
       callback(loginError);
     }
@@ -434,16 +434,14 @@ LiftMasterPlatform.prototype.setTargetState = function (accessory, state, callba
 }
 
 // Method to get target door state
-LiftMasterPlatform.prototype.getTargetState = function (accessory, callback) {
+LiftMasterPlatform.prototype.getTargetState = function (thisOpener, callback) {
   // Get target state directly from cache
-  callback(null, accessory.context.currentState % 2);
+  callback(null, thisOpener.currentState % 2);
 }
 
 // Method to get current door state
-LiftMasterPlatform.prototype.getCurrentState = function (accessory, callback) {
+LiftMasterPlatform.prototype.getCurrentState = function (thisOpener, callback) {
   var self = this;
-  var thisOpener = accessory.context;
-  var name = accessory.displayName;
 
   // Retrieve latest state from server
   this.updateState(function (error) {
@@ -457,8 +455,8 @@ LiftMasterPlatform.prototype.getCurrentState = function (accessory, callback) {
 }
 
 // Method to handle identify request
-LiftMasterPlatform.prototype.identify = function (accessory, paired, callback) {
-  this.log(accessory.context.name + " identify requested!");
+LiftMasterPlatform.prototype.identify = function (thisOpener, paired, callback) {
+  this.log(thisOpener.name + " identify requested!");
   callback();
 }
 
@@ -498,6 +496,14 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
             "placeholder": this.password ? "Leave blank if unchanged" : "password",
             "secure": true
           }, {
+            "id": "openDuration",
+            "title": "Time to Open Garage Door Completely",
+            "placeholder": this.openDuration.toString(),
+          }, {
+            "id": "closeDuration",
+            "title": "Time to Close Garage Door Completely",
+            "placeholder": this.closeDuration.toString(),
+          }, {
             "id": "polling",
             "title": "Enable Polling (true/false)",
             "placeholder": this.polling.toString(),
@@ -525,6 +531,8 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
         // Setup info for adding or updating accessory
         this.username = userInputs.username || this.username;
         this.password = userInputs.password || this.password;
+        this.openDuration = parseInt(userInputs.openDuration, 10) || this.openDuration;
+        this.closeDuration = parseInt(userInputs.closeDuration, 10) || this.closeDuration;
         if (userInputs.polling.toUpperCase() === "TRUE") {
           this.polling = true;
         } else if (userInputs.polling.toUpperCase() === "FALSE") {
@@ -543,7 +551,7 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
           if (this.polling) {
             this.maxCount = this.shortPollDuration / this.shortPoll;
             this.count = this.maxCount;
-            this.statePolling();
+            this.statePolling(0);
           }
 
           var respDict = {
@@ -575,6 +583,8 @@ LiftMasterPlatform.prototype.configurationRequestHandler = function (context, re
         var newConfig = this.config;
         newConfig.username = this.username;
         newConfig.password = this.password;
+        newConfig.openDuration = this.openDuration;
+        newConfig.closeDuration = this.closeDuration;
         newConfig.polling = this.polling;
         newConfig.longPoll = this.longPoll;
         newConfig.shortPoll = this.shortPoll;
