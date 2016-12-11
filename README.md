@@ -36,15 +36,15 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 
 ```
 
-| Fields            | Description                                                   | Required |
-|-------------------|---------------------------------------------------------------|----------|
-| platform          | Must always be `LiftMaster2`.                                 | Yes      |
-| name              | For logging purposes.                                         | No       |
-| username          | Your MyQ account email.                                       | Yes      |
-| password          | Your MyQ account password.                                    | Yes      |
-| openDuration      | Time in `s` to open garage door completely (Default 15s).     | No       |
-| closeDuration     | Time in `s` to close garage door completely (Default 25s).    | No       |
-| polling           | State polling (Default false).                                | No       |
-| longPoll          | Normal polling interval in `s` (Default 300s).                | No       |
-| shortPoll         | Polling interval in `s` when door state changes (Default 5s). | No       |
-| shortPollDuration | Duration in `s` to use `shortPoll` (Default 120s).            | No       |
+| Fields            | Description                                      | Default | Required |
+|-------------------|--------------------------------------------------|---------|----------|
+| platform          | Must always be `LiftMaster2`.                    |         | Yes      |
+| name              | For logging purposes.                            |         | No       |
+| username          | Your MyQ account email.                          |         | Yes      |
+| password          | Your MyQ account password.                       |         | Yes      |
+| openDuration      | Time in `s` to open garage door completely.      | 15      | No       |
+| closeDuration     | Time in `s` to close garage door completely.     | 25      | No       |
+| polling           | State polling.                                   | false   | No       |
+| longPoll          | Normal polling interval in `s`.                  | 300     | No       |
+| shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
+| shortPollDuration | Duration in `s` to use `shortPoll`.              | 120     | No       |
