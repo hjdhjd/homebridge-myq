@@ -1,6 +1,6 @@
 {
   "name": "homebridge-liftmaster2",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "LiftMaster plugin for HomeBridge (API 2.0): https://github.com/nfarina/homebridge",
   "repository": {
     "type": "git",
@@ -20,6 +20,6 @@
     "homebridge": ">=0.3.0"
   },
   "dependencies": {
-    "request": "^2.49.0"
+    "node-fetch": "^1.6.3"
   }
 }

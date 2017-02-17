@@ -1,4 +1,4 @@
-var request = require("request");
+var fetch = require("node-fetch");
 var Accessory, Service, Characteristic, UUIDGen;
 
 module.exports = function (homebridge) {
@@ -12,6 +12,16 @@ module.exports = function (homebridge) {
 
 // This seems to be the "id" of the official LiftMaster iOS app
 var APP_ID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
+
+// Headers needed for validation
+var HEADERS = {
+    "Content-Type": "application/json",
+    "User-Agent": "Chamberlain/3.73",
+    "BrandID": "2",
+    "ApiVersion": "4.1",
+    "Culture": "en",
+    "MyQApplicationID": APP_ID
+};
 
 function LiftMasterPlatform(log, config, api) {
   this.log = log;
@@ -54,7 +64,11 @@ LiftMasterPlatform.prototype.didFinishLaunching = function () {
     // Start polling
     if (this.polling) this.statePolling(0);
   } else {
-    this.log("Please setup MyQ login information!")
+    this.log("Please setup MyQ login information!");
+    for (var deviceID in this.accessories) {
+      var accessory = this.accessories[deviceID];
+      this.removeAccessory(accessory);
+    }
   }
 }
 
@@ -114,7 +128,7 @@ LiftMasterPlatform.prototype.setAccessoryInfo = function (accessory, model, seri
 LiftMasterPlatform.prototype.updateDoorStates = function (accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .setCharacteristic(Characteristic.CurrentDoorState, accessory.context.currentState);
-  
+
   accessory.getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
     .getValue();
@@ -169,41 +183,29 @@ LiftMasterPlatform.prototype.statePolling = function (delay) {
 LiftMasterPlatform.prototype.login = function (callback) {
   var self = this;
 
-  // querystring params
-  var query = {
-    appId: APP_ID,
+  // Body stream for validation
+  var body = {
     username: this.username,
-    password: this.password,
-    culture: "en"
+    password: this.password
   };
 
   // login to liftmaster
-  request.get({
-    url: "https://myqexternal.myqdevice.com/api/user/validatewithculture",
-    qs: query
-  }, function (err, response, body) {
-	// parse and interpret the response
-    var json = JSON.parse(body);
-
-    if (!err && response.statusCode === 200) {      
-      // Check for MyQ Error Codes
-      if (json.ReturnCode > 200) { 
-        self.log(json.ErrorMessage);
-        callback(json.ErrorMessage);
-      } else {
-        self.userId = json.UserId;
-        self.securityToken = json.SecurityToken;
-        self.manufacturer = json.BrandName.toString();
-        self.log("Logged in with MyQ user ID " + self.userId);
-        self.getDevice(callback);
-      }
+  fetch("https://myqexternal.myqdevice.com/api/v4/User/Validate", {
+    method: "POST",
+    headers: HEADERS,
+    body: JSON.stringify(body)
+  }).then(function (res) {
+    return res.json();
+  }).then(function (data) {
+    // Check for MyQ Error Codes
+    if (data.ReturnCode === "0") {
+      self.securityToken = data.SecurityToken;
+      self.manufacturer = "Chamberlain";
+      self.getDevice(callback);
     } else {
-      self.log("Error '" + err + "' logging in to MyQ: " + body);
-      callback(err || new Error(json.ErrorMessage));
+      self.log(data.ErrorMessage);
+      callback(data.ErrorMessage);      
     }
-  }).on('error', function (err) {
-    self.log(err);
-    callback(err);
   });
 }
 
@@ -216,57 +218,58 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
   // Querystring params
   var query = {
-    appId: APP_ID,
-    SecurityToken: this.securityToken,
     filterOn: "true"
   };
 
-  // Some necessary duplicated info in the headers
-  var headers = {
-    MyQApplicationId: APP_ID,
-    SecurityToken: this.securityToken
-  };
+  // Adding security token to headers
+  var getHeaders = JSON.parse(JSON.stringify(HEADERS));
+  getHeaders.SecurityToken = this.securityToken;
 
   // Request details of all your devices
-  request.get({
-    url: "https://myqexternal.myqdevice.com/api/v4/userdevicedetails/get",
-    qs: query,
-    headers: headers
-  }, function (err, response, body) {
-    // parse and interpret the response
-    var json = JSON.parse(body);
+  fetch("https://myqexternal.myqdevice.com/api/v4/UserDeviceDetails/Get", {
+    method: "GET",
+    headers: getHeaders,
+    query: query
+  }).then(function (res) {
+    return res.json();
+  }).then(function (data) {
+    if (data.ReturnCode === "0") {
+      var devices = data.Devices;
 
-    if (!err && response.statusCode === 200) {
-      try {
-        var devices = json.Devices;
+      // Look through the array of devices for all the openers
+      for (var i = 0; i < devices.length; i++) {
+        var device = devices[i];
+        var deviceType = device.MyQDeviceTypeName;
 
-        // Look through the array of devices for all the openers
-        for (var i = 0; i < devices.length; i++) {
-          var device = devices[i];
-          var deviceType = device.MyQDeviceTypeName;
+        // Search for specific device type
+        if (deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
+          var thisDeviceID = device.MyQDeviceId.toString();
+          var thisSerial = device.SerialNumber.toString();
+          var thisModel = deviceType.toString();
+          var thisDoorName = "Unknown";
+          var thisDoorState = "2";
+          var nameFound = false;
+          var stateFound = false;
 
-          if (deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
-            var thisDeviceID = device.MyQDeviceId.toString();
-            var thisSerial = device.SerialNumber.toString();
-            var thisModel = deviceType.toString();
-            var thisDoorName = "Unknown";
-            var thisDoorState = "2";
-            var nameFound = false;
-            var stateFound = false;
+          for (var j = 0; j < device.Attributes.length; j ++) {
+            var thisAttributeSet = device.Attributes[j];
 
-            for (var j = 0; j < device.Attributes.length; j ++) {
-              var thisAttributeSet = device.Attributes[j];
-              if (thisAttributeSet.AttributeDisplayName === "desc") {
-                thisDoorName = thisAttributeSet.Value;
-                nameFound = true;
-              }
-              if (thisAttributeSet.AttributeDisplayName === "doorstate") {
-                thisDoorState = thisAttributeSet.Value;
-                stateFound = true;
-              }
-              if (nameFound && stateFound) break;
+            // Search for device name
+            if (thisAttributeSet.AttributeDisplayName === "desc" && thisAttributeSet.Value !== "") {
+              thisDoorName = thisAttributeSet.Value;
+              nameFound = true;
             }
 
+            // Search for device state
+            if (thisAttributeSet.AttributeDisplayName === "doorstate" && thisAttributeSet.Value !== "") {
+              thisDoorState = thisAttributeSet.Value;
+              stateFound = true;
+            }
+
+            if (nameFound && stateFound) break;
+          }
+
+          if (nameFound && stateFound) {
             // Retrieve accessory from cache
             var accessory = self.accessories[thisDeviceID];
 
@@ -324,8 +327,6 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
             self.validData = true;
           }
         }
-      } catch (err) {
-        self.log("Error '" + err + "'");
       }
 
       // Did we have valid data?
@@ -337,15 +338,12 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
       } else {
         var parseErr = "Error: Couldn't find a MyQ door device."
         self.log(parseErr);
-        callback(new Error(parseErr));
+        callback(parseErr);
       }
     } else {
-      self.log("Error '" + err + "' getting MyQ devices: " + body);
-      callback(err || new Error(json.ErrorMessage));
+      self.log("Error getting MyQ devices: " + data.ErrorMessage);
+      callback(data.ErrorMessage);
     }
-  }).on('error', function (err) {
-    self.log("Error '" + err + "'");
-    callback(err);
   });
 }
 
@@ -356,66 +354,46 @@ LiftMasterPlatform.prototype.setState = function (thisOpener, state, callback) {
   var liftmasterState = state === 1 ? "0" : "1";
   var updateDelay = state === 1 ? this.closeDuration : this.openDuration;
 
-  // Querystring params
-  var query = {
-    appId: APP_ID,
-    SecurityToken: this.securityToken,
-    filterOn: "true"
-  };
-
-  // Some necessary duplicated info in the headers
-  var headers = {
-    MyQApplicationId: APP_ID,
-    SecurityToken: this.securityToken
-  };
+  // Adding security token to headers
+  var putHeaders = JSON.parse(JSON.stringify(HEADERS));
+  putHeaders.SecurityToken = this.securityToken;
 
   // PUT request body
   var body = {
     AttributeName: "desireddoorstate",
     AttributeValue: liftmasterState,
-    ApplicationId: APP_ID,
-    SecurityToken: this.securityToken,
     MyQDeviceId: thisOpener.deviceID
   };
 
   // Send the state request to liftmaster
-  request.put({
-    url: "https://myqexternal.myqdevice.com/api/v4/DeviceAttribute/PutDeviceAttribute",
-    qs: query,
-    headers: headers,
+  fetch("https://myqexternal.myqdevice.com/api/v4/DeviceAttribute/PutDeviceAttribute", {
+    method: "PUT",
+    headers: putHeaders,
     body: body,
-    json: true
-  }, function (err, response, json) {
-    if (!err && response.statusCode === 200) {
-      if (json.ReturnCode === "0") {
-        self.log(thisOpener.name + " is set to " + self.doorState[state]);
+  }).then(function(res) {
+    return res.json();
+  }).then(function (data) {
+    if (data.ReturnCode === "0") {
+      self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
-        if (self.polling) {
-          // Set short polling interval
-          self.count = 0;
-          self.statePolling(updateDelay - self.shortPoll);
-        } else {
-          // Update door state after updateDelay
-          setTimeout(function () {
-            self.updateState(function (error) {
-              if (!error) self.updateDoorStates(thisAccessory);
-            });
-          }, updateDelay * 1000);
-        }
-
-        callback();
+      if (self.polling) {
+        // Set short polling interval
+        self.count = 0;
+        self.statePolling(updateDelay - self.shortPoll);
       } else {
-        self.log("Bad return code: " + json.ReturnCode);
-        self.log("Raw response " + JSON.stringify(json));
-        callback(new Error("Unknown Error"));
+        // Update door state after updateDelay
+        setTimeout(function () {
+          self.updateState(function (error) {
+            if (!error) self.updateDoorStates(thisAccessory);
+          });
+        }, updateDelay * 1000);
       }
+
+      callback();
     } else {
-      self.log("Error '" + err + "' setting " + thisOpener.name + " state: " + JSON.stringify(json));
-      callback(err || new Error(json.ErrorMessage));
+      self.log("Error setting " + thisOpener.name + " state: " + JSON.stringify(data));
+      callback(data.ErrorMessage);
     }
-  }).on('error', function (err) {
-    self.log(err);
-    callback(err);
   });
 }
 
