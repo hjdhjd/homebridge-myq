@@ -8,6 +8,13 @@ Older verion using API 1.0: [homebridge-liftmaster](https://github.com/nfarina/h
 2. Install this plugin using `npm install -g git+https://github.com/luisiam/homebridge-liftmaster2.git`.
 3. Update your configuration file. See configuration sample below.
 
+# Removal
+1. Stop homebridge.
+2. Remove configuration in `config.json`.
+3. Start homebridge (the plugin will remove cached accessories automatically).
+4. Remove this plugin using `npm remove -g homebridge-liftmaster2`.
+5. Restart homebridge.
+
 # Configuration
 Edit your `config.json` accordingly. Configuration sample:
  ```
