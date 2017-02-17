@@ -369,7 +369,7 @@ LiftMasterPlatform.prototype.setState = function (thisOpener, state, callback) {
   fetch("https://myqexternal.myqdevice.com/api/v4/DeviceAttribute/PutDeviceAttribute", {
     method: "PUT",
     headers: putHeaders,
-    body: body,
+    body: JSON.stringify(body)
   }).then(function(res) {
     return res.json();
   }).then(function (data) {
