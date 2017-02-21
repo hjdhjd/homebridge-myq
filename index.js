@@ -85,6 +85,7 @@ LiftMasterPlatform.prototype.addAccessory = function () {
           self.removeAccessory(accessory);
         } else {
           // Update inital state
+          self.log("Initializing platform accessory '" + accessory.context.name + " (ID: " + deviceID + ")'...");
           self.updateDoorStates(accessory);
         }
       }
@@ -248,28 +249,28 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
           var thisModel = deviceType.toString();
           var thisDoorName = "Unknown";
           var thisDoorState = "2";
-          var nameFound = false;
-          var stateFound = false;
+          var thisDoorMonitor = "1";
 
           for (var j = 0; j < device.Attributes.length; j ++) {
             var thisAttributeSet = device.Attributes[j];
 
             // Search for device name
-            if (thisAttributeSet.AttributeDisplayName === "desc" && thisAttributeSet.Value !== "") {
+            if (thisAttributeSet.AttributeDisplayName === "desc") {
               thisDoorName = thisAttributeSet.Value;
-              nameFound = true;
             }
 
             // Search for device state
-            if (thisAttributeSet.AttributeDisplayName === "doorstate" && thisAttributeSet.Value !== "") {
+            if (thisAttributeSet.AttributeDisplayName === "doorstate") {
               thisDoorState = thisAttributeSet.Value;
-              stateFound = true;
             }
 
-            if (nameFound && stateFound) break;
+            // Search for device monitor mode
+            if (thisAttributeSet.AttributeDisplayName === "myqmonitormode") {
+              thisDoorMonitor = thisAttributeSet.Value;
+            }
           }
 
-          if (nameFound && stateFound) {
+          if (thisDoorMonitor === "0") {
             // Retrieve accessory from cache
             var accessory = self.accessories[thisDeviceID];
 
