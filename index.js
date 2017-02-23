@@ -249,7 +249,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
           var thisModel = deviceType.toString();
           var thisDoorName = "Unknown";
           var thisDoorState = "2";
-          var thisDoorMonitor = "1";
+          var thisDoorMonitor = "0";
 
           for (var j = 0; j < device.Attributes.length; j ++) {
             var thisAttributeSet = device.Attributes[j];
