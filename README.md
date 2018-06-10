@@ -38,7 +38,8 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
     "polling": true,
     "longPoll": 300,
     "shortPoll": 5,
-    "shortPollDuration": 120
+    "shortPollDuration": 120,
+    "gateways": ["My Home"]
 }]
 
 ```
@@ -55,3 +56,4 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 | longPoll          | Normal polling interval in `s`.                  | 300     | No       |
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.              | 120     | No       |
+| gateways          | Array of gateway IDs or names to add.             | []      | No       |

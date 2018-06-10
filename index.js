@@ -28,6 +28,7 @@ function LiftMasterPlatform(log, config, api) {
   this.config = config || {"platform": "LiftMaster2"};
   this.username = this.config.username;
   this.password = this.config.password;
+  this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
   this.openDuration = parseInt(this.config.openDuration, 10) || 15;
   this.closeDuration = parseInt(this.config.closeDuration, 10) || 25;
   this.polling = this.config.polling === true;
@@ -37,6 +38,11 @@ function LiftMasterPlatform(log, config, api) {
   this.maxCount = this.shortPollDuration / this.shortPoll;
   this.count = this.maxCount;
   this.validData = false;
+
+  // Gateways convenience
+  if (this.config.gateway) this.gateways.push(this.config.gateway);
+  if (this.config.hub) this.gateways.push(this.config.hub);
+  if (this.config.hubs && Array.isArray(this.config.hubs)) this.gateways = this.gateways.concat(this.config.hubs);
 
   this.accessories = {};
 
@@ -205,7 +211,7 @@ LiftMasterPlatform.prototype.login = function (callback) {
       self.getDevice(callback);
     } else {
       self.log(data.ErrorMessage);
-      callback(data.ErrorMessage);      
+      callback(data.ErrorMessage);
     }
   });
 }
@@ -236,6 +242,31 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
   }).then(function (data) {
     if (data.ReturnCode === "0") {
       var devices = data.Devices;
+
+      // Look through the array of devices for all the gateways
+      var allowedGateways = [];
+      var gatewaysKeyed = {};
+
+      for (var i = 0; i < devices.length; i++) {
+        var device = devices[i];
+        var deviceType = device.MyQDeviceTypeId;
+        var deviceDesc = "Unknown";
+
+        // Search for specific device type
+        if (deviceType != 1) continue;
+
+        for (var j = 0; j < device.Attributes.length; j ++) {
+          var thisAttributeSet = device.Attributes[j];
+          // Search for device name
+          if (thisAttributeSet.AttributeDisplayName === "desc") {
+            deviceDesc = thisAttributeSet.Value;
+          }
+        }
+
+        // Is this gateway one of the specified gateways in the config
+        gatewaysKeyed[device.MyQDeviceId] = deviceDesc;
+        if (self.gateways.indexOf(deviceDesc) > -1 || self.gateways.indexOf(device.MyQDeviceId) > -1) allowedGateways.push(device.MyQDeviceId);
+      }
 
       // Look through the array of devices for all the openers
       for (var i = 0; i < devices.length; i++) {
@@ -270,12 +301,19 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
             }
           }
 
+          // Does this device fall under the specified gateways
+          if (self.gateways.length > 0 && allowedGateways.indexOf(device.ParentMyQDeviceId) == -1) {
+            self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+            continue;
+          }
+
           if (thisDoorMonitor === "0") {
             // Retrieve accessory from cache
             var accessory = self.accessories[thisDeviceID];
 
             // Initialization for new accessory
             if (!accessory) {
+
               // Setup accessory as GARAGE_DOOR_OPENER (4) category.
               var uuid = UUIDGen.generate(thisDeviceID);
               accessory = new Accessory("MyQ " + thisDoorName, uuid, 4);
@@ -297,6 +335,12 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
               // Store accessory in cache
               self.accessories[thisDeviceID] = accessory;
+            }
+
+            if (device.ParentMyQDeviceId) {
+              self.log('Adding Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+            } else {
+              self.log('Adding Device: "'+thisDoorName+'"');
             }
 
             // Accessory is reachable after it's found in the server
