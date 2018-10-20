@@ -354,12 +354,19 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
             // Determine the current door state
             var newState;
-            if (thisDoorState === "2") {
+            if (thisDoorState === "1") {
+              newState = Characteristic.CurrentDoorState.OPEN;
+            } else if (thisDoorState === "2") {
               newState = Characteristic.CurrentDoorState.CLOSED;
             } else if (thisDoorState === "3") {
               newState = Characteristic.CurrentDoorState.STOPPED;
+            } else if (thisDoorState === "4") {
+              newState = Characteristic.CurrentDoorState.OPENING;
+            } else if (thisDoorState === "5") {
+              newState = Characteristic.CurrentDoorState.CLOSING;
             } else {
-              newState = Characteristic.CurrentDoorState.OPEN;
+              // Not sure about this...
+              accessory.updateReachability(false);
             }
 
             // Detect for state changes
