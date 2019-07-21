@@ -1,24 +1,36 @@
 # homebridge-myq2
 MyQ LiftMaster and Chamberlain Plugin for [HomeBridge](https://github.com/nfarina/homebridge) (API 2.0)
 
-# Installation
-1. Install homebridge using `npm install -g homebridge`.
-2. Install this plugin using `npm install -g homebridge-myq2`.
-3. Update your configuration file. See configuration sample below.
+`homebridge-myq2` is a HomeBridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.
 
-# Removal
-1. Stop homebridge.
-2. Remove configuration in `config.json`.
-3. Start homebridge (the plugin will remove cached accessories automatically).
-4. Remove this plugin using `npm remove -g homebridge-myq2`.
-5. Restart homebridge.
+LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge. Unfortunately, some of us have encountered issues with the hardware bridge in a real world setting
+that continue to persist.
+
+# What makes this plugin different than the other plugins out there for MyQ support?
+Both [homebridge-liftmaster2](https://github.com/luisiam/homebridge-liftmaster2) and [homebridge-chamberlain](https://github.com/caseywebdev/homebridge-chamberlain) exist as good
+options, if you prefer. This plugin is based on `homebridge-liftmaster2` with additional bugfixes and contributions by others. The intent is to keep this plugin up-to-date and
+incorporate additional capabilities as-needed without overly bloating it.
+
+# Installation
+If you are new to Homebridge, please first read the Homebridge [documentation](https://www.npmjs.com/package/homebridge).
+If you are running on a Raspberry, you will find a tutorial in the [homebridge-punt Wiki](https://github.com/cflurin/homebridge-punt/wiki/Running-Homebridge-on-a-Raspberry-Pi).
+
+Install homebridge:
+```sh
+sudo npm install -g homebridge
+```
+Install homebridge-myq2:
+```sh
+sudo npm install -g homebridge-myq2
+```
 
 # Configuration
-Edit your `config.json` accordingly. Configuration sample:
- ```
+Add the platform in `config.json` in your home directory inside `.homebridge`.
+
+```js
 "platforms": [{
     "platform": "MyQ2",
-    "username": "email@email.com",
+    "email": "email@email.com",
     "password": "password"
 }]
 ```
@@ -27,7 +39,7 @@ Edit your `config.json` accordingly. Configuration sample:
 This step is not required. HomeBridge with API 2.0 can handle configurations in the HomeKit app.
 ```
 "platforms": [{
-    "platform": "MyQ",
+    "platform": "MyQ2",
     "name": "MyQ",
     "email": "email@email.com",
     "password": "password",
@@ -55,3 +67,4 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.              | 120     | No       |
 | gateways          | Array of gateway IDs or names to add.            | []      | No       |
+
