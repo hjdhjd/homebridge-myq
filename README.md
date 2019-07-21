@@ -3,8 +3,15 @@ MyQ LiftMaster and Chamberlain Plugin for [HomeBridge](https://github.com/nfarin
 
 `homebridge-myq2` is a HomeBridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.
 
-LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge. Unfortunately, some of us have encountered issues with the hardware bridge in a real world setting
-that continue to persist.
+There are two ways to be able to control a MyQ-compatible garage door opener through HomeKit:
+
+1. LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge (not to be coonfused with the open source [homebridge project](https://www.npmjs.com/package/homebridge)).
+Unfortunately, some of us have encountered issues with the hardware bridge in a real world setting, where it either stops working or hangs for extended periods of time.
+Others have encountered no issues and this solution works well.
+
+2. A plugin for [homebridge](https://www.npmjs.com/package/homebridge) like this one that emulates the capabilities of a MyQ bridge.
+
+Either solution will provide a complete solution to automating your garage door and you'll soon be automating your home with HomeKit like you always dreamed of. :)
 
 # What makes this plugin different than the other plugins out there for MyQ support?
 Both [homebridge-liftmaster2](https://github.com/luisiam/homebridge-liftmaster2) and [homebridge-chamberlain](https://github.com/caseywebdev/homebridge-chamberlain) exist as good
