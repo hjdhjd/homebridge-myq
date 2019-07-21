@@ -26,7 +26,7 @@ var HEADERS = {
 function MyQ2Platform(log, config, api) {
   this.log = log;
   this.config = config || {"platform": "MyQ2"};
-  this.username = this.config.username;
+  this.email = this.config.email;
   this.password = this.config.password;
   this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
   this.openDuration = parseInt(this.config.openDuration, 10) || 15;
@@ -63,7 +63,7 @@ MyQ2Platform.prototype.configureAccessory = function (accessory) {
 
 // Method to setup accesories from config.json
 MyQ2Platform.prototype.didFinishLaunching = function () {
-  if (this.username && this.password) {
+  if (this.email && this.password) {
     // Add or update accessory in HomeKit
     this.addAccessory();
 
@@ -192,7 +192,7 @@ MyQ2Platform.prototype.login = function (callback) {
 
   // Body stream for validation
   var body = {
-    username: this.username,
+    username: this.email,
     password: this.password
   };
 
@@ -517,9 +517,9 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
           "interface": "input",
           "title": "Configuration",
           "items": [{
-            "id": "username",
+            "id": "email",
             "title": "Login Username (Required)",
-            "placeholder": this.username ? "Leave blank if unchanged" : "email"
+            "placeholder": this.email ? "Leave blank if unchanged" : "email"
           }, {
             "id": "password",
             "title": "Login Password (Required)",
@@ -559,7 +559,7 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
         var userInputs = request.response.inputs;
 
         // Setup info for adding or updating accessory
-        this.username = userInputs.username || this.username;
+        this.email = userInputs.email || this.email;
         this.password = userInputs.password || this.password;
         this.openDuration = parseInt(userInputs.openDuration, 10) || this.openDuration;
         this.closeDuration = parseInt(userInputs.closeDuration, 10) || this.closeDuration;
@@ -573,7 +573,7 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
         this.shortPollDuration = parseInt(userInputs.shortPollDuration, 10) || this.shortPollDuration;
 
         // Check for required info
-        if (this.username && this.password) {
+        if (this.email && this.password) {
           // Add or update accessory in HomeKit
           this.addAccessory();
 
@@ -611,7 +611,7 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
         // Update config.json accordingly
         delete context.step;
         var newConfig = this.config;
-        newConfig.username = this.username;
+        newConfig.email = this.email;
         newConfig.password = this.password;
         newConfig.openDuration = this.openDuration;
         newConfig.closeDuration = this.closeDuration;

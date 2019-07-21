@@ -29,7 +29,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 "platforms": [{
     "platform": "MyQ",
     "name": "MyQ",
-    "username": "email@email.com",
+    "email": "email@email.com",
     "password": "password",
     "openDuration": 15,
     "closeDuration": 25,
@@ -46,7 +46,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 |-------------------|--------------------------------------------------|---------|----------|
 | platform          | Must always be `MyQ2`.                           |         | Yes      |
 | name              | For logging purposes.                            |         | No       |
-| username          | Your MyQ account email.                          |         | Yes      |
+| email             | Your MyQ account email.                          |         | Yes      |
 | password          | Your MyQ account password.                       |         | Yes      |
 | openDuration      | Time in `s` to open garage door completely.      | 15      | No       |
 | closeDuration     | Time in `s` to close garage door completely.     | 25      | No       |
