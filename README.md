@@ -1,23 +1,23 @@
-# homebridge-myq
+# homebridge-myq2
 MyQ LiftMaster and Chamberlain Plugin for [HomeBridge](https://github.com/nfarina/homebridge) (API 2.0)
 
 # Installation
 1. Install homebridge using `npm install -g homebridge`.
-2. Install this plugin using `npm install -g homebridge-myq`.
+2. Install this plugin using `npm install -g homebridge-myq2`.
 3. Update your configuration file. See configuration sample below.
 
 # Removal
 1. Stop homebridge.
 2. Remove configuration in `config.json`.
 3. Start homebridge (the plugin will remove cached accessories automatically).
-4. Remove this plugin using `npm remove -g homebridge-myq`.
+4. Remove this plugin using `npm remove -g homebridge-myq2`.
 5. Restart homebridge.
 
 # Configuration
 Edit your `config.json` accordingly. Configuration sample:
  ```
 "platforms": [{
-    "platform": "MyQ",
+    "platform": "MyQ2",
     "username": "email@email.com",
     "password": "password"
 }]
@@ -44,7 +44,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 
 | Fields            | Description                                      | Default | Required |
 |-------------------|--------------------------------------------------|---------|----------|
-| platform          | Must always be `MyQ`.                            |         | Yes      |
+| platform          | Must always be `MyQ2`.                           |         | Yes      |
 | name              | For logging purposes.                            |         | No       |
 | username          | Your MyQ account email.                          |         | Yes      |
 | password          | Your MyQ account password.                       |         | Yes      |

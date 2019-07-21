@@ -1,10 +1,10 @@
 {
-  "name": "homebridge-myq",
+  "name": "homebridge-myq2,
   "version": "1.0.0",
   "description": "MyQ LiftMaster and Chamberlain plugin for HomeBridge (API 2.0): https://github.com/nfarina/homebridge",
   "repository": {
     "type": "git",
-    "url": "git://github.com/hjdhjd/homebridge-myq.git"
+    "url": "git://github.com/hjdhjd/homebridge-myq2.git"
   },
   "keywords": [
     "homebridge-plugin"
@@ -12,9 +12,9 @@
   "author": "HJD",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/hjdhjd/homebridge-myq/issues"
+    "url": "https://github.com/hjdhjd/homebridge-myq2/issues"
   },
-  "homepage": "https://github.com/hjdhjd/homebridge-myq#readme",
+  "homepage": "https://github.com/hjdhjd/homebridge-myq2#readme",
   "engines": {
     "node": ">=0.12.0",
     "homebridge": ">=0.3.0"

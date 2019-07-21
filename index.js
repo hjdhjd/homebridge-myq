@@ -7,7 +7,7 @@ module.exports = function (homebridge) {
   Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
 
-  homebridge.registerPlatform("homebridge-myq", "MyQ", MyQPlatform, true);
+  homebridge.registerPlatform("homebridge-myq2", "MyQ2", MyQ2Platform, true);
 }
 
 // This seems to be the "id" of the official LiftMaster iOS app
@@ -23,9 +23,9 @@ var HEADERS = {
     "MyQApplicationID": APP_ID
 };
 
-function MyQPlatform(log, config, api) {
+function MyQ2Platform(log, config, api) {
   this.log = log;
-  this.config = config || {"platform": "MyQ"};
+  this.config = config || {"platform": "MyQ2"};
   this.username = this.config.username;
   this.password = this.config.password;
   this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
@@ -56,13 +56,13 @@ function MyQPlatform(log, config, api) {
 }
 
 // Method to restore accessories from cache
-MyQPlatform.prototype.configureAccessory = function (accessory) {
+MyQ2Platform.prototype.configureAccessory = function (accessory) {
   this.setService(accessory);
   this.accessories[accessory.context.deviceID] = accessory;
 }
 
 // Method to setup accesories from config.json
-MyQPlatform.prototype.didFinishLaunching = function () {
+MyQ2Platform.prototype.didFinishLaunching = function () {
   if (this.username && this.password) {
     // Add or update accessory in HomeKit
     this.addAccessory();
@@ -79,7 +79,7 @@ MyQPlatform.prototype.didFinishLaunching = function () {
 }
 
 // Method to add or update HomeKit accessories
-MyQPlatform.prototype.addAccessory = function () {
+MyQ2Platform.prototype.addAccessory = function () {
   var self = this;
 
   this.login(function (error){
@@ -100,17 +100,17 @@ MyQPlatform.prototype.addAccessory = function () {
 }
 
 // Method to remove accessories from HomeKit
-MyQPlatform.prototype.removeAccessory = function (accessory) {
+MyQ2Platform.prototype.removeAccessory = function (accessory) {
   if (accessory) {
     var deviceID = accessory.context.deviceID;
     this.log(accessory.context.name + " is removed from HomeBridge.");
-    this.api.unregisterPlatformAccessories("homebridge-myq", "MyQ", [accessory]);
+    this.api.unregisterPlatformAccessories("homebridge-myq2", "MyQ2", [accessory]);
     delete this.accessories[deviceID];
   }
 }
 
 // Method to setup listeners for different events
-MyQPlatform.prototype.setService = function (accessory) {
+MyQ2Platform.prototype.setService = function (accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.CurrentDoorState)
     .on('get', this.getCurrentState.bind(this, accessory.context));
@@ -124,7 +124,7 @@ MyQPlatform.prototype.setService = function (accessory) {
 }
 
 // Method to setup HomeKit accessory information
-MyQPlatform.prototype.setAccessoryInfo = function (accessory, model, serial) {
+MyQ2Platform.prototype.setAccessoryInfo = function (accessory, model, serial) {
   accessory.getService(Service.AccessoryInformation)
     .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
     .setCharacteristic(Characteristic.Model, model)
@@ -132,7 +132,7 @@ MyQPlatform.prototype.setAccessoryInfo = function (accessory, model, serial) {
 }
 
 // Method to update door state in HomeKit
-MyQPlatform.prototype.updateDoorStates = function (accessory) {
+MyQ2Platform.prototype.updateDoorStates = function (accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .setCharacteristic(Characteristic.CurrentDoorState, accessory.context.currentState);
 
@@ -142,7 +142,7 @@ MyQPlatform.prototype.updateDoorStates = function (accessory) {
 }
 
 // Method to retrieve door state from the server
-MyQPlatform.prototype.updateState = function (callback) {
+MyQ2Platform.prototype.updateState = function (callback) {
   if (this.validData && this.polling) {
     // Refresh data directly from sever if current data is valid
     this.getDevice(callback);
@@ -153,7 +153,7 @@ MyQPlatform.prototype.updateState = function (callback) {
 }
 
 // Method for state periodic update
-MyQPlatform.prototype.statePolling = function (delay) {
+MyQ2Platform.prototype.statePolling = function (delay) {
   var self = this;
   var refresh = this.longPoll + delay;
 
@@ -187,7 +187,7 @@ MyQPlatform.prototype.statePolling = function (delay) {
 }
 
 // Login to MyQ server
-MyQPlatform.prototype.login = function (callback) {
+MyQ2Platform.prototype.login = function (callback) {
   var self = this;
 
   // Body stream for validation
@@ -217,7 +217,7 @@ MyQPlatform.prototype.login = function (callback) {
 }
 
 // Find your garage door ID
-MyQPlatform.prototype.getDevice = function (callback) {
+MyQ2Platform.prototype.getDevice = function (callback) {
   var self = this;
 
   // Reset validData hint until we retrived data from the server
@@ -331,7 +331,7 @@ MyQPlatform.prototype.getDevice = function (callback) {
               self.setService(accessory);
 
               // Register new accessory in HomeKit
-              self.api.registerPlatformAccessories("homebridge-myq", "MyQ", [accessory]);
+              self.api.registerPlatformAccessories("homebridge-myq2", "MyQ2", [accessory]);
 
               // Store accessory in cache
               self.accessories[thisDeviceID] = accessory;
@@ -400,7 +400,7 @@ MyQPlatform.prototype.getDevice = function (callback) {
 }
 
 // Send opener target state to the server
-MyQPlatform.prototype.setState = function (thisOpener, state, callback) {
+MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
   var self = this;
   var thisAccessory = this.accessories[thisOpener.deviceID];
   var myqState = state === 1 ? "0" : "1";
@@ -450,7 +450,7 @@ MyQPlatform.prototype.setState = function (thisOpener, state, callback) {
 }
 
 // Method to set target door state
-MyQPlatform.prototype.setTargetState = function (thisOpener, state, callback) {
+MyQ2Platform.prototype.setTargetState = function (thisOpener, state, callback) {
   var self = this;
 
   // Always re-login for setting the state
@@ -464,13 +464,13 @@ MyQPlatform.prototype.setTargetState = function (thisOpener, state, callback) {
 }
 
 // Method to get target door state
-MyQPlatform.prototype.getTargetState = function (thisOpener, callback) {
+MyQ2Platform.prototype.getTargetState = function (thisOpener, callback) {
   // Get target state directly from cache
   callback(null, thisOpener.currentState % 2);
 }
 
 // Method to get current door state
-MyQPlatform.prototype.getCurrentState = function (thisOpener, callback) {
+MyQ2Platform.prototype.getCurrentState = function (thisOpener, callback) {
   var self = this;
 
   // Retrieve latest state from server
@@ -485,13 +485,13 @@ MyQPlatform.prototype.getCurrentState = function (thisOpener, callback) {
 }
 
 // Method to handle identify request
-MyQPlatform.prototype.identify = function (thisOpener, paired, callback) {
+MyQ2Platform.prototype.identify = function (thisOpener, paired, callback) {
   this.log(thisOpener.name + " identify requested!");
   callback();
 }
 
 // Method to handle plugin configuration in HomeKit app
-MyQPlatform.prototype.configurationRequestHandler = function (context, request, callback) {
+MyQ2Platform.prototype.configurationRequestHandler = function (context, request, callback) {
   if (request && request.type === "Terminate") {
     return;
   }
