@@ -7,7 +7,7 @@ module.exports = function (homebridge) {
   Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
 
-  homebridge.registerPlatform("homebridge-liftmaster2", "LiftMaster2", LiftMasterPlatform, true);
+  homebridge.registerPlatform("homebridge-myq", "MyQ", MyQPlatform, true);
 }
 
 // This seems to be the "id" of the official LiftMaster iOS app
@@ -23,9 +23,9 @@ var HEADERS = {
     "MyQApplicationID": APP_ID
 };
 
-function LiftMasterPlatform(log, config, api) {
+function MyQPlatform(log, config, api) {
   this.log = log;
-  this.config = config || {"platform": "LiftMaster2"};
+  this.config = config || {"platform": "MyQ"};
   this.username = this.config.username;
   this.password = this.config.password;
   this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
@@ -56,13 +56,13 @@ function LiftMasterPlatform(log, config, api) {
 }
 
 // Method to restore accessories from cache
-LiftMasterPlatform.prototype.configureAccessory = function (accessory) {
+MyQPlatform.prototype.configureAccessory = function (accessory) {
   this.setService(accessory);
   this.accessories[accessory.context.deviceID] = accessory;
 }
 
 // Method to setup accesories from config.json
-LiftMasterPlatform.prototype.didFinishLaunching = function () {
+MyQPlatform.prototype.didFinishLaunching = function () {
   if (this.username && this.password) {
     // Add or update accessory in HomeKit
     this.addAccessory();
@@ -79,7 +79,7 @@ LiftMasterPlatform.prototype.didFinishLaunching = function () {
 }
 
 // Method to add or update HomeKit accessories
-LiftMasterPlatform.prototype.addAccessory = function () {
+MyQPlatform.prototype.addAccessory = function () {
   var self = this;
 
   this.login(function (error){
@@ -100,17 +100,17 @@ LiftMasterPlatform.prototype.addAccessory = function () {
 }
 
 // Method to remove accessories from HomeKit
-LiftMasterPlatform.prototype.removeAccessory = function (accessory) {
+MyQPlatform.prototype.removeAccessory = function (accessory) {
   if (accessory) {
     var deviceID = accessory.context.deviceID;
     this.log(accessory.context.name + " is removed from HomeBridge.");
-    this.api.unregisterPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
+    this.api.unregisterPlatformAccessories("homebridge-myq", "MyQ", [accessory]);
     delete this.accessories[deviceID];
   }
 }
 
 // Method to setup listeners for different events
-LiftMasterPlatform.prototype.setService = function (accessory) {
+MyQPlatform.prototype.setService = function (accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.CurrentDoorState)
     .on('get', this.getCurrentState.bind(this, accessory.context));
@@ -124,7 +124,7 @@ LiftMasterPlatform.prototype.setService = function (accessory) {
 }
 
 // Method to setup HomeKit accessory information
-LiftMasterPlatform.prototype.setAccessoryInfo = function (accessory, model, serial) {
+MyQPlatform.prototype.setAccessoryInfo = function (accessory, model, serial) {
   accessory.getService(Service.AccessoryInformation)
     .setCharacteristic(Characteristic.Manufacturer, this.manufacturer)
     .setCharacteristic(Characteristic.Model, model)
@@ -132,7 +132,7 @@ LiftMasterPlatform.prototype.setAccessoryInfo = function (accessory, model, seri
 }
 
 // Method to update door state in HomeKit
-LiftMasterPlatform.prototype.updateDoorStates = function (accessory) {
+MyQPlatform.prototype.updateDoorStates = function (accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .setCharacteristic(Characteristic.CurrentDoorState, accessory.context.currentState);
 
@@ -142,7 +142,7 @@ LiftMasterPlatform.prototype.updateDoorStates = function (accessory) {
 }
 
 // Method to retrieve door state from the server
-LiftMasterPlatform.prototype.updateState = function (callback) {
+MyQPlatform.prototype.updateState = function (callback) {
   if (this.validData && this.polling) {
     // Refresh data directly from sever if current data is valid
     this.getDevice(callback);
@@ -153,7 +153,7 @@ LiftMasterPlatform.prototype.updateState = function (callback) {
 }
 
 // Method for state periodic update
-LiftMasterPlatform.prototype.statePolling = function (delay) {
+MyQPlatform.prototype.statePolling = function (delay) {
   var self = this;
   var refresh = this.longPoll + delay;
 
@@ -187,7 +187,7 @@ LiftMasterPlatform.prototype.statePolling = function (delay) {
 }
 
 // Login to MyQ server
-LiftMasterPlatform.prototype.login = function (callback) {
+MyQPlatform.prototype.login = function (callback) {
   var self = this;
 
   // Body stream for validation
@@ -196,7 +196,7 @@ LiftMasterPlatform.prototype.login = function (callback) {
     password: this.password
   };
 
-  // login to liftmaster
+  // login to Liftmaster
   fetch("https://myqexternal.myqdevice.com/api/v4/User/Validate", {
     method: "POST",
     headers: HEADERS,
@@ -217,7 +217,7 @@ LiftMasterPlatform.prototype.login = function (callback) {
 }
 
 // Find your garage door ID
-LiftMasterPlatform.prototype.getDevice = function (callback) {
+MyQPlatform.prototype.getDevice = function (callback) {
   var self = this;
 
   // Reset validData hint until we retrived data from the server
@@ -331,7 +331,7 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               self.setService(accessory);
 
               // Register new accessory in HomeKit
-              self.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
+              self.api.registerPlatformAccessories("homebridge-myq", "MyQ", [accessory]);
 
               // Store accessory in cache
               self.accessories[thisDeviceID] = accessory;
@@ -354,12 +354,19 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
             // Determine the current door state
             var newState;
-            if (thisDoorState === "2") {
+            if (thisDoorState === "1") {
+              newState = Characteristic.CurrentDoorState.OPEN;
+            } else if (thisDoorState === "2") {
               newState = Characteristic.CurrentDoorState.CLOSED;
             } else if (thisDoorState === "3") {
               newState = Characteristic.CurrentDoorState.STOPPED;
+            } else if (thisDoorState === "4") {
+              newState = Characteristic.CurrentDoorState.OPENING;
+            } else if (thisDoorState === "5") {
+              newState = Characteristic.CurrentDoorState.CLOSING;
             } else {
-              newState = Characteristic.CurrentDoorState.OPEN;
+              // Not sure about this...
+              accessory.updateReachability(false);
             }
 
             // Detect for state changes
@@ -393,10 +400,10 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 }
 
 // Send opener target state to the server
-LiftMasterPlatform.prototype.setState = function (thisOpener, state, callback) {
+MyQPlatform.prototype.setState = function (thisOpener, state, callback) {
   var self = this;
   var thisAccessory = this.accessories[thisOpener.deviceID];
-  var liftmasterState = state === 1 ? "0" : "1";
+  var myqState = state === 1 ? "0" : "1";
   var updateDelay = state === 1 ? this.closeDuration : this.openDuration;
 
   // Adding security token to headers
@@ -406,11 +413,11 @@ LiftMasterPlatform.prototype.setState = function (thisOpener, state, callback) {
   // PUT request body
   var body = {
     AttributeName: "desireddoorstate",
-    AttributeValue: liftmasterState,
+    AttributeValue: myqState,
     MyQDeviceId: thisOpener.deviceID
   };
 
-  // Send the state request to liftmaster
+  // Send the state request to Liftmaster
   fetch("https://myqexternal.myqdevice.com/api/v4/DeviceAttribute/PutDeviceAttribute", {
     method: "PUT",
     headers: putHeaders,
@@ -443,7 +450,7 @@ LiftMasterPlatform.prototype.setState = function (thisOpener, state, callback) {
 }
 
 // Method to set target door state
-LiftMasterPlatform.prototype.setTargetState = function (thisOpener, state, callback) {
+MyQPlatform.prototype.setTargetState = function (thisOpener, state, callback) {
   var self = this;
 
   // Always re-login for setting the state
@@ -457,13 +464,13 @@ LiftMasterPlatform.prototype.setTargetState = function (thisOpener, state, callb
 }
 
 // Method to get target door state
-LiftMasterPlatform.prototype.getTargetState = function (thisOpener, callback) {
+MyQPlatform.prototype.getTargetState = function (thisOpener, callback) {
   // Get target state directly from cache
   callback(null, thisOpener.currentState % 2);
 }
 
 // Method to get current door state
-LiftMasterPlatform.prototype.getCurrentState = function (thisOpener, callback) {
+MyQPlatform.prototype.getCurrentState = function (thisOpener, callback) {
   var self = this;
 
   // Retrieve latest state from server
@@ -478,13 +485,13 @@ LiftMasterPlatform.prototype.getCurrentState = function (thisOpener, callback) {
 }
 
 // Method to handle identify request
-LiftMasterPlatform.prototype.identify = function (thisOpener, paired, callback) {
+MyQPlatform.prototype.identify = function (thisOpener, paired, callback) {
   this.log(thisOpener.name + " identify requested!");
   callback();
 }
 
 // Method to handle plugin configuration in HomeKit app
-LiftMasterPlatform.prototype.configurationRequestHandler = function (context, request, callback) {
+MyQPlatform.prototype.configurationRequestHandler = function (context, request, callback) {
   if (request && request.type === "Terminate") {
     return;
   }

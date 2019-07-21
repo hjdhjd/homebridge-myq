@@ -1,25 +1,23 @@
-# homebridge-liftmaster2
-LiftMaster Plugin for [HomeBridge](https://github.com/nfarina/homebridge) (API 2.0)
-
-Older verion using API 1.0: [homebridge-liftmaster](https://github.com/nfarina/homebridge-liftmaster)
+# homebridge-myq
+MyQ LiftMaster and Chamberlain Plugin for [HomeBridge](https://github.com/nfarina/homebridge) (API 2.0)
 
 # Installation
 1. Install homebridge using `npm install -g homebridge`.
-2. Install this plugin using `npm install -g git+https://github.com/luisiam/homebridge-liftmaster2.git`.
+2. Install this plugin using `npm install -g homebridge-myq`.
 3. Update your configuration file. See configuration sample below.
 
 # Removal
 1. Stop homebridge.
 2. Remove configuration in `config.json`.
 3. Start homebridge (the plugin will remove cached accessories automatically).
-4. Remove this plugin using `npm remove -g homebridge-liftmaster2`.
+4. Remove this plugin using `npm remove -g homebridge-myq`.
 5. Restart homebridge.
 
 # Configuration
 Edit your `config.json` accordingly. Configuration sample:
  ```
 "platforms": [{
-    "platform": "LiftMaster2",
+    "platform": "MyQ",
     "username": "email@email.com",
     "password": "password"
 }]
@@ -29,7 +27,7 @@ Edit your `config.json` accordingly. Configuration sample:
 This step is not required. HomeBridge with API 2.0 can handle configurations in the HomeKit app.
 ```
 "platforms": [{
-    "platform": "LiftMaster2",
+    "platform": "MyQ",
     "name": "MyQ",
     "username": "email@email.com",
     "password": "password",
@@ -46,7 +44,7 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 
 | Fields            | Description                                      | Default | Required |
 |-------------------|--------------------------------------------------|---------|----------|
-| platform          | Must always be `LiftMaster2`.                    |         | Yes      |
+| platform          | Must always be `MyQ`.                            |         | Yes      |
 | name              | For logging purposes.                            |         | No       |
 | username          | Your MyQ account email.                          |         | Yes      |
 | password          | Your MyQ account password.                       |         | Yes      |
@@ -56,4 +54,4 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 | longPoll          | Normal polling interval in `s`.                  | 300     | No       |
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.              | 120     | No       |
-| gateways          | Array of gateway IDs or names to add.             | []      | No       |
+| gateways          | Array of gateway IDs or names to add.            | []      | No       |
