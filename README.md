@@ -5,7 +5,7 @@ MyQ LiftMaster and Chamberlain Plugin for [HomeBridge](https://github.com/nfarin
 
 There are two ways to be able to control a MyQ-compatible garage door opener through HomeKit:
 
-1. LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge (not to be coonfused with the open source [homebridge project](https://www.npmjs.com/package/homebridge)).
+1. LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge (not to be confused with the open source [homebridge project](https://www.npmjs.com/package/homebridge)).
 Unfortunately, some of us have encountered issues with the hardware bridge in a real world setting, where it either stops working or hangs for extended periods of time.
 Others have encountered no issues and this solution works well.
 
