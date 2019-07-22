@@ -1,6 +1,9 @@
 var fetch = require("node-fetch");
 var Accessory, Service, Characteristic, UUIDGen;
 
+var skippedDevices = [];
+var addedDevices = [];
+
 module.exports = function (homebridge) {
   Accessory = homebridge.platformAccessory;
   Service = homebridge.hap.Service;
@@ -303,7 +306,10 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
           // Does this device fall under the specified gateways
           if (self.gateways.length > 0 && allowedGateways.indexOf(device.ParentMyQDeviceId) == -1) {
-            self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+            if (skippedDevices.indexOf(thisDeviceID) == -1) {
+              skippedDevices.push(thisDeviceID);
+              self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+            }
             continue;
           }
 
@@ -337,10 +343,13 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
               self.accessories[thisDeviceID] = accessory;
             }
 
-            if (device.ParentMyQDeviceId) {
-              self.log('Adding Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
-            } else {
-              self.log('Adding Device: "'+thisDoorName+'"');
+            if (addedDevices.indexOf(thisDeviceID) == -1) {
+              addedDevices.push(thisDeviceID);
+              if (device.ParentMyQDeviceId) {
+                self.log('Adding Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+              } else {
+                self.log('Adding Device: "'+thisDoorName+'"');
+              }
             }
 
             // Accessory is reachable after it's found in the server
