@@ -26,15 +26,15 @@ var HEADERS = {
 function MyQ2Platform(log, config, api) {
   this.log = log;
   this.config = config || {"platform": "MyQ2"};
+  this.verbose = this.config.verbose === true;
   this.email = this.config.email;
   this.password = this.config.password;
   this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
   this.openDuration = parseInt(this.config.openDuration, 10) || 15;
   this.closeDuration = parseInt(this.config.closeDuration, 10) || 25;
-  this.polling = this.config.polling === true;
-  this.longPoll = parseInt(this.config.longPoll, 10) || 300;
+  this.longPoll = parseInt(this.config.longPoll, 10) || 15;
   this.shortPoll = parseInt(this.config.shortPoll, 10) || 5;
-  this.shortPollDuration = parseInt(this.config.shortPollDuration, 10) || 120;
+  this.shortPollDuration = parseInt(this.config.shortPollDuration, 10) || 600;
   this.maxCount = this.shortPollDuration / this.shortPoll;
   this.count = this.maxCount;
   this.validData = false;
@@ -68,7 +68,7 @@ MyQ2Platform.prototype.didFinishLaunching = function () {
     this.addAccessory();
 
     // Start polling
-    if (this.polling) this.statePolling(0);
+    this.statePolling(0);
   } else {
     this.log("Please setup MyQ login information!");
     for (var deviceID in this.accessories) {
@@ -143,7 +143,7 @@ MyQ2Platform.prototype.updateDoorStates = function (accessory) {
 
 // Method to retrieve door state from the server
 MyQ2Platform.prototype.updateState = function (callback) {
-  if (this.validData && this.polling) {
+  if (this.validData) {
     // Refresh data directly from sever if current data is valid
     this.getDevice(callback);
   } else {
@@ -303,7 +303,9 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
           // Does this device fall under the specified gateways
           if (self.gateways.length > 0 && allowedGateways.indexOf(device.ParentMyQDeviceId) == -1) {
-            self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+            if(self.verbose) {
+              self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+            }
             continue;
           }
 
@@ -337,10 +339,12 @@ MyQ2Platform.prototype.getDevice = function (callback) {
               self.accessories[thisDeviceID] = accessory;
             }
 
-            if (device.ParentMyQDeviceId) {
-              self.log('Adding Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
-            } else {
-              self.log('Adding Device: "'+thisDoorName+'"');
+            if(self.verbose) {
+              if (device.ParentMyQDeviceId) {
+                self.log('Checking "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+              } else {
+                self.log('Checking: "'+thisDoorName+'"');
+              }
             }
 
             // Accessory is reachable after it's found in the server
@@ -384,7 +388,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
       // Did we have valid data?
       if (self.validData) {
         // Set short polling interval when state changes
-        if (self.polling) self.statePolling(0);
+        self.statePolling(0);
 
         callback();
       } else {
@@ -428,18 +432,9 @@ MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
     if (data.ReturnCode === "0") {
       self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
-      if (self.polling) {
-        // Set short polling interval
-        self.count = 0;
-        self.statePolling(updateDelay - self.shortPoll);
-      } else {
-        // Update door state after updateDelay
-        setTimeout(function () {
-          self.updateState(function (error) {
-            if (!error) self.updateDoorStates(thisAccessory);
-          });
-        }, updateDelay * 1000);
-      }
+      // Set short polling interval
+      self.count = 0;
+      self.statePolling(updateDelay - self.shortPoll);
 
       callback();
     } else {
@@ -517,9 +512,13 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
           "interface": "input",
           "title": "Configuration",
           "items": [{
+            "id": "verbose",
+            "title": "Verbose logging (true / false)",
+            "placeholder": this.verbose.toString(),
+          }, {
             "id": "email",
             "title": "Login Username (Required)",
-            "placeholder": this.email ? "Leave blank if unchanged" : "email"
+            "placeholder": this.email ? "Leave blank if unchanged" : "email",
           }, {
             "id": "password",
             "title": "Login Password (Required)",
@@ -533,10 +532,6 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
             "id": "closeDuration",
             "title": "Time to Close Garage Door Completely",
             "placeholder": this.closeDuration.toString(),
-          }, {
-            "id": "polling",
-            "title": "Enable Polling (true/false)",
-            "placeholder": this.polling.toString(),
           }, {
             "id": "longPoll",
             "title": "Long Polling Interval",
@@ -559,15 +554,16 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
         var userInputs = request.response.inputs;
 
         // Setup info for adding or updating accessory
+        this.verbose = userInputs.verbose || this.verbose;
+        if (userInputs.verbose.toUpperCase() === "TRUE") {
+          this.verbose = true;
+        } else if (userInputs.verbose.toUpperCase() === "FALSE") {
+          this.verbose = false;
+        }
         this.email = userInputs.email || this.email;
         this.password = userInputs.password || this.password;
         this.openDuration = parseInt(userInputs.openDuration, 10) || this.openDuration;
         this.closeDuration = parseInt(userInputs.closeDuration, 10) || this.closeDuration;
-        if (userInputs.polling.toUpperCase() === "TRUE") {
-          this.polling = true;
-        } else if (userInputs.polling.toUpperCase() === "FALSE") {
-          this.polling = false;
-        }
         this.longPoll = parseInt(userInputs.longPoll, 10) || this.longPoll;
         this.shortPoll = parseInt(userInputs.shortPoll, 10) || this.shortPoll;
         this.shortPollDuration = parseInt(userInputs.shortPollDuration, 10) || this.shortPollDuration;
@@ -578,11 +574,9 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
           this.addAccessory();
 
           // Reset polling
-          if (this.polling) {
-            this.maxCount = this.shortPollDuration / this.shortPoll;
-            this.count = this.maxCount;
-            this.statePolling(0);
-          }
+          this.maxCount = this.shortPollDuration / this.shortPoll;
+          this.count = this.maxCount;
+          this.statePolling(0);
 
           var respDict = {
             "type": "Interface",
@@ -611,11 +605,11 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
         // Update config.json accordingly
         delete context.step;
         var newConfig = this.config;
+        newConfig.verbose = this.verbose;
         newConfig.email = this.email;
         newConfig.password = this.password;
         newConfig.openDuration = this.openDuration;
         newConfig.closeDuration = this.closeDuration;
-        newConfig.polling = this.polling;
         newConfig.longPoll = this.longPoll;
         newConfig.shortPoll = this.shortPoll;
         newConfig.shortPollDuration = this.shortPollDuration;

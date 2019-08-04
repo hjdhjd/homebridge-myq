@@ -31,6 +31,15 @@ Install homebridge-myq2:
 sudo npm install -g homebridge-myq2
 ```
 
+# What's new in 1.1
+I've simplified some configuration options and adjusted some of the logging. There are also configuration file changes in this version - in particular, polling is no longer an optional
+parameter. Given the intent of this plugin is to inform you of state changes in your garage door opener (and other MyQ accessories), polling is an essential component particularly when
+you have automations in place. The default polling interval is 15 seconds which should be sufficient for most purposes but is configurable below.
+
+Additionally, I've increased the polling duration for the shortPoll interval to give you more time between opening and closing the garage door to allow for more granular state changes.
+
+Eventually, I hope we can reverse engineer the service / push protocol that MyQ uses, but for the time being, polling it is.
+
 # Configuration
 Add the platform in `config.json` in your home directory inside `.homebridge`.
 
@@ -50,12 +59,12 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
     "name": "MyQ",
     "email": "email@email.com",
     "password": "password",
+    "verbose": false,
     "openDuration": 15,
     "closeDuration": 25,
-    "polling": true,
-    "longPoll": 300,
+    "longPoll": 15,
     "shortPoll": 5,
-    "shortPollDuration": 120,
+    "shortPollDuration": 600,
     "gateways": ["My Home"]
 }]
 
@@ -67,11 +76,11 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 | name              | For logging purposes.                            |         | No       |
 | email             | Your MyQ account email.                          |         | Yes      |
 | password          | Your MyQ account password.                       |         | Yes      |
+| verbose           | Logging verbosity for debugging purporses.       | false   | No       |
 | openDuration      | Time in `s` to open garage door completely.      | 15      | No       |
 | closeDuration     | Time in `s` to close garage door completely.     | 25      | No       |
-| polling           | State polling.                                   | false   | No       |
-| longPoll          | Normal polling interval in `s`.                  | 300     | No       |
+| longPoll          | Normal polling interval in `s`.                  | 15      | No       |
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
-| shortPollDuration | Duration in `s` to use `shortPoll`.              | 120     | No       |
+| shortPollDuration | Duration in `s` to use `shortPoll`.              | 600     | No       |
 | gateways          | Array of gateway IDs or names to add.            | []      | No       |
 
