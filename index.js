@@ -377,6 +377,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             if (newState !== cache.currentState) {
               self.count = 0;
               cache.currentState = newState;
+              self.log(cache.name + " is " + self.doorState[cache.currentState]);
             }
 
             // Set validData hint after we found an opener
