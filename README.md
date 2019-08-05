@@ -18,6 +18,11 @@ Both [homebridge-liftmaster2](https://github.com/luisiam/homebridge-liftmaster2)
 options, if you prefer. This plugin is based on `homebridge-liftmaster2` with additional bugfixes and contributions by others. The intent is to keep this plugin up-to-date and
 incorporate additional capabilities as-needed without overly bloating it.
 
+In a nutshell, the aim of this plugin for things to "just work". Without complex configuration options needed for the functionality you would expect from a first-party HomeKit plugin. But
+of course, those granular options are available as well for the adventurous or those with more esoteric use cases. What does "just work" mean? It means that this plugin will poll at regular,
+reasonable intervals for changes in state of a garage door opener or other MyQ device and inform HomeKit of those changes. By default. Without additional configuration beyond the login
+information required for MyQ services.
+
 # Installation
 If you are new to Homebridge, please first read the Homebridge [documentation](https://www.npmjs.com/package/homebridge).
 If you are running on a Raspberry, you will find a tutorial in the [homebridge-punt Wiki](https://github.com/cflurin/homebridge-punt/wiki/Running-Homebridge-on-a-Raspberry-Pi).
