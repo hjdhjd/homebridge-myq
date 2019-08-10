@@ -16,7 +16,7 @@ var APP_ID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
 // Headers needed for validation
 var HEADERS = {
     "Content-Type": "application/json",
-    "User-Agent": "Chamberlain/3.73",
+    "User-Agent": "Chamberlain/3.120",
     "BrandID": "2",
     "ApiVersion": "4.1",
     "Culture": "en",
@@ -213,6 +213,8 @@ MyQ2Platform.prototype.login = function (callback) {
       self.log(data.ErrorMessage);
       callback(data.ErrorMessage);
     }
+  }).catch(error => {
+      self.log('Login error: ' + error);
   });
 }
 
@@ -401,6 +403,8 @@ MyQ2Platform.prototype.getDevice = function (callback) {
       self.log("Error getting MyQ devices: " + data.ErrorMessage);
       callback(data.ErrorMessage);
     }
+  }).catch(error => {
+      self.log('Error polling MyQ servers: ' + error);
   });
 }
 
@@ -442,6 +446,8 @@ MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
       self.log("Error setting " + thisOpener.name + " state: " + JSON.stringify(data));
       callback(data.ErrorMessage);
     }
+  }).catch(error => {
+      self.log('Error setting the target: ' + error);
   });
 }
 
