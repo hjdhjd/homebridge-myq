@@ -314,11 +314,16 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
           }
 
           if (thisDoorMonitor === "0") {
+            // Should this accessory be registered
+            var registerAccessory = false;
+
             // Retrieve accessory from cache
             var accessory = self.accessories[thisDeviceID];
 
             // Initialization for new accessory
-            if (!accessory) {
+            if (accessory === undefined) {
+              // Ensure accessory is registered
+              registerAccessory = true;
 
               // Setup accessory as GARAGE_DOOR_OPENER (4) category.
               var uuid = UUIDGen.generate(thisDeviceID);
@@ -335,9 +340,6 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
               // Setup listeners for different security system events
               self.setService(accessory);
-
-              // Register new accessory in HomeKit
-              self.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
 
               // Store accessory in cache
               self.accessories[thisDeviceID] = accessory;
@@ -386,6 +388,16 @@ LiftMasterPlatform.prototype.getDevice = function (callback) {
 
             // Set validData hint after we found an opener
             self.validData = true;
+
+            // Register accessory
+            if (registerAccessory) {
+              try {
+                self.api.registerPlatformAccessories("homebridge-liftmaster2", "LiftMaster2", [accessory]);
+              } catch (e) {
+                self.log('Unable to Add Device: "'+thisDoorName+'"');
+                self.removeAccessory(accessory);
+              }
+            }
           }
         }
       }
