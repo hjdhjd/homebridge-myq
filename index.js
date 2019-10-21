@@ -12,13 +12,14 @@ module.exports = function (homebridge) {
 
 // This seems to be the "id" of the official LiftMaster iOS app
 var APP_ID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
+var UA_ID = "myQ/14041 CFNetwork/1107.1 Darwin/19.0.0";
 
 // Headers needed for validation
 var HEADERS = {
     "Content-Type": "application/json",
-    "User-Agent": "Chamberlain/3.120",
+    "User-Agent": UA_ID,
     "BrandID": "2",
-    "ApiVersion": "4.1",
+    "ApiVersion": "5.1",
     "Culture": "en",
     "MyQApplicationID": APP_ID
 };
