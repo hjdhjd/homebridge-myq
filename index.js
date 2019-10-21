@@ -246,6 +246,15 @@ MyQ2Platform.prototype.getDevice = function (callback) {
     if (data.ReturnCode === "0") {
       var devices = data.Devices;
 
+      // Handle MyQ fetch errors gracefully. This is especially helpful when MyQ
+      // API changes happen.
+      if(devices === undefined) {
+        var parseErr = "Error: Couldn't fetch device details:\r\n" + JSON.stringify(data, null, 2);
+        self.log(parseErr);
+        callback(parseErr);
+        return;
+      }
+
       // Look through the array of devices for all the gateways
       var allowedGateways = [];
       var gatewaysKeyed = {};
