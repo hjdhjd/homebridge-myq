@@ -384,6 +384,9 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
             // Set validData hint after we found an opener
             self.validData = true;
+
+            // Ensure the accessories cache is updated to avoid registryy issues
+            self.api.updatePlatformAccessories([accessory]);
           }
         }
       }
