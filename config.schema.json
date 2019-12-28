@@ -1,0 +1,83 @@
+{
+	"pluginAlias": "MyQ2",
+	"pluginType": "platform",
+	"headerDisplay": "MyQ LiftMaster and Chamberlain Plugin for HomeBridge (API 2.0). <p>[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a HomeBridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.",
+	"footerDisplay": "For help please see the [wiki](https://github.com/hjdhjd/homebridge-myq2/wiki).",
+	"singular": false,
+	"schema": {
+		"type": "object",
+		"properties": {
+			"name": {
+                                "type": "string",
+                                "placeholder": "eg. Home",
+                                "required": false,
+				"title": "Place Name",
+				"description": "Where is this MyQ installed?"
+                        },
+			"email": {
+				"type": "string",
+				"placeholder": "eg. user@example.com",
+				"required": true
+			},
+			"password": {
+				"type": "string",
+				"placeholder": "eg. abc$123!",
+				"required": true
+			},
+			"verbose": {
+				"description": "Logging verbosity for debugging purporses. (Default = false)",
+				"type": "boolean",
+				"required": false
+			},
+			"openDuration": {
+				"title": "Open Duration",
+				"description": "Time in <code>seconds</code> to open garage door completely. (Default = 15)",
+				"type": "integer",
+				"required": false
+			},
+			"closeDuration": {
+				"title": "Close Duration",
+				"description": "Time in <code>seconds</code> to close garage door completely. (Default = 25)",
+				"type": "integer",
+				"required": false
+			},
+			"longPoll": {
+				"title": "Long Poll Interval",
+				"description": "Normal polling interval in <code>seconds</code>. (Default = 15)",
+				"type": "integer",
+				"required": false
+			},
+			"shortPoll": {
+				"title": "Short Poll Interval",
+				"description": "Polling interval in <code>seconds</code> when door state changes. (Default = 5)",
+				"type": "integer",
+				"required": false
+			},
+			"shortPollDuration": {
+				"title": "Short Poll Duration",
+				"description": "Duration in <code>seconds</code> to use shortPoll. (Default = 600)",
+				"type": "integer",
+				"required": false
+			},
+			"gateways": {
+				"title": "Gateways",
+				"description": "Array of gateway IDs or names to add. (Default = [])",
+				"type": "string",
+				"placeholder": "eg. [My Home]",
+				"required": false
+			}
+		}
+	},
+	"form": [
+		"name",
+		"email",
+		"password",
+		{
+			"type": "fieldset",
+			"expandable": true,
+			"title": "Advanced Configuration (Optional)",
+			"description": "This step is not required. HomeBridge with API 2.0 can handle configurations in the HomeKit app.",
+			"items": ["verbose", "openDuration", "closeDuration", "longPoll", "shortPoll", "shortPollDuration", "gateways"]
+	}
+]
+}
