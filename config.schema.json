@@ -8,66 +8,72 @@
 		"type": "object",
 		"properties": {
 			"name": {
-                                "type": "string",
-                                "placeholder": "eg. Home",
-                                "required": false,
 				"title": "Place Name",
-				"description": "Where is this MyQ installed?"
+                                "type": "string",
+                                "required": false,
+                                "placeholder": "eg. Home",
+				"description": "Physical location where this MyQ Home Bridge is installed?"
                         },
 			"email": {
+				"title": "MyQ Username",
 				"type": "string",
-				"placeholder": "eg. user@example.com",
-				"required": true
+				"required": true,
+				"placeholder": "e.g. user@example.com",
+				"description": "Email address used for your MyQ account."
 			},
 			"password": {
+				"title": "MyQ Password",
 				"type": "string",
-				"placeholder": "eg. abc$123!",
-				"required": true
+				"required": true,
+				"placeholder": "e.g. mypassword",
+				"description": "Password used for your MyQ account."
 			},
 			"verbose": {
-				"description": "Logging verbosity for debugging purporses. (Default = false)",
+				"title": "Debug Logging Verbosity",
 				"type": "boolean",
-				"required": false
+				"required": false,
+				"description": "Logging verbosity for debugging purporses. (Default = false)"
 			},
 			"openDuration": {
 				"title": "Open Duration",
-				"description": "Time in <code>seconds</code> to open garage door completely. (Default = 15)",
 				"type": "integer",
-				"required": false
+				"required": false,
+				"description": "Time in <code>seconds</code> to check that the garage door has finished opening. (Default = 15)"
 			},
 			"closeDuration": {
 				"title": "Close Duration",
-				"description": "Time in <code>seconds</code> to close garage door completely. (Default = 25)",
 				"type": "integer",
-				"required": false
+				"required": false,
+				"description": "Time in <code>seconds</code> to check that the garage door has finished closing. (Default = 25)"
 			},
 			"longPoll": {
 				"title": "Long Poll Interval",
-				"description": "Normal polling interval in <code>seconds</code>. (Default = 15)",
 				"type": "integer",
-				"required": false
+				"required": false,
+				"description": "Normal polling interval in <code>seconds</code>. (Default = 15)"
 			},
 			"shortPoll": {
 				"title": "Short Poll Interval",
-				"description": "Polling interval in <code>seconds</code> when door state changes. (Default = 5)",
 				"type": "integer",
-				"required": false
+				"required": false,
+				"description": "Polling interval in <code>seconds</code> to use when the door state changes. (Default = 5)"
 			},
 			"shortPollDuration": {
 				"title": "Short Poll Duration",
-				"description": "Duration in <code>seconds</code> to use shortPoll. (Default = 600)",
 				"type": "integer",
-				"required": false
+				"required": false,
+				"description": "Duration in <code>seconds</code> to use the <code>Short Poll Interval</code>. (Default = 600)"
 			},
 			"gateways": {
 				"title": "Gateways",
-				"description": "Array of gateway IDs or names to add. (Default = [])",
 				"type": "string",
-				"placeholder": "eg. [My Home]",
-				"required": false
+				"required": false,
+				"placeholder": "e.g. [My Home]",
+				"description": "An array of gateway IDs or names to add. This is only useful or needed if you have multiple MyQ gateways. (Default = [])"
 			}
 		}
 	},
+
 	"form": [
 		"name",
 		"email",
