@@ -88,4 +88,5 @@ This step is not required. HomeBridge with API 2.0 can handle configurations in 
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.              | 600     | No       |
 | gateways          | Array of gateway IDs or names to add.            | []      | No       |
+| openers           | Array of openers IDs to allow.                   | []      | No       |
 
