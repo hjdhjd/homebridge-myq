@@ -12,7 +12,7 @@
                                 "type": "string",
                                 "required": false,
                                 "placeholder": "e.g. Home",
-				"description": "Physical location where this MyQ Home Bridge is installed?"
+				"description": "Physical location where this MyQ Home Bridge is installed."
                         },
 			"email": {
 				"title": "MyQ Username",
