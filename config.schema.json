@@ -11,7 +11,7 @@
 				"title": "Place Name",
                                 "type": "string",
                                 "required": false,
-                                "placeholder": "eg. Home",
+                                "placeholder": "e.g. Home",
 				"description": "Physical location where this MyQ Home Bridge is installed?"
                         },
 			"email": {
