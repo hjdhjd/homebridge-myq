@@ -88,7 +88,7 @@
 			"type": "fieldset",
 			"expandable": true,
 			"title": "Advanced Configuration (Optional)",
-			"description": "This step is not required. HomeBridge with API 2.0 can handle configurations in the HomeKit app.",
+			"description": "These are optional setetings that you can adjust if needed. The defaults should work for nearly everyone.",
 			"items": ["verbose", "openDuration", "closeDuration", "longPoll", "shortPoll", "shortPollDuration", "gateways"]
 	}
 ]
