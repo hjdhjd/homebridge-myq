@@ -11,21 +11,21 @@
 				"title": "Name",
                                 "type": "string",
                                 "required": false,
-                                "placeholder": "e.g. Home",
+                                "placeholder": "Home",
 				"description": "The name you would like to assign to this MyQ Home Bridge."
                         },
 			"email": {
 				"title": "MyQ Username",
 				"type": "string",
 				"required": true,
-				"placeholder": "e.g. user@example.com",
+				"placeholder": "user@example.com",
 				"description": "Email address used for your MyQ account."
 			},
 			"password": {
 				"title": "MyQ Password",
 				"type": "string",
 				"required": true,
-				"placeholder": "e.g. mypassword",
+				"placeholder": "mypassword",
 				"description": "Password used for your MyQ account."
 			},
 			"verbose": {
@@ -40,42 +40,42 @@
 				"type": "integer",
 				"default": 15,
 				"required": false,
-				"description": "Time in <code>seconds</code> to check that the garage door has finished opening. Default: 15"
+				"description": "Time in <code>seconds</code> to check that the garage door has finished opening."
 			},
 			"closeDuration": {
 				"title": "Close Duration",
 				"type": "integer",
 				"default": 25,
 				"required": false,
-				"description": "Time in <code>seconds</code> to check that the garage door has finished closing. Default: 25"
+				"description": "Time in <code>seconds</code> to check that the garage door has finished closing."
 			},
 			"longPoll": {
 				"title": "Long Poll Interval",
 				"type": "integer",
 				"default": 15,
 				"required": false,
-				"description": "Normal polling interval in <code>seconds</code>. Default: 15"
+				"description": "Normal polling interval in <code>seconds</code>."
 			},
 			"shortPoll": {
 				"title": "Short Poll Interval",
 				"type": "integer",
 				"default": 5,
 				"required": false,
-				"description": "Polling interval in <code>seconds</code> to use when the door state changes. Default: 5"
+				"description": "Polling interval in <code>seconds</code> to use when the door state changes."
 			},
 			"shortPollDuration": {
 				"title": "Short Poll Duration",
 				"type": "integer",
 				"default": 600,
 				"required": false,
-				"description": "Duration in <code>seconds</code> to use the <code>Short Poll Interval</code>. Default: 600"
+				"description": "Duration in <code>seconds</code> to use the <code>Short Poll Interval</code>."
 			},
 			"gateways": {
 				"title": "Gateways",
 				"type": "string",
 				"required": false,
-				"placeholder": "e.g. [My Home]",
-				"description": "An array of gateway IDs or names to add. This is only useful or needed if you have multiple MyQ gateways. Default: []"
+				"placeholder": "[My Home]",
+				"description": "An array of gateway IDs or names to add. This is only useful or needed if you have multiple MyQ gateways.' 
 			}
 		}
 	},
