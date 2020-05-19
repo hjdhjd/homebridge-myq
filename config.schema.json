@@ -87,8 +87,8 @@
 		{
 			"type": "fieldset",
 			"expandable": true,
-			"title": "Advanced Configuration (Optional)",
-			"description": "These are optional setetings that you can adjust if needed. The defaults should work for nearly everyone.",
+			"title": "Advanced Settings (Optional)",
+			"description": "These are optional settings that you can adjust if needed. The defaults should work for nearly everyone.",
 			"items": ["verbose", "openDuration", "closeDuration", "longPoll", "shortPoll", "shortPollDuration", "gateways"]
 	}
 ]
