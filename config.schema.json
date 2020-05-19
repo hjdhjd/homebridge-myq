@@ -12,7 +12,7 @@
                                 "type": "string",
                                 "required": false,
                                 "placeholder": "e.g. Home",
-				"description": "The namee you would like to assign to this MyQ Home Bridge."
+				"description": "The name you would like to assign to this MyQ Home Bridge."
                         },
 			"email": {
 				"title": "MyQ Username",
