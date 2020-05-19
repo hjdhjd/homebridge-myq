@@ -1,7 +1,7 @@
 {
 	"pluginAlias": "MyQ2",
 	"pluginType": "platform",
-	"headerDisplay": "MyQ LiftMaster and Chamberlain Plugin for Homebridge. <p>[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a Homebridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.",
+	"headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a Homebridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.",
 	"footerDisplay": "For help please see the [developer page](https://github.com/hjdhjd/homebridge-myq2).",
 	"singular": true,
 	"schema": {
