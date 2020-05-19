@@ -1,6 +1,6 @@
 {
   "name": "homebridge-myq2",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "displayName": "Homebridge MyQ",
   "description": "MyQ LiftMaster and Chamberlain plugin for Homebridge",
   "repository": {
@@ -8,7 +8,14 @@
     "url": "git://github.com/hjdhjd/homebridge-myq2.git"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge",
+    "homebridge-plugin",
+    "myq",
+    "liftmaster",
+    "chamberlain",
+    "garage",
+    "garage door",
+    "garage door opener"
   ],
   "author": "HJD",
   "license": "ISC",
