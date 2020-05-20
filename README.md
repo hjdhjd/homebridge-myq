@@ -100,4 +100,5 @@ This step is not required. The defaults should work well for almost everyone.
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.              | 600     | No       |
 | gateways          | Array of gateway IDs or names to add.            | []      | No       |
+| openers           | Array of openers IDs to allow.                   | []      | No       |
 

@@ -31,6 +31,7 @@ function MyQ2Platform(log, config, api) {
   this.email = this.config.email;
   this.password = this.config.password;
   this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
+  this.openers = Array.isArray(this.config.openers) ? this.config.openers : [];
   this.openDuration = parseInt(this.config.openDuration, 10) || 15;
   this.closeDuration = parseInt(this.config.closeDuration, 10) || 25;
   this.longPoll = parseInt(this.config.longPoll, 10) || 15;
@@ -320,6 +321,14 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             }
             continue;
           }
+
+		  // Does this device fail under the specified openers
+		  if (self.openers.length >0 && self.openers.indexOf(device.MyQDeviceId) == -1) {
+    	        if(self.verbose) {
+        	      self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDevicId+")");
+        	    }
+	    	continue;
+		  }
 
           if (thisDoorMonitor === "0") {
             // Retrieve accessory from cache
