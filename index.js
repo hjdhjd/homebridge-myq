@@ -427,6 +427,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
     }
   }).catch(error => {
       self.log('Error polling MyQ servers: ' + error);
+      callback(error);
   });
 }
 

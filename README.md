@@ -1,15 +1,28 @@
-# homebridge-myq2
-MyQ LiftMaster and Chamberlain Plugin for [HomeBridge](https://github.com/nfarina/homebridge) (API 2.0)
+<span align="center">
+
+<a href="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><img alt="homebridge-verified" src="https://github.com/homebridge/branding/blob/master/logos/homebridge-color-round.svg?sanitize=true" width="140px"></a>
+
+# Homebridge MyQ Liftmaster and Chamberlain
+
+<a href="https://www.npmjs.com/package/homebridge-myq2"><img title="npm version" src="https://badgen.net/npm/v/homebridge-myq2" ></a>
+<a href="https://www.npmjs.com/package/homebridge-myq2"><img title="npm downloads" src="https://badgen.net/npm/dt/homebridge-myq2" ></a>
+
+<p>MyQ (Liftmaster and Chamberlain) garage and MyQ devices plugin for <a href="https://homebridge.io">Homebridge</a>.</p>
+
+</span>
+
+# Homebridge MyQ
+MyQ LiftMaster and Chamberlain Plugin for [Homebridge](https://homebridge.io)
 
 `homebridge-myq2` is a HomeBridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.
 
 There are two ways to be able to control a MyQ-compatible garage door opener through HomeKit:
 
-1. LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge (not to be confused with the open source [homebridge project](https://www.npmjs.com/package/homebridge)).
+1. LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge (not to be confused with the open source [Homebridge project](https://homebridge.io)).
 Unfortunately, some of us have encountered issues with the hardware bridge in a real world setting, where it either stops working or hangs for extended periods of time.
 Others have encountered no issues and this solution works well.
 
-2. A plugin for [homebridge](https://www.npmjs.com/package/homebridge) like this one that emulates the capabilities of a MyQ bridge.
+2. A plugin for [homebridge](https://homebridge.io) like this one that emulates the capabilities of a MyQ bridge.
 
 Either solution will provide a complete solution to automating your garage door and you'll soon be automating your home with HomeKit like you always dreamed of. :)
 
@@ -24,12 +37,11 @@ reasonable intervals for changes in state of a garage door opener or other MyQ d
 information required for MyQ services.
 
 # Installation
-If you are new to Homebridge, please first read the Homebridge [documentation](https://www.npmjs.com/package/homebridge).
-If you are running on a Raspberry, you will find a tutorial in the [homebridge-punt Wiki](https://github.com/cflurin/homebridge-punt/wiki/Running-Homebridge-on-a-Raspberry-Pi).
+If you are new to Homebridge, please first read the Homebridge [documentation](https://homebridge.io).
 
 Install homebridge:
 ```sh
-sudo npm install -g homebridge
+sudo npm install -g --unsafe-perm homebridge
 ```
 Install homebridge-myq2:
 ```sh
@@ -57,7 +69,7 @@ Add the platform in `config.json` in your home directory inside `.homebridge`.
 ```
 
 ### Advanced Configuration (Optional)
-This step is not required. HomeBridge with API 2.0 can handle configurations in the HomeKit app.
+This step is not required. The defaults should work well for almost everyone.
 ```
 "platforms": [{
     "platform": "MyQ2",
