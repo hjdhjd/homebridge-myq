@@ -69,7 +69,7 @@ Add the platform in `config.json` in your home directory inside `.homebridge`.
 ```
 
 ### Advanced Configuration (Optional)
-This step is not required. HomeBridge with API 2.0 can handle configurations in the HomeKit app.
+This step is not required. The defaults should work well for almost everyone.
 ```
 "platforms": [{
     "platform": "MyQ2",
