@@ -1,6 +1,6 @@
 {
   "name": "homebridge-myq2",
-  "version": "1.2.17",
+  "version": "1.2.18",
   "displayName": "Homebridge MyQ",
   "description": "MyQ LiftMaster and Chamberlain plugin for Homebridge",
   "repository": {
