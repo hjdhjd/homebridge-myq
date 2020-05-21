@@ -42,13 +42,13 @@ function MyQ2Platform(log, config, api) {
   this.validData = false;
 
   // Gateways convenience
-  if (this.config.gateway) this.gateways.push(this.config.gateway);
-  if (this.config.hub) this.gateways.push(this.config.hub);
-  if (this.config.hubs && Array.isArray(this.config.hubs)) this.gateways = this.gateways.concat(this.config.hubs);
+  if(this.config.gateway) this.gateways.push(this.config.gateway);
+  if(this.config.hub) this.gateways.push(this.config.hub);
+  if(this.config.hubs && Array.isArray(this.config.hubs)) this.gateways = this.gateways.concat(this.config.hubs);
 
   this.accessories = {};
 
-  if (api) {
+  if(api) {
     this.api = api;
     this.api.on('didFinishLaunching', this.didFinishLaunching.bind(this));
   }
@@ -65,7 +65,7 @@ MyQ2Platform.prototype.configureAccessory = function (accessory) {
 
 // Method to setup accesories from config.json
 MyQ2Platform.prototype.didFinishLaunching = function () {
-  if (this.email && this.password) {
+  if(this.email && this.password) {
     // Add or update accessory in HomeKit
     this.addAccessory();
 
@@ -85,10 +85,10 @@ MyQ2Platform.prototype.addAccessory = function () {
   var self = this;
 
   this.login(function (error){
-    if (!error) {
+    if(!error) {
       for (var deviceID in self.accessories) {
         var accessory = self.accessories[deviceID];
-        if (!accessory.reachable) {
+        if(!accessory.reachable) {
           // Remove extra accessories in cache
           self.removeAccessory(accessory);
         } else {
@@ -103,7 +103,7 @@ MyQ2Platform.prototype.addAccessory = function () {
 
 // Method to remove accessories from HomeKit
 MyQ2Platform.prototype.removeAccessory = function (accessory) {
-  if (accessory) {
+  if(accessory) {
     var deviceID = accessory.context.deviceID;
     this.log(accessory.context.name + " is removed from HomeBridge.");
     this.api.unregisterPlatformAccessories("homebridge-myq2", "MyQ2", [accessory]);
@@ -145,7 +145,7 @@ MyQ2Platform.prototype.updateDoorStates = function (accessory) {
 
 // Method to retrieve door state from the server
 MyQ2Platform.prototype.updateState = function (callback) {
-  if (this.validData) {
+  if(this.validData) {
     // Refresh data directly from sever if current data is valid
     this.getDevice(callback);
   } else {
@@ -163,7 +163,7 @@ MyQ2Platform.prototype.statePolling = function (delay) {
   clearTimeout(this.tout);
 
   // Determine polling interval
-  if (this.count  < this.maxCount) {
+  if(this.count  < this.maxCount) {
     this.count++;
     refresh = this.shortPoll + delay;
   }
@@ -171,7 +171,7 @@ MyQ2Platform.prototype.statePolling = function (delay) {
   // Setup periodic update with polling interval
   this.tout = setTimeout(function () {
     self.updateState(function (error) {
-      if (!error) {
+      if(!error) {
         // Update states for all HomeKit accessories
         for (var deviceID in self.accessories) {
           var accessory = self.accessories[deviceID];
@@ -207,7 +207,7 @@ MyQ2Platform.prototype.login = function (callback) {
     return res.json();
   }).then(function (data) {
     // Check for MyQ Error Codes
-    if (data.ReturnCode === "0") {
+    if(data.ReturnCode === "0") {
       self.securityToken = data.SecurityToken;
       self.manufacturer = "Chamberlain";
       self.getDevice(callback);
@@ -244,7 +244,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
   }).then(function (res) {
     return res.json();
   }).then(function (data) {
-    if (data.ReturnCode === "0") {
+    if(data.ReturnCode === "0") {
       var devices = data.Devices;
 
       // Handle MyQ fetch errors gracefully. This is especially helpful when MyQ
@@ -266,19 +266,19 @@ MyQ2Platform.prototype.getDevice = function (callback) {
         var deviceDesc = "Unknown";
 
         // Search for specific device type
-        if (deviceType != 1) continue;
+        if(deviceType != 1) continue;
 
         for (var j = 0; j < device.Attributes.length; j ++) {
           var thisAttributeSet = device.Attributes[j];
           // Search for device name
-          if (thisAttributeSet.AttributeDisplayName === "desc") {
+          if(thisAttributeSet.AttributeDisplayName === "desc") {
             deviceDesc = thisAttributeSet.Value;
           }
         }
 
         // Is this gateway one of the specified gateways in the config
         gatewaysKeyed[device.MyQDeviceId] = deviceDesc;
-        if (self.gateways.indexOf(deviceDesc) > -1 || self.gateways.indexOf(device.MyQDeviceId) > -1) allowedGateways.push(device.MyQDeviceId);
+        if(self.gateways.indexOf(deviceDesc) > -1 || self.gateways.indexOf(device.MyQDeviceId) > -1) allowedGateways.push(device.MyQDeviceId);
       }
 
       // Look through the array of devices for all the openers
@@ -287,7 +287,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
         var deviceType = device.MyQDeviceTypeName;
 
         // Search for specific device type
-        if (deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
+        if(deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
           var thisDeviceID = device.MyQDeviceId.toString();
           var thisSerial = device.SerialNumber.toString();
           var thisModel = deviceType.toString();
@@ -299,43 +299,45 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             var thisAttributeSet = device.Attributes[j];
 
             // Search for device name
-            if (thisAttributeSet.AttributeDisplayName === "desc") {
+            if(thisAttributeSet.AttributeDisplayName === "desc") {
               thisDoorName = thisAttributeSet.Value;
             }
 
             // Search for device state
-            if (thisAttributeSet.AttributeDisplayName === "doorstate") {
+            if(thisAttributeSet.AttributeDisplayName === "doorstate") {
               thisDoorState = thisAttributeSet.Value;
             }
 
             // Search for device monitor mode
-            if (thisAttributeSet.AttributeDisplayName === "myqmonitormode") {
+            if(thisAttributeSet.AttributeDisplayName === "myqmonitormode") {
               thisDoorMonitor = thisAttributeSet.Value;
             }
           }
 
           // Does this device fall under the specified gateways
-          if (self.gateways.length > 0 && allowedGateways.indexOf(device.ParentMyQDeviceId) == -1) {
+          if(self.gateways.length > 0 && allowedGateways.indexOf(device.ParentMyQDeviceId) == -1) {
             if(self.verbose) {
               self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
             }
+            
             continue;
           }
 
-		  // Does this device fail under the specified openers
-		  if (self.openers.length >0 && self.openers.indexOf(device.MyQDeviceId) == -1) {
-    	        if(self.verbose) {
-        	      self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDevicId+")");
-        	    }
-	    	continue;
-		  }
+          // Does this device fail under the specified openers
+          if(self.openers.length > 0 && self.openers.indexOf(device.MyQDeviceId) == -1) {
+            if(self.verbose) {
+              self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDevicId+")");
+            }
+            
+            continue;
+          }
 
-          if (thisDoorMonitor === "0") {
+          if(thisDoorMonitor === "0") {
             // Retrieve accessory from cache
             var accessory = self.accessories[thisDeviceID];
 
             // Initialization for new accessory
-            if (!accessory) {
+            if(!accessory) {
 
               // Setup accessory as GARAGE_DOOR_OPENER (4) category.
               var uuid = UUIDGen.generate(thisDeviceID);
@@ -361,7 +363,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             }
 
             if(self.verbose) {
-              if (device.ParentMyQDeviceId) {
+              if(device.ParentMyQDeviceId) {
                 self.log('Checking "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
               } else {
                 self.log('Checking: "'+thisDoorName+'"');
@@ -375,19 +377,19 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             var cache = accessory.context;
             cache.name = thisDoorName;
             cache.deviceID = thisDeviceID;
-            if (cache.currentState === undefined) cache.currentState = Characteristic.CurrentDoorState.CLOSED;
+            if(cache.currentState === undefined) cache.currentState = Characteristic.CurrentDoorState.CLOSED;
 
             // Determine the current door state
             var newState;
-            if (thisDoorState === "1") {
+            if(thisDoorState === "1") {
               newState = Characteristic.CurrentDoorState.OPEN;
-            } else if (thisDoorState === "2") {
+            } else if(thisDoorState === "2") {
               newState = Characteristic.CurrentDoorState.CLOSED;
-            } else if (thisDoorState === "3") {
+            } else if(thisDoorState === "3") {
               newState = Characteristic.CurrentDoorState.STOPPED;
-            } else if (thisDoorState === "4") {
+            } else if(thisDoorState === "4") {
               newState = Characteristic.CurrentDoorState.OPENING;
-            } else if (thisDoorState === "5") {
+            } else if(thisDoorState === "5") {
               newState = Characteristic.CurrentDoorState.CLOSING;
             } else {
               // Not sure about this...
@@ -395,7 +397,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             }
 
             // Detect for state changes
-            if (newState !== cache.currentState) {
+            if(newState !== cache.currentState) {
               self.count = 0;
               cache.currentState = newState;
               self.log(cache.name + " is " + self.doorState[cache.currentState]);
@@ -411,7 +413,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
       }
 
       // Did we have valid data?
-      if (self.validData) {
+      if(self.validData) {
         // Set short polling interval when state changes
         self.statePolling(0);
 
@@ -457,7 +459,7 @@ MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
   }).then(function(res) {
     return res.json();
   }).then(function (data) {
-    if (data.ReturnCode === "0") {
+    if(data.ReturnCode === "0") {
       self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
       // Set short polling interval
@@ -480,7 +482,7 @@ MyQ2Platform.prototype.setTargetState = function (thisOpener, state, callback) {
 
   // Always re-login for setting the state
   this.login(function (loginError) {
-    if (!loginError) {
+    if(!loginError) {
       self.setState(thisOpener, state, callback);
     } else {
       callback(loginError);
@@ -500,7 +502,7 @@ MyQ2Platform.prototype.getCurrentState = function (thisOpener, callback) {
 
   // Retrieve latest state from server
   this.updateState(function (error) {
-    if (!error) {
+    if(!error) {
       self.log(thisOpener.name + " is " + self.doorState[thisOpener.currentState]);
       callback(null, thisOpener.currentState);
     } else {
@@ -517,12 +519,12 @@ MyQ2Platform.prototype.identify = function (thisOpener, paired, callback) {
 
 // Method to handle plugin configuration in HomeKit app
 MyQ2Platform.prototype.configurationRequestHandler = function (context, request, callback) {
-  if (request && request.type === "Terminate") {
+  if(request && request.type === "Terminate") {
     return;
   }
 
   // Instruction
-  if (!context.step) {
+  if(!context.step) {
     var instructionResp = {
       "type": "Interface",
       "interface": "instruction",
@@ -585,9 +587,9 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
 
         // Setup info for adding or updating accessory
         this.verbose = userInputs.verbose || this.verbose;
-        if (userInputs.verbose.toUpperCase() === "TRUE") {
+        if(userInputs.verbose.toUpperCase() === "TRUE") {
           this.verbose = true;
-        } else if (userInputs.verbose.toUpperCase() === "FALSE") {
+        } else if(userInputs.verbose.toUpperCase() === "FALSE") {
           this.verbose = false;
         }
         this.email = userInputs.email || this.email;
@@ -599,7 +601,7 @@ MyQ2Platform.prototype.configurationRequestHandler = function (context, request,
         this.shortPollDuration = parseInt(userInputs.shortPollDuration, 10) || this.shortPollDuration;
 
         // Check for required info
-        if (this.email && this.password) {
+        if(this.email && this.password) {
           // Add or update accessory in HomeKit
           this.addAccessory();
 

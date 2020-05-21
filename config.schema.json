@@ -74,14 +74,14 @@
 				"title": "Gateways",
 				"type": "string",
 				"required": false,
-				"placeholder": "e.g. [My Home]",
+				"placeholder": "[ \"My Home\" ]",
 				"description": "An array of gateway IDs or names to add. This is only useful or needed if you have multiple MyQ gateways. (Default = [])"
 			},
 			"openers": {
 				"title": "Openers",
 				"type": "string",
 				"required": false,
-				"placeholder": "e.g. [ id1, id2 ..]",
+				"placeholder": "[ id1, id2]",
 				"description": "An array of opener IDs or to add. This is only useful or needed if you have multiple MyQ garage openers. (Default = [])"
 			}
 		}
