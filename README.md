@@ -14,7 +14,7 @@
 # Homebridge MyQ
 MyQ LiftMaster and Chamberlain Plugin for [Homebridge](https://homebridge.io)
 
-`homebridge-myq2` is a HomeBridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.
+`homebridge-myq2` is a HomeBridge plugin to interact with MyQ smart garage door openers, made primarily by LiftMaster and Chamberlain.
 
 There are two ways to be able to control a MyQ-compatible garage door opener through HomeKit:
 
@@ -82,7 +82,8 @@ This step is not required. The defaults should work well for almost everyone.
     "longPoll": 15,
     "shortPoll": 5,
     "shortPollDuration": 600,
-    "gateways": ["My Home"]
+    "gateways": ["My Home"],
+    "gateways": [id1]
 }]
 
 ```
@@ -100,5 +101,5 @@ This step is not required. The defaults should work well for almost everyone.
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.              | 600     | No       |
 | gateways          | Array of gateway IDs or names to add.            | []      | No       |
-| openers           | Array of openers IDs to allow.                   | []      | No       |
+| openers           | Array of openers IDs to make available.          | []      | No       |
 
