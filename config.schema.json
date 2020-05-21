@@ -96,7 +96,7 @@
 			"expandable": true,
 			"title": "Advanced Settings (Optional)",
 			"description": "These are optional settings that you can adjust if needed. The defaults should work for nearly everyone.",
-			"items": ["verbose", "openDuration", "closeDuration", "longPoll", "shortPoll", "shortPollDuration", "gateways"]
+			"items": ["verbose", "openDuration", "closeDuration", "longPoll", "shortPoll", "shortPollDuration", "gateways", "openers"]
 	}
 ]
 }
