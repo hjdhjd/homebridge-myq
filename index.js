@@ -42,9 +42,9 @@ function MyQ2Platform(log, config, api) {
   this.validData = false;
 
   // Gateways convenience
-  if(this.config.gateway) this.gateways.push(this.config.gateway);
-  if(this.config.hub) this.gateways.push(this.config.hub);
-  if(this.config.hubs && Array.isArray(this.config.hubs)) this.gateways = this.gateways.concat(this.config.hubs);
+  if(this.config.gateways) this.gateways.push(this.config.gateways);
+  if(this.config.openers) this.gateways.push(this.config.openers);
+  if(this.config.openers && Array.isArray(this.config.openers)) this.gateways = this.gateways.concat(this.config.openers);
 
   this.accessories = {};
 
