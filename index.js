@@ -46,7 +46,7 @@ function MyQ2Platform(log, config, api) {
   if(this.config.hub) this.gateways.push(this.config.hub);
   if(this.config.hubs && Array.isArray(this.config.hubs)) this.gateways = this.gateways.concat(this.config.hubs);
 
-  this.accessories = {};
+  this.accessories = [];
 
   if(api) {
     this.api = api;
