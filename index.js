@@ -258,7 +258,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
       // Look through the array of devices for all the gateways
       var allowedGateways = [];
-      var gatewaysKeyed = {};
+      var gatewaysKeyed = [];
 
       for (var i = 0; i < devices.length; i++) {
         var device = devices[i];
