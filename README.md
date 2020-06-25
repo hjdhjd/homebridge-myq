@@ -83,7 +83,7 @@ This step is not required. The defaults should work well for almost everyone.
     "shortPoll": 5,
     "shortPollDuration": 600,
     "gateways": ["My Home"],
-    "gateways": [id1]
+    "openers": [id1]
 }]
 
 ```
