@@ -97,6 +97,9 @@ MyQ2Platform.prototype.addAccessory = function () {
           self.updateDoorStates(accessory);
         }
       }
+    } else {
+      self.log('addAccessory: login failed');
+      self.removeAccessory(accessory);
     }
   });
 }
@@ -217,6 +220,7 @@ MyQ2Platform.prototype.login = function (callback) {
     }
   }).catch(error => {
       self.log('Login error: ' + error);
+      callback(error);
   });
 }
 
