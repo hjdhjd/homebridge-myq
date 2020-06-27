@@ -97,9 +97,6 @@ MyQ2Platform.prototype.addAccessory = function () {
           self.updateDoorStates(accessory);
         }
       }
-    } else {
-      self.log('addAccessory: login failed');
-      self.removeAccessory(accessory);
     }
   });
 }
@@ -219,7 +216,7 @@ MyQ2Platform.prototype.login = function (callback) {
       callback(data.ErrorMessage);
     }
   }).catch(error => {
-      self.log('Login error: ' + error);
+      self.log.error('Unable to login to MyQ, received error:', error);
       callback(error);
   });
 }
