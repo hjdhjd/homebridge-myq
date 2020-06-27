@@ -39,6 +39,7 @@ function MyQ2Platform(log, config, api) {
   this.shortPollDuration = parseInt(this.config.shortPollDuration, 10) || 600;
   this.maxCount = this.shortPollDuration / this.shortPoll;
   this.count = this.maxCount;
+  this.loginWaitInterval = 0;
   this.validData = false;
 
   // Gateways convenience
@@ -168,6 +169,12 @@ MyQ2Platform.prototype.statePolling = function (delay) {
     refresh = this.shortPoll + delay;
   }
 
+  // last login failed, delay next attempt
+  if (self.loginWaitInterval > 0) {
+    self.log.error(`Error logging into MyQ, delaying ${self.loginWaitInterval}s before retrying.`);
+    refresh = self.loginWaitInterval;
+  }
+
   // Setup periodic update with polling interval
   this.tout = setTimeout(function () {
     self.updateState(function (error) {
@@ -210,6 +217,7 @@ MyQ2Platform.prototype.login = function (callback) {
     if(data.ReturnCode === "0") {
       self.securityToken = data.SecurityToken;
       self.manufacturer = "Chamberlain";
+      self.loginWaitInterval = 0;
       self.getDevice(callback);
     } else {
       self.log(data.ErrorMessage);
@@ -217,6 +225,7 @@ MyQ2Platform.prototype.login = function (callback) {
     }
   }).catch(error => {
       self.log('Login error: ' + error);
+      self.loginWaitInterval = 2 * Math.max(self.shortPoll, self.loginWaitInterval);
   });
 }
 
@@ -319,7 +328,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             if(self.verbose) {
               self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
             }
-            
+
             continue;
           }
 
@@ -328,7 +337,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             if(self.verbose) {
               self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDevicId+")");
             }
-            
+
             continue;
           }
 
