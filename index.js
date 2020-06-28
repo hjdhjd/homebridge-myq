@@ -148,7 +148,7 @@ MyQ2Platform.prototype.updateDoorStates = function (accessory) {
     .getValue();
 
   accessory.getService(Service.GarageDoorOpener)
-    .setCharacteristic(Characteristic.StatusLowBattery, accessory.context.currentBattery);
+    .setCharacteristic(Characteristic.StatusLowBattery, accessory.context.batteryStatus);
 }
 
 // Method to retrieve door state from the server
