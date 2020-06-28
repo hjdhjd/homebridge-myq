@@ -27,7 +27,7 @@ var HEADERS = {
 function MyQ2Platform(log, config, api) {
   this.log = log;
   this.config = config || {"platform": "MyQ2"};
-  this.verbose = this.config.verbose || false;
+  this.verbose = this.config.verbose === true;
   this.email = this.config.email;
   this.password = this.config.password;
   this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
