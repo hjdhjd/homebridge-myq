@@ -75,7 +75,7 @@
         "title": "MyQ Gateways",
         "type": "array",
         "items": {
-          "type": "string"
+          "type": "integer"
         }
       },
 
@@ -83,7 +83,7 @@
         "title": "MyQ Openers",
         "type": "array",
         "items": {
-          "type": "string"
+          "type": "integer"
         }
       }
 		}
