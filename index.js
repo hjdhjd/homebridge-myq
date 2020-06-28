@@ -12,7 +12,7 @@ module.exports = function (homebridge) {
 
 // This seems to be the "id" of the official LiftMaster iOS app
 var APP_ID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
-var UA_ID = "myQ/14041 CFNetwork/1107.1 Darwin/19.0.0";
+var UA_ID = "myQ/19569 CFNetwork/1107.1 Darwin/19.0.0";
 
 // Headers needed for validation
 var HEADERS = {
@@ -43,11 +43,11 @@ function MyQ2Platform(log, config, api) {
   this.validData = false;
 
   // Gateways convenience
-  if(this.config.gateway) this.gateways.push(this.config.gateway);
-  if(this.config.hub) this.gateways.push(this.config.hub);
-  if(this.config.hubs && Array.isArray(this.config.hubs)) this.gateways = this.gateways.concat(this.config.hubs);
+  if(this.config.gateways) this.gateways.push(this.config.gateways);
+  if(this.config.openers) this.gateways.push(this.config.openers);
+  if(this.config.openers && Array.isArray(this.config.openers)) this.gateways = this.gateways.concat(this.config.openers);
 
-  this.accessories = {};
+  this.accessories = [];
 
   if(api) {
     this.api = api;
@@ -56,6 +56,7 @@ function MyQ2Platform(log, config, api) {
 
   // Definition Mapping
   this.doorState = ["open.", "closed.", "opening.", "closing.", "stopped."];
+  this.batteryState = ["normal.", "low."];
 }
 
 // Method to restore accessories from cache
@@ -123,6 +124,10 @@ MyQ2Platform.prototype.setService = function (accessory) {
     .on('get', this.getTargetState.bind(this, accessory.context))
     .on('set', this.setTargetState.bind(this, accessory.context));
 
+  accessory.getService(Service.GarageDoorOpener)
+    .getCharacteristic(Characteristic.StatusLowBattery)
+    .on('get', this.getStatusLowBattery.bind(this, accessory.context))
+
   accessory.on('identify', this.identify.bind(this, accessory));
 }
 
@@ -142,6 +147,9 @@ MyQ2Platform.prototype.updateDoorStates = function (accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.TargetDoorState)
     .getValue();
+
+  accessory.getService(Service.GarageDoorOpener)
+    .setCharacteristic(Characteristic.StatusLowBattery, accessory.context.batteryStatus);
 }
 
 // Method to retrieve door state from the server
@@ -224,8 +232,9 @@ MyQ2Platform.prototype.login = function (callback) {
       callback(data.ErrorMessage);
     }
   }).catch(error => {
-      self.log('Login error: ' + error);
       self.loginWaitInterval = 2 * Math.max(self.shortPoll, self.loginWaitInterval);
+      self.log.error('Unable to login to MyQ, received error:', error);
+      callback(error);
   });
 }
 
@@ -267,7 +276,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
       // Look through the array of devices for all the gateways
       var allowedGateways = [];
-      var gatewaysKeyed = {};
+      var gatewaysKeyed = [];
 
       for (var i = 0; i < devices.length; i++) {
         var device = devices[i];
@@ -303,6 +312,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
           var thisDoorName = "Unknown";
           var thisDoorState = "2";
           var thisDoorMonitor = "0";
+          var thisDoorBatteryLow = "0";
 
           for (var j = 0; j < device.Attributes.length; j ++) {
             var thisAttributeSet = device.Attributes[j];
@@ -320,6 +330,11 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             // Search for device monitor mode
             if(thisAttributeSet.AttributeDisplayName === "myqmonitormode") {
               thisDoorMonitor = thisAttributeSet.Value;
+            }
+
+            // Search for device battery status
+            if(thisAttributeSet.AttributeDisplayName === "dpsbatterystate") {
+              thisDoorBatteryLow = thisAttributeSet.Value;
             }
           }
 
@@ -386,7 +401,10 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             var cache = accessory.context;
             cache.name = thisDoorName;
             cache.deviceID = thisDeviceID;
-            if(cache.currentState === undefined) cache.currentState = Characteristic.CurrentDoorState.CLOSED;
+            if(cache.currentState === undefined)
+              cache.currentState = Characteristic.CurrentDoorState.CLOSED;
+            if(cache.batteryStatus === undefined)
+              cache.batteryStatus = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
 
             // Determine the current door state
             var newState;
@@ -405,11 +423,26 @@ MyQ2Platform.prototype.getDevice = function (callback) {
               accessory.updateReachability(false);
             }
 
+            // Determine current battery state
+            var newBattery;
+            if (thisDoorBatteryLow == "0") {
+              newBattery = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+            } else if (thisDoorBatteryLow == "1") {
+              newBattery = Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
+            } else {
+              // Not sure about this...
+              accessory.updateReachability(false);
+            }
+
             // Detect for state changes
-            if(newState !== cache.currentState) {
+            // Just roll them together for now, battery state changes
+            // should be very infrequent.
+            if(newState !== cache.currentState ||
+               newBattery != cache.batteryStatus) {
               self.count = 0;
               cache.currentState = newState;
-              self.log(cache.name + " is " + self.doorState[cache.currentState]);
+              cache.batteryStatus = newBattery;
+              self.log(cache.name + " is " + self.doorState[cache.currentState] + " Battery " + self.batteryState[cache.batteryStatus]);
             }
 
             // Set validData hint after we found an opener
@@ -512,12 +545,18 @@ MyQ2Platform.prototype.getCurrentState = function (thisOpener, callback) {
   // Retrieve latest state from server
   this.updateState(function (error) {
     if(!error) {
-      self.log(thisOpener.name + " is " + self.doorState[thisOpener.currentState]);
+      self.log(thisOpener.name + " is " + self.doorState[thisOpener.currentState] + " Battery " + self.batteryState[thisOpener.batteryStatus]);
       callback(null, thisOpener.currentState);
     } else {
       callback(error);
     }
   });
+}
+
+// Method to get battery status
+MyQ2Platform.prototype.getStatusLowBattery = function (thisOpener, callback) {
+  // Get battery status directly from cache
+  callback(null, thisOpener.batteryStatus);
 }
 
 // Method to handle identify request
