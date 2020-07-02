@@ -274,13 +274,12 @@ MyQ2Platform.prototype.getDevice = function (callback) {
   }).then(function (res) {
     return res.json();
   }).then(function (data) {
-    self.log('Devices data:', data);
-    if(data.ReturnCode === "0") {
-      var devices = data.Devices;
+    if (data.count > 0) {
+      var devices = data.items;
 
       // Handle MyQ fetch errors gracefully. This is especially helpful when MyQ
       // API changes happen.
-      if(devices === undefined) {
+      if (devices === undefined) {
         var parseErr = "Error: Couldn't fetch device details:\r\n" + JSON.stringify(data, null, 2);
         self.log(parseErr);
         callback(parseErr);
@@ -293,83 +292,47 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
       for (var i = 0; i < devices.length; i++) {
         var device = devices[i];
-        var deviceType = device.MyQDeviceTypeId;
-        var deviceDesc = "Unknown";
-
-        // Search for specific device type
-        if(deviceType != 1) continue;
-
-        for (var j = 0; j < device.Attributes.length; j ++) {
-          var thisAttributeSet = device.Attributes[j];
-          // Search for device name
-          if(thisAttributeSet.AttributeDisplayName === "desc") {
-            deviceDesc = thisAttributeSet.Value;
-          }
-        }
+        var deviceType = device.device_type;
+        var deviceDesc = device.name;
 
         // Is this gateway one of the specified gateways in the config
-        gatewaysKeyed[device.MyQDeviceId] = deviceDesc;
-        if(self.gateways.indexOf(deviceDesc) > -1 || self.gateways.indexOf(device.MyQDeviceId) > -1) allowedGateways.push(device.MyQDeviceId);
+        gatewaysKeyed[device.serial_number] = deviceDesc;
+        if(self.gateways.indexOf(deviceDesc) > -1 || self.gateways.indexOf(device.serial_number) > -1) allowedGateways.push(device.serial_number);
       }
 
       // Look through the array of devices for all the openers
       for (var i = 0; i < devices.length; i++) {
         var device = devices[i];
-        var deviceType = device.MyQDeviceTypeName;
+        var deviceType = device.device_type;
 
         // Search for specific device type
-        if(deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
-          var thisDeviceID = device.MyQDeviceId.toString();
-          var thisSerial = device.SerialNumber.toString();
+        if(deviceType == 'virtualgaragedooropener' || deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
+          var thisDeviceID = device.serial_number.toString();
           var thisModel = deviceType.toString();
-          var thisDoorName = "Unknown";
-          var thisDoorState = "2";
-          var thisDoorMonitor = "0";
-          var thisDoorBatteryLow = "0";
-
-          for (var j = 0; j < device.Attributes.length; j ++) {
-            var thisAttributeSet = device.Attributes[j];
-
-            // Search for device name
-            if(thisAttributeSet.AttributeDisplayName === "desc") {
-              thisDoorName = thisAttributeSet.Value;
-            }
-
-            // Search for device state
-            if(thisAttributeSet.AttributeDisplayName === "doorstate") {
-              thisDoorState = thisAttributeSet.Value;
-            }
-
-            // Search for device monitor mode
-            if(thisAttributeSet.AttributeDisplayName === "myqmonitormode") {
-              thisDoorMonitor = thisAttributeSet.Value;
-            }
-
-            // Search for device battery status
-            if(thisAttributeSet.AttributeDisplayName === "dpsbatterystate") {
-              thisDoorBatteryLow = thisAttributeSet.Value;
-            }
-          }
+          var thisDoorName = device.name;
+          var thisDoorState = device.state.door_state;
+          var thisDoorMonitor = device.state.monitor_only_mode == 'true';
+          var thisDoorBatteryLow = device.state.dps_low_battery_mode == 'true';
 
           // Does this device fall under the specified gateways
-          if(self.gateways.length > 0 && allowedGateways.indexOf(device.ParentMyQDeviceId) == -1) {
+          if(self.gateways.length > 0 && allowedGateways.indexOf(device.parent_device_id) == -1) {
             if(self.verbose) {
-              self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+              self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.parent_device_id]+"\"",'-', "Gateway ID:",device.parent_device_id+")");
             }
 
             continue;
           }
 
           // Does this device fail under the specified openers
-          if(self.openers.length > 0 && self.openers.indexOf(device.MyQDeviceId) == -1) {
+          if(self.openers.length > 0 && self.openers.indexOf(device.serial_number) == -1) {
             if(self.verbose) {
-              self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDevicId+")");
+              self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.parent_device_id]+"\"",'-', "Gateway ID:",device.parent_device_id+")");
             }
 
             continue;
           }
 
-          if(thisDoorMonitor === "0") {
+          if (!thisDoorMonitor) {
             // Retrieve accessory from cache
             var accessory = self.accessories[thisDeviceID];
 
@@ -387,7 +350,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
               accessory.reachable = true;
 
               // Setup HomeKit accessory information
-              self.setAccessoryInfo(accessory, thisModel, thisSerial);
+              self.setAccessoryInfo(accessory, thisModel, thisDeviceID);
 
               // Setup listeners for different security system events
               self.setService(accessory);
@@ -400,8 +363,8 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             }
 
             if(self.verbose) {
-              if(device.ParentMyQDeviceId) {
-                self.log('Checking "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
+              if(device.parent_device_id) {
+                self.log('Checking "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.parent_device_id]+"\"",'-', "Gateway ID:",device.parent_device_id+")");
               } else {
                 self.log('Checking: "'+thisDoorName+'"');
               }
@@ -414,22 +377,22 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             var cache = accessory.context;
             cache.name = thisDoorName;
             cache.deviceID = thisDeviceID;
-            if(cache.currentState === undefined)
+            if (cache.currentState == undefined)
               cache.currentState = Characteristic.CurrentDoorState.CLOSED;
-            if(cache.batteryStatus === undefined)
+            if (cache.batteryStatus == undefined)
               cache.batteryStatus = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
 
             // Determine the current door state
             var newState;
-            if(thisDoorState === "1") {
+            if (thisDoorState == 'open') {
               newState = Characteristic.CurrentDoorState.OPEN;
-            } else if(thisDoorState === "2") {
+            } else if (thisDoorState == 'closed') {
               newState = Characteristic.CurrentDoorState.CLOSED;
-            } else if(thisDoorState === "3") {
+            } else if (thisDoorState == 'stopped') {
               newState = Characteristic.CurrentDoorState.STOPPED;
-            } else if(thisDoorState === "4") {
+            } else if (thisDoorState == 'opening') {
               newState = Characteristic.CurrentDoorState.OPENING;
-            } else if(thisDoorState === "5") {
+            } else if (thisDoorState == 'closing') {
               newState = Characteristic.CurrentDoorState.CLOSING;
             } else {
               // Not sure about this...
@@ -438,13 +401,10 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
             // Determine current battery state
             var newBattery;
-            if (thisDoorBatteryLow == "0") {
-              newBattery = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
-            } else if (thisDoorBatteryLow == "1") {
+            if (thisDoorBatteryLow) {
               newBattery = Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW;
             } else {
-              // Not sure about this...
-              accessory.updateReachability(false);
+              newBattery = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
             }
 
             // Detect for state changes
@@ -479,8 +439,8 @@ MyQ2Platform.prototype.getDevice = function (callback) {
         callback(parseErr);
       }
     } else {
-      self.log("Error getting MyQ devices: " + data.ErrorMessage);
-      callback(data.ErrorMessage);
+      self.log("Error getting MyQ devices: " + data.message + data.description);
+      callback(data.message);
     }
   }).catch(error => {
       self.log('Error polling MyQ servers: ' + error);
