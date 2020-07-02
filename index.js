@@ -243,6 +243,7 @@ MyQ2Platform.prototype.login = function (callback) {
         self.getDevice(callback);
       }
     } else {
+      self.log.error('Unable to login to MyQ:', data.message);
       callback(data.message);
     }
   }).catch(error => {
@@ -436,15 +437,15 @@ MyQ2Platform.prototype.getDevice = function (callback) {
         callback();
       } else {
         var parseErr = "Error: Couldn't find a MyQ door device."
-        self.log(parseErr);
+        self.log.error(parseErr);
         callback(parseErr);
       }
     } else {
-      self.log("Error getting MyQ devices: " + data.message + data.description);
+      self.log.error("Error getting MyQ devices:", data.message, data.description);
       callback(data.message);
     }
   }).catch(error => {
-      self.log('Error polling MyQ servers: ' + error);
+      self.log.error('Error polling MyQ servers:', error);
       callback(error);
   });
 }
@@ -480,11 +481,11 @@ MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
 
       callback();
     } else {
-      self.log("Error setting " + thisOpener.name + " state: " + JSON.stringify(data));
-      callback(data.message);
+      self.log.error("Error setting " + thisOpener.name + " state:", res);
+      callback(res);
     }
   }).catch(error => {
-      self.log('Error setting the target: ' + error);
+      self.log.error('Error setting the target: ' + error);
       callback(error);
   });
 }
