@@ -40,6 +40,7 @@ function MyQ2Platform(log, config, api) {
   this.maxCount = this.shortPollDuration / this.shortPoll;
   this.count = this.maxCount;
   this.validData = false;
+  this.accountID;
 
   // Gateways convenience
   if(this.config.gateways) this.gateways.push(this.config.gateways);
@@ -207,21 +208,42 @@ MyQ2Platform.prototype.login = function (callback) {
   };
 
   // login to Liftmaster
-  fetch("https://myqexternal.myqdevice.com/api/v4/User/Validate", {
+  fetch("https://api.myqdevice.com/api/v5/Login", {
     method: "POST",
     headers: HEADERS,
     body: JSON.stringify(body)
   }).then(function (res) {
     return res.json();
   }).then(function (data) {
-    // Check for MyQ Error Codes
-    if(data.ReturnCode === "0") {
+    if (data.SecurityToken) {
       self.securityToken = data.SecurityToken;
       self.manufacturer = "Chamberlain";
-      self.getDevice(callback);
+      // Adding security token to headers
+      var getHeaders = JSON.parse(JSON.stringify(HEADERS));
+      getHeaders.SecurityToken = self.securityToken;
+
+      // set account on first login
+      if (!self.accountID) {
+        fetch("https://api.myqdevice.com/api/v5/My", {
+          method: "GET",
+          headers: getHeaders
+        }).then(function (res) {
+          return res.json();
+        }).then(function (data) {
+          if (data.Account) {
+            self.accountID = data.Account.href.substring(data.Account.href.lastIndexOf('/') + 1);
+            self.getDevice(callback);
+          } else {
+            self.log.error(`${data.message}: ${data.description}`);
+            callback(data.message);
+            return;
+          }
+        });
+      } else { // already have account
+        self.getDevice(callback);
+      }
     } else {
-      self.log(data.ErrorMessage);
-      callback(data.ErrorMessage);
+      callback(data.message);
     }
   }).catch(error => {
       self.log.error('Unable to login to MyQ, received error:', error);
@@ -244,15 +266,15 @@ MyQ2Platform.prototype.getDevice = function (callback) {
   // Adding security token to headers
   var getHeaders = JSON.parse(JSON.stringify(HEADERS));
   getHeaders.SecurityToken = this.securityToken;
-
   // Request details of all your devices
-  fetch("https://myqexternal.myqdevice.com/api/v4/UserDeviceDetails/Get", {
+  fetch(`https://api.myqdevice.com/api/v5.1/Accounts/${self.accountID}/Devices`, {
     method: "GET",
     headers: getHeaders,
     query: query
   }).then(function (res) {
     return res.json();
   }).then(function (data) {
+    self.log('Devices data:', data);
     if(data.ReturnCode === "0") {
       var devices = data.Devices;
 
@@ -334,7 +356,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             if(self.verbose) {
               self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDeviceId+")");
             }
-            
+
             continue;
           }
 
@@ -343,7 +365,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
             if(self.verbose) {
               self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.ParentMyQDeviceId]+"\"",'-', "Gateway ID:",device.ParentMyQDevicId+")");
             }
-            
+
             continue;
           }
 
