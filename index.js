@@ -383,6 +383,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
               cache.batteryStatus = Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
 
             // Determine the current door state
+            // TODO: v5 API may not support all these states
             var newState;
             if (thisDoorState == 'open') {
               newState = Characteristic.CurrentDoorState.OPEN;
@@ -452,8 +453,8 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
   var self = this;
   var thisAccessory = this.accessories[thisOpener.deviceID];
-  var myqState = state === 1 ? "0" : "1";
-  var updateDelay = state === 1 ? this.closeDuration : this.openDuration;
+  var myqState = state == Characteristic.CurrentDoorState.CLOSED ? 'close' : 'open';
+  var updateDelay = state == Characteristic.CurrentDoorState.CLOSED ? this.closeDuration : this.openDuration;
 
   // Adding security token to headers
   var putHeaders = JSON.parse(JSON.stringify(HEADERS));
@@ -461,20 +462,16 @@ MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
 
   // PUT request body
   var body = {
-    AttributeName: "desireddoorstate",
-    AttributeValue: myqState,
-    MyQDeviceId: thisOpener.deviceID
+    action_type: myqState
   };
 
   // Send the state request to Liftmaster
-  fetch("https://myqexternal.myqdevice.com/api/v4/DeviceAttribute/PutDeviceAttribute", {
+  fetch(`https://api.myqdevice.com/api/v5.1/accounts/${self.accountID}/devices/${thisOpener.deviceID}/actions`, {
     method: "PUT",
     headers: putHeaders,
     body: JSON.stringify(body)
-  }).then(function(res) {
-    return res.json();
-  }).then(function (data) {
-    if(data.ReturnCode === "0") {
+  }).then(function (res) {
+    if (res.ok) { // v5 API just response status 204
       self.log(thisOpener.name + " is set to " + self.doorState[state]);
 
       // Set short polling interval
@@ -484,10 +481,11 @@ MyQ2Platform.prototype.setState = function (thisOpener, state, callback) {
       callback();
     } else {
       self.log("Error setting " + thisOpener.name + " state: " + JSON.stringify(data));
-      callback(data.ErrorMessage);
+      callback(data.message);
     }
   }).catch(error => {
       self.log('Error setting the target: ' + error);
+      callback(error);
   });
 }
 
