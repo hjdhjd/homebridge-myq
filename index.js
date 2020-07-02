@@ -27,7 +27,7 @@ var HEADERS = {
 function MyQ2Platform(log, config, api) {
   this.log = log;
   this.config = config || {"platform": "MyQ2"};
-  this.verbose = this.config.verbose === true;
+  this.debug = this.config.debug === true;
   this.email = this.config.email;
   this.password = this.config.password;
   this.gateways = Array.isArray(this.config.gateways) ? this.config.gateways : [];
@@ -45,7 +45,9 @@ function MyQ2Platform(log, config, api) {
   // Gateways convenience
   if(this.config.gateways) this.gateways.push(this.config.gateways);
   if(this.config.openers) this.gateways.push(this.config.openers);
-  if(this.config.openers && Array.isArray(this.config.openers)) this.gateways = this.gateways.concat(this.config.openers);
+  if(this.config.openers && Array.isArray(this.config.openers)) {
+    this.gateways = this.gateways.concat(this.config.openers);
+  }
 
   this.accessories = [];
 
@@ -74,7 +76,7 @@ MyQ2Platform.prototype.didFinishLaunching = function () {
     // Start polling
     this.statePolling(0);
   } else {
-    this.log("Please setup MyQ login information!");
+    this.log("Error: MyQ username and password is required.");
     for (var deviceID in this.accessories) {
       var accessory = this.accessories[deviceID];
       this.removeAccessory(accessory);
@@ -83,7 +85,7 @@ MyQ2Platform.prototype.didFinishLaunching = function () {
 }
 
 // Method to add or update HomeKit accessories
-MyQ2Platform.prototype.addAccessory = function () {
+MyQ2Platform.prototype.addAccessory = function() {
   var self = this;
 
   this.login(function (error){
@@ -104,7 +106,7 @@ MyQ2Platform.prototype.addAccessory = function () {
 }
 
 // Method to remove accessories from HomeKit
-MyQ2Platform.prototype.removeAccessory = function (accessory) {
+MyQ2Platform.prototype.removeAccessory = function(accessory) {
   if(accessory) {
     var deviceID = accessory.context.deviceID;
     this.log(accessory.context.name + " is removed from HomeBridge.");
@@ -114,7 +116,7 @@ MyQ2Platform.prototype.removeAccessory = function (accessory) {
 }
 
 // Method to setup listeners for different events
-MyQ2Platform.prototype.setService = function (accessory) {
+MyQ2Platform.prototype.setService = function(accessory) {
   accessory.getService(Service.GarageDoorOpener)
     .getCharacteristic(Characteristic.CurrentDoorState)
     .on('get', this.getCurrentState.bind(this, accessory.context));
@@ -317,7 +319,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
           // Does this device fall under the specified gateways
           if(self.gateways.length > 0 && allowedGateways.indexOf(device.parent_device_id) == -1) {
-            if(self.verbose) {
+            if(self.debug) {
               self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.parent_device_id]+"\"",'-', "Gateway ID:",device.parent_device_id+")");
             }
 
@@ -326,7 +328,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
 
           // Does this device fail under the specified openers
           if(self.openers.length > 0 && self.openers.indexOf(device.serial_number) == -1) {
-            if(self.verbose) {
+            if(self.debug) {
               self.log('Skipping Device: "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.parent_device_id]+"\"",'-', "Gateway ID:",device.parent_device_id+")");
             }
 
@@ -363,7 +365,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
               self.accessories[thisDeviceID] = accessory;
             }
 
-            if(self.verbose) {
+            if(self.debug) {
               if(device.parent_device_id) {
                 self.log('Checking "'+thisDoorName+'" - Device ID: '+thisDeviceID+' (Gateway: "'+gatewaysKeyed[device.parent_device_id]+"\"",'-', "Gateway ID:",device.parent_device_id+")");
               } else {
@@ -535,138 +537,4 @@ MyQ2Platform.prototype.getStatusLowBattery = function (thisOpener, callback) {
 MyQ2Platform.prototype.identify = function (thisOpener, paired, callback) {
   this.log(thisOpener.name + " identify requested!");
   callback();
-}
-
-// Method to handle plugin configuration in HomeKit app
-MyQ2Platform.prototype.configurationRequestHandler = function (context, request, callback) {
-  if(request && request.type === "Terminate") {
-    return;
-  }
-
-  // Instruction
-  if(!context.step) {
-    var instructionResp = {
-      "type": "Interface",
-      "interface": "instruction",
-      "title": "Before You Start...",
-      "detail": "Please make sure homebridge is running with elevated privileges.",
-      "showNextButton": true
-    }
-
-    context.step = 1;
-    callback(instructionResp);
-  } else {
-    switch (context.step) {
-      // Operation choices
-      case 1:
-        var respDict = {
-          "type": "Interface",
-          "interface": "input",
-          "title": "Configuration",
-          "items": [{
-            "id": "verbose",
-            "title": "Verbose logging (true / false)",
-            "placeholder": this.verbose.toString(),
-          }, {
-            "id": "email",
-            "title": "Login Username (Required)",
-            "placeholder": this.email ? "Leave blank if unchanged" : "email",
-          }, {
-            "id": "password",
-            "title": "Login Password (Required)",
-            "placeholder": this.password ? "Leave blank if unchanged" : "password",
-            "secure": true
-          }, {
-            "id": "openDuration",
-            "title": "Time to Open Garage Door Completely",
-            "placeholder": this.openDuration.toString(),
-          }, {
-            "id": "closeDuration",
-            "title": "Time to Close Garage Door Completely",
-            "placeholder": this.closeDuration.toString(),
-          }, {
-            "id": "longPoll",
-            "title": "Long Polling Interval",
-            "placeholder": this.longPoll.toString(),
-          }, {
-            "id": "shortPoll",
-            "title": "Short Polling Interval",
-            "placeholder": this.shortPoll.toString(),
-          }, {
-            "id": "shortPollDuration",
-            "title": "Short Polling Duration",
-            "placeholder": this.shortPollDuration.toString(),
-          }]
-        }
-
-        context.step = 2;
-        callback(respDict);
-        break;
-      case 2:
-        var userInputs = request.response.inputs;
-
-        // Setup info for adding or updating accessory
-        this.verbose = userInputs.verbose || this.verbose;
-        if(userInputs.verbose.toUpperCase() === "TRUE") {
-          this.verbose = true;
-        } else if(userInputs.verbose.toUpperCase() === "FALSE") {
-          this.verbose = false;
-        }
-        this.email = userInputs.email || this.email;
-        this.password = userInputs.password || this.password;
-        this.openDuration = parseInt(userInputs.openDuration, 10) || this.openDuration;
-        this.closeDuration = parseInt(userInputs.closeDuration, 10) || this.closeDuration;
-        this.longPoll = parseInt(userInputs.longPoll, 10) || this.longPoll;
-        this.shortPoll = parseInt(userInputs.shortPoll, 10) || this.shortPoll;
-        this.shortPollDuration = parseInt(userInputs.shortPollDuration, 10) || this.shortPollDuration;
-
-        // Check for required info
-        if(this.email && this.password) {
-          // Add or update accessory in HomeKit
-          this.addAccessory();
-
-          // Reset polling
-          this.maxCount = this.shortPollDuration / this.shortPoll;
-          this.count = this.maxCount;
-          this.statePolling(0);
-
-          var respDict = {
-            "type": "Interface",
-            "interface": "instruction",
-            "title": "Success",
-            "detail": "The configuration is now updated.",
-            "showNextButton": true
-          };
-
-          context.step = 3;
-        } else {
-          // Error if required info is missing
-          var respDict = {
-            "type": "Interface",
-            "interface": "instruction",
-            "title": "Error",
-            "detail": "Some required information is missing.",
-            "showNextButton": true
-          };
-
-          context.step = 1;
-        }
-        callback(respDict);
-        break;
-      case 3:
-        // Update config.json accordingly
-        delete context.step;
-        var newConfig = this.config;
-        newConfig.verbose = this.verbose;
-        newConfig.email = this.email;
-        newConfig.password = this.password;
-        newConfig.openDuration = this.openDuration;
-        newConfig.closeDuration = this.closeDuration;
-        newConfig.longPoll = this.longPoll;
-        newConfig.shortPoll = this.shortPoll;
-        newConfig.shortPollDuration = this.shortPollDuration;
-        callback(null, "platform", true, newConfig);
-        break;
-    }
-  }
 }

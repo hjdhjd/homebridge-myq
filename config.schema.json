@@ -1,102 +1,155 @@
 {
-	"pluginAlias": "MyQ2",
-	"pluginType": "platform",
-	"headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a Homebridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.",
-	"footerDisplay": "For additional help please see the [developer page](https://github.com/hjdhjd/homebridge-myq2).",
-	"singular": true,
-	"schema": {
-		"type": "object",
-		"properties": {
-			"name": {
-				"title": "Name",
-                                "type": "string",
-                                "required": false,
-                                "placeholder": "Home",
-				"description": "The name you would like to assign to this MyQ Home Bridge."
-                        },
-			"email": {
-				"title": "MyQ Username",
-				"type": "string",
-				"required": true,
-				"placeholder": "user@example.com",
-				"description": "Email address used for your MyQ account."
-			},
-			"password": {
-				"title": "MyQ Password",
-				"type": "string",
-				"required": true,
-				"placeholder": "mypassword",
-				"description": "Password used for your MyQ account."
-			},
-			"verbose": {
-				"title": "Debug Logging Verbosity",
-				"type": "boolean",
-				"default": false,
-				"required": false,
-				"description": "Logging verbosity for debugging purporses. Default: false"
-			},
-			"openDuration": {
-				"title": "Open Duration",
-				"type": "integer",
-				"default": 15,
-				"required": false,
-				"description": "Time in <code>seconds</code> to check that the garage door has finished opening."
-			},
-			"closeDuration": {
-				"title": "Close Duration",
-				"type": "integer",
-				"default": 25,
-				"required": false,
-				"description": "Time in <code>seconds</code> to check that the garage door has finished closing."
-			},
-			"longPoll": {
-				"title": "Long Poll Interval",
-				"type": "integer",
-				"default": 15,
-				"required": false,
-				"description": "Normal polling interval in <code>seconds</code>."
-			},
-			"shortPoll": {
-				"title": "Short Poll Interval",
-				"type": "integer",
-				"default": 5,
-				"required": false,
-				"description": "Polling interval in <code>seconds</code> to use when the door state changes."
-			},
-			"shortPollDuration": {
-				"title": "Short Poll Duration",
-				"type": "integer",
-				"default": 600,
-				"required": false,
-				"description": "Duration in <code>seconds</code> to use the <code>Short Poll Interval</code>."
-			},
-			"gateways": {
-				"title": "Gateways",
-				"type": "string",
-				"required": false,
-				"placeholder": "[ \"My Home\" ]",
-				"description": "An array of gateway IDs or names to add. This is only useful or needed if you have multiple MyQ gateways. (Default = [])"
-			},
-			"openers": {
-				"title": "Openers",
-				"type": "string",
-				"required": false,
-				"placeholder": "[ id1, id2]",
-				"description": "An array of opener IDs or to add. This is only useful or needed if you have multiple MyQ garage openers. (Default = [])"
-			}
-		}
-	},
+  "pluginAlias": "MyQ2",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a Homebridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.",
+  "footerDisplay": "For additional help please see the [homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) Github page.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "description": "The name you would like to assign to this MyQ Home Bridge. Default: MyQ2"
+      },
 
-	"form": [
-		"name",
-		"email",
-		"password",
-		{
-			"type": "fieldset",
-			"expandable": true,
-			"title": "Advanced Settings (Optional)",
-			"description": "These are optional settings that you can adjust if needed. The defaults should work for nearly everyone.",
-			"items": ["verbose", "openDuration", "closeDuration", "longPoll", "shortPoll", "shortPollDuration", "gateways", "openers"]
-	}
-]
+      "email": {
+        "title": "MyQ Username",
+        "type": "string",
+        "required": true,
+        "placeholder": "user@example.com",
+        "description": "Email address used for your MyQ account."
+      },
+
+      "password": {
+        "title": "MyQ Password",
+        "type": "string",
+        "required": true,
+        "placeholder": "mypassword",
+        "description": "Password used for your MyQ account."
+      },
+
+      "debug": {
+        "title": "Debug Logging",
+        "type": "boolean",
+        "required": false,
+        "description": "Logging verbosity for debugging purporses. Default: false"
+      },
+
+      "openDuration": {
+        "title": "Open Duration",
+        "type": "integer",
+        "required": false,
+        "description": "Time in <code>seconds</code> to check that the garage door has finished opening. Default: 15"
+      },
+
+      "closeDuration": {
+        "title": "Close Duration",
+        "type": "integer",
+        "required": false,
+        "description": "Time in <code>seconds</code> to check that the garage door has finished closing. Default: 25"
+      },
+
+      "longPoll": {
+        "title": "Long Poll Interval",
+        "type": "integer",
+        "required": false,
+        "description": "Normal polling interval in <code>seconds</code>. Default: 15"
+      },
+
+      "shortPoll": {
+        "title": "Short Poll Interval",
+        "type": "integer",
+        "required": false,
+        "description": "Polling interval in <code>seconds</code> to use when the door state changes. Default: 5"
+      },
+
+      "shortPollDuration": {
+        "title": "Short Poll Duration",
+        "type": "integer",
+        "required": false,
+        "description": "Duration in <code>seconds</code> to use the <code>Short Poll Interval</code>. Default: 600"
+      },
+
+      "gateways": {
+        "title": "MyQ Gateways",
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      },
+
+      "openers": {
+        "title": "MyQ Openers",
+        "type": "array",
+        "items": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+
+  "layout": [
+    {
+      "key": "",
+      "title": "General Options",
+      "help": "General options for the plugin.",
+      "type": "fieldset",
+      "orderable": false,
+      "expandable": true,
+      "expanded": true,
+      "items": [
+        "name",
+        "email",
+        "password"
+      ]
+    },
+
+    {
+      "key": "",
+      "title": "Advanced Settings (Optional)",
+      "help": "Configure advanced features such as debugging.",
+      "type": "fieldset",
+      "orderable": false,
+      "expandable": true,
+      "expanded": false,
+      "items": [
+        "openDuration",
+        "closeDuration",
+        "longPoll",
+        "shortPoll",
+        "shortPollDuration",
+        {
+          "name": "MyQ Gateways",
+          "buttonText": "Add Gateway",
+          "type": "array",
+          "orderable": false,
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            {
+              "description": "Add gateway IDs, one per entry. This is only needed in the circumstance where you have more than one MyQ gateway <B>and</B> wish to limit which MyQ gateways are used by this plugin.",
+              "key": "gateways[]"
+            }
+          ]
+        },
+        {
+          "name": "MyQ Openers",
+          "buttonText": "Add Opener",
+          "type": "array",
+          "orderable": false,
+          "expandable": true,
+          "expanded": false,
+          "items": [
+            {
+              "description": "Add opener IDs, one per entry. This is only needed in the circumstance where you have more than one opener associated with a MyQ gateway <B>and</B> you wish to limit which openers are used by this plugin.",
+              "key": "openers[]"
+            }
+          ]
+        },
+        "debug"
+      ]
+    }
+
+  ]
 }
