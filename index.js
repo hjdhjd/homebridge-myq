@@ -215,8 +215,10 @@ MyQ2Platform.prototype.login = function (callback) {
     headers: HEADERS,
     body: JSON.stringify(body)
   }).then(function (res) {
+    if (self.debug) self.log.debug('login response OK:', res.ok);
     return res.json();
   }).then(function (data) {
+    if (self.debug) self.log.debug('login data:', data);
     if (data.SecurityToken) {
       self.securityToken = data.SecurityToken;
       self.manufacturer = "Chamberlain";
@@ -230,8 +232,10 @@ MyQ2Platform.prototype.login = function (callback) {
           method: "GET",
           headers: getHeaders
         }).then(function (res) {
+          if (self.debug) self.log.debug('My response status OK:', res.ok);
           return res.json();
         }).then(function (data) {
+          if (self.debug) self.log.debug('My response data:', data);
           if (data.Account) {
             self.accountID = data.Account.href.substring(data.Account.href.lastIndexOf('/') + 1);
             self.getDevice(callback);
@@ -275,8 +279,10 @@ MyQ2Platform.prototype.getDevice = function (callback) {
     headers: getHeaders,
     query: query
   }).then(function (res) {
+    if (self.debug) self.log.debug('getDevice response OK:', res.ok);
     return res.json();
   }).then(function (data) {
+    if (self.debug) self.log.debug('getDevice response data:', data);
     if (data.count > 0) {
       var devices = data.items;
 
