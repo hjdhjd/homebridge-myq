@@ -12,7 +12,7 @@ module.exports = function (homebridge) {
 
 // This seems to be the "id" of the official LiftMaster iOS app
 var APP_ID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
-var UA_ID = "myQ/19569 CFNetwork/1107.1 Darwin/19.0.0";
+var UA_ID = "myQ/19859 CFNetwork/1107.1 Darwin/19.0.0";
 
 // Headers needed for validation
 var HEADERS = {
@@ -205,8 +205,8 @@ MyQ2Platform.prototype.login = function (callback) {
 
   // Body stream for validation
   var body = {
-    username: this.email,
-    password: this.password
+    UserName: this.email,
+    Password: this.password
   };
 
   // login to Liftmaster
