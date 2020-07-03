@@ -215,7 +215,7 @@ MyQ2Platform.prototype.login = function (callback) {
     headers: HEADERS,
     body: JSON.stringify(body)
   }).then(function (res) {
-    if (self.debug) self.log.debug('login response OK:', res.ok);
+    if (self.debug) self.log.debug('login response status: ' + res.status);
     return res.json();
   }).then(function (data) {
     if (self.debug) self.log.debug('login data:', data);
@@ -232,7 +232,7 @@ MyQ2Platform.prototype.login = function (callback) {
           method: "GET",
           headers: getHeaders
         }).then(function (res) {
-          if (self.debug) self.log.debug('My response status OK:', res.ok);
+          if (self.debug) self.log.debug('My response status: ' + res.status);
           return res.json();
         }).then(function (data) {
           if (self.debug) self.log.debug('My response data:', data);
@@ -279,7 +279,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
     headers: getHeaders,
     query: query
   }).then(function (res) {
-    if (self.debug) self.log.debug('getDevice response OK:', res.ok);
+    if (self.debug) self.log.debug('getDevice response status: ' + res.status);
     return res.json();
   }).then(function (data) {
     if (self.debug) self.log.debug('getDevice response data:', data);
