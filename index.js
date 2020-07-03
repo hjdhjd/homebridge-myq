@@ -315,7 +315,7 @@ MyQ2Platform.prototype.getDevice = function (callback) {
         var deviceType = device.device_type;
 
         // Search for specific device type
-        if(deviceType == 'virtualgaragedooropener' || deviceType == "garagedooropener" || deviceType === "Garage Door Opener WGDO" || deviceType === "GarageDoorOpener" || deviceType === "VGDO" || deviceType === "Gate") {
+        if(deviceType == 'virtualgaragedooropener' || deviceType == "garagedooropener" || deviceType === "gate") {
           var thisDeviceID = device.serial_number.toString();
           var thisModel = deviceType.toString();
           var thisDoorName = device.name;
