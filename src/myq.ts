@@ -206,7 +206,7 @@ export class myQ {
     }
 
     // Save the user information.
-    this.accountID = data.Account.href.substring(data.Account.href.lastIndexOf('/'));
+    this.accountID = data.Account.href.substring(data.Account.href.lastIndexOf('/') + 1);
 
     if(debug) {
       this.log("myQ accountID: " + this.accountID);
