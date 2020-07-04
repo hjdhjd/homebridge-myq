@@ -27,6 +27,7 @@
   "license": "ISC",
   "files": [
     "LICENSE",
+    "README.md",
     "dist",
     "config.schema.json"
   ],
