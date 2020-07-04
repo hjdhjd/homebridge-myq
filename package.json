@@ -28,6 +28,7 @@
   "files": [
     "LICENSE",
     "README.md",
+    "CHANGELOG.md",
     "dist",
     "config.schema.json"
   ],
