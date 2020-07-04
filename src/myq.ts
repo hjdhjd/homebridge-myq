@@ -24,18 +24,18 @@ var debug = 0;
  * minor version in others. Given the dynamic nature of the myQ API, expect this to
  * continue to evolve.
  */
-const myqVersionmajor = 5;
-const myqVersionminor = 1;
-const myqVersion = myqVersionmajor + '.' + myqVersionminor;
+const myqVersionMajor = 5;
+const myqVersionMinor = 1;
+const myqVersion = myqVersionMajor + '.' + myqVersionMinor;
 
 // myQ API base URL, currently v5.
-const myqApi = 'https://api.myqdevice.com/api/v' + myqVersionmajor;
+const myqApi = 'https://api.myqdevice.com/api/v' + myqVersionMajor;
 
 // myQ API devices URL, currently v5.1
-const myqApidev = myqApi + '.' + myqVersionminor;
+const myqApidev = myqApi + '.' + myqVersionMinor;
 
 // myQ app identifier and user agent used to validate against the myQ API.
-const myqAppid = 'JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu';
+const myqAppId = 'JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu';
 const myqAgent = 'okhttp/3.10.0';
 
 // Utility function to streamline the error checking of responses from the myQ API.
@@ -106,10 +106,10 @@ export class myQ {
   private myqHeaders = {
     "Content-Type": "application/json",
     "User-Agent": myqAgent,
-    "BrandID": "2",
+    "BrandId": "2",
     "ApiVersion": myqVersion,
     "Culture": "en",
-    "MyQApplicationID": myqAppid,
+    "MyQApplicationId": myqAppId,
     "SecurityToken": ""
   };
 
@@ -131,7 +131,7 @@ export class myQ {
                             {
                               method: "POST",
                               headers: this.myqHeaders,
-                              body: JSON.stringify({username: this.Email, password: this.Password})
+                              body: JSON.stringify({UserName: this.Email, Password: this.Password})
                             }
                           );
 
