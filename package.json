@@ -1,6 +1,6 @@
 {
   "name": "homebridge-myq2",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "displayName": "Homebridge MyQ",
   "description": "HomeKit integration of myQ enabled devices such as those from LiftMaster and Chamberlain.",
   "main": "dist/index.js",
@@ -27,7 +27,8 @@
   "license": "ISC",
   "files": [
     "LICENSE",
-    "dist"
+    "dist",
+    "config.schema.json"
   ],
   "repository": {
     "type": "git",
