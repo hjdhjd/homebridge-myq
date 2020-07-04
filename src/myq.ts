@@ -58,7 +58,7 @@ const checkStatus = (log: Logging, response: Response) => {
 
   // Some other unknown error occurred.
   if(!response.ok) {
-    log("myQ API error while logging in: %s %s", response.status, response.statusText);
+    log("myQ API error: %s %s", response.status, response.statusText);
     return 0;
   }
 
@@ -136,6 +136,7 @@ export class myQ {
                           );
 
     if(!checkStatus(this.log, response)) {
+      this.log("myQ API error: unable to authenticate. Will retry later.");
       return 0;
     }
 
@@ -187,6 +188,7 @@ export class myQ {
                           );
 
     if(!checkStatus(this.log, response)) {
+      this.log("myQ API error: unable to login. Will retry later.");
       return 0;
     }
 
@@ -254,6 +256,7 @@ export class myQ {
                           );
 
     if(!checkStatus(this.log, response)) {
+      this.log("myQ API error: unable to refresh. Will retry later.");
       return 0;
     }
 
@@ -334,6 +337,7 @@ export class myQ {
                           );
 
     if(!checkStatus(this.log, response)) {
+      this.log("myQ API error: unable to query device. Will retry later.");
       return 0;
     }
 
@@ -381,7 +385,7 @@ export class myQ {
                           );
 
     if(!checkStatus(this.log, response)) {
-      this.log("Command execution failed");
+      this.log("myQ API error: unable to execute command.");
       return 0;
     }
 
