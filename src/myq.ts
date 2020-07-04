@@ -97,7 +97,7 @@ export class myQ {
   private Email: string;
   private Password: string;
   private securityToken: string;
-  private userId: string;
+  private accountID: string;
   Devices!: Array<JSON>;
   private log: Logging;
   private lastCall!: number;
@@ -119,7 +119,7 @@ export class myQ {
     this.Email = email;
     this.Password = password;
     this.securityToken = "";
-    this.userId = "";
+    this.accountID = "";
   }
 
   // Log us into myQ and get a security token.
@@ -200,16 +200,16 @@ export class myQ {
     }
 
     // No account information returned.
-    if(!data || !data.UserId) {
+    if(!data || !data.Account) {
       this.log("Unable to retrieve account information from myQ servers.")
       return 0;
     }
 
     // Save the user information.
-    this.userId = data.UserId;
+    this.accountID = data.Account.href.substring(data.Account.href.lastIndexOf('/'));
 
     if(debug) {
-      this.log("myQ userId: " + this.userId);
+      this.log("myQ accountID: " + this.accountID);
     }
 
     return 1;
@@ -241,14 +241,14 @@ export class myQ {
     this.lastCall = now;
 
     // If we don't have our account information yet, acquire it before proceeding.
-    if(!this.userId && !await this.login()) {
+    if(!this.accountID && !await this.login()) {
         return 0;
     }
 
     // Get the list of device information.
     params = new URLSearchParams({ filterOn: 'true' });
 
-    response = await fetch(myqApidev + '/Accounts/' + this.userId + '/Devices?' + params,
+    response = await fetch(myqApidev + '/Accounts/' + this.accountID + '/Devices?' + params,
                             {
                               method: 'GET',
                               headers: this.myqHeaders
@@ -322,14 +322,14 @@ export class myQ {
     var response, data;
 
     // If we don't have our account information yet, acquire it before proceeding.
-    if(!this.userId && !await this.login()) {
+    if(!this.accountID && !await this.login()) {
         return 0;
     }
 
     debug = 1;
 
     // Get the list of device information.
-    response = await fetch(myqApidev + '/Accounts/' + this.userId + '/devices/' + deviceId,
+    response = await fetch(myqApidev + '/Accounts/' + this.accountID + '/devices/' + deviceId,
                             {
                               method: 'GET',
                               headers: this.myqHeaders
@@ -370,12 +370,12 @@ export class myQ {
     var response;
 
     // If we don't have our account information yet, acquire it before proceeding.
-    if(!this.userId && !await this.login()) {
+    if(!this.accountID && !await this.login()) {
         return 0;
     }
 
     // Execute the action. There are only two known actions currently: 'open' and 'close'.
-    response = await fetch(myqApidev + '/Accounts/' + this.userId + '/Devices/' +
+    response = await fetch(myqApidev + '/Accounts/' + this.accountID + '/Devices/' +
                             deviceId + '/actions',
                             {
                               method: 'PUT',
