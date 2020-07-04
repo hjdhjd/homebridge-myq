@@ -407,7 +407,7 @@ export class myQ {
     // This works because homebridge always generates the same UUID for a given input -
     // in this case the device serial number.
     if((device = this.Devices.find((x: any) =>
-      x.device_type && (x.device_type === 'garagedooropener' || x.device_type == 'virtualgaragedooropener') &&
+      x.device_type && (x.device_type.indexOf('garagedooropener') != -1) && 
       x.serial_number && hap.uuid.generate(x.serial_number) === uuid)) != undefined) {
       return device;
     }
