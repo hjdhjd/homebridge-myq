@@ -213,7 +213,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       // See if we already know about this accessory or if it's truly new.
       if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)) == undefined) {
         isNew = 1;
-        accessory = new Accessory("MyQ " + device.name, uuid);
+        accessory = new Accessory(device.name, uuid);
       }
 
       // Fun fact: This firmware information is stored on the gateway not the opener.
