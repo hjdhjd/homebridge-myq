@@ -18,7 +18,7 @@ MyQ LiftMaster and Chamberlain Plugin for [Homebridge](https://homebridge.io)
 
 There are two ways to be able to control a MyQ-compatible garage door opener through HomeKit:
 
-1. LiftMaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge (not to be confused with the open source [Homebridge project](https://homebridge.io)).
+1. Liftmaster and Chamberlain make a hardware HomeKit bridge also called Home Bridge (not to be confused with the open source [Homebridge project](https://homebridge.io)).
 Unfortunately, some of us have encountered issues with the hardware bridge in a real world setting, where it either stops working or hangs for extended periods of time.
 Others have encountered no issues and this solution works well.
 
@@ -48,6 +48,20 @@ Install homebridge-myq2:
 sudo npm install -g homebridge-myq2
 ```
 
+# What's new in 2.0
+This plugin has been completely rewritten and updated to work with the modern [homebridge](https://homebridge.io) APIs. As a result, some prior functionality is currently unavailable.
+Features that are not currently supported (but soon will be):
+
+- Gateways and openers can be selectively filtered. The configuration options are there, but will be silently ignored.
+- Battery support is not included. If someone has need for this functionality, create an issue and I can work with you to identify what's needed to expose this as I don't have access to devices with a battery status.
+
+## Things to be aware of
+- The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future breaking changes that may come.
+
+- By default, this plugin is set to silently fail if it can't login to the myQ API, but continue to retry at regular polling intervals. In my experience, eventually the API will reconnect, sometimes taking up to 45 minutes to an hour. My advice: configure the plugin, and wait for it to successfully connect to the myQ API. You can check the homebridge log for confirmation when a connection ultimately gets made.
+
+- The configuration block for `config.json` has changed slightly to rename the platform.
+
 # What's new in 1.1
 I've simplified some configuration options and adjusted some of the logging. There are also configuration file changes in this version - in particular, polling is no longer an optional
 parameter. Given the intent of this plugin is to inform you of state changes in your garage door opener (and other MyQ accessories), polling is an essential component particularly when
@@ -62,7 +76,7 @@ Add the platform in `config.json` in your home directory inside `.homebridge`.
 
 ```js
 "platforms": [{
-    "platform": "MyQ2",
+    "platform": "myQ",
     "email": "email@email.com",
     "password": "password"
 }]
@@ -72,7 +86,7 @@ Add the platform in `config.json` in your home directory inside `.homebridge`.
 This step is not required. The defaults should work well for almost everyone.
 ```
 "platforms": [{
-    "platform": "MyQ2",
+    "platform": "myQ",
     "name": "MyQ",
     "email": "email@email.com",
     "password": "password",

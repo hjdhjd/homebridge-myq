@@ -1,11 +1,15 @@
 {
   "name": "homebridge-myq2",
-  "version": "1.2.25",
+  "version": "2.0.0",
   "displayName": "Homebridge MyQ",
-  "description": "MyQ LiftMaster and Chamberlain plugin for Homebridge",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/hjdhjd/homebridge-myq2.git"
+  "description": "HomeKit integration of myQ enabled devices such as those from LiftMaster and Chamberlain.",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "build": "rimraf ./dist && tsc",
+    "prepublishOnly": "npm run build",
+    "postpublish": "npm run clean",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "homebridge",
@@ -14,20 +18,34 @@
     "liftmaster",
     "chamberlain",
     "garage",
-    "garage door",
-    "garage door opener"
+    "door"
   ],
-  "author": "HJD",
+  "author": "HJD https://github.com/hjdhjd",
+  "engines": {
+    "homebridge": ">=1.0.0"
+  },
   "license": "ISC",
+  "files": [
+    "LICENSE",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hjdhjd/homebridge-myq2.git"
+  },
   "bugs": {
     "url": "https://github.com/hjdhjd/homebridge-myq2/issues"
   },
   "homepage": "https://github.com/hjdhjd/homebridge-myq2#readme",
-  "engines": {
-    "node": ">=0.12.0",
-    "homebridge": ">=0.3.0"
+  "devDependencies": {
+    "@types/node": "10.17.19",
+    "typescript": "^3.8.3",
+    "rimraf": "^3.0.2",
+    "homebridge": "^1.0.4"
   },
   "dependencies": {
-    "node-fetch": "^2.0.0"
+    "@types/node-fetch": "^2.5.7",
+    "node-fetch": "^2.6.0",
+    "util": "^0.12.3"
   }
 }
