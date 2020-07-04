@@ -35,7 +35,7 @@ const myqApi = 'https://api.myqdevice.com/api/v' + myqVersionMajor;
 const myqApidev = myqApi + '.' + myqVersionMinor;
 
 // myQ app identifier and user agent used to validate against the myQ API.
-const myqAppId = 'JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu';
+const myqAppId = 'Vj8pQggXLhLy0WHahglCD4N1nAkkXQtGYpq2HrHD7H1nvmbT55KqtN6RSF4ILB/i';
 const myqAgent = 'okhttp/3.10.0';
 
 // Utility function to streamline the error checking of responses from the myQ API.
