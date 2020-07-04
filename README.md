@@ -50,7 +50,7 @@ sudo npm install -g homebridge-myq2
 
 # What's new in 2.0
 This plugin has been completely rewritten and updated to work with the modern [homebridge](https://homebridge.io) APIs. As a result, some prior functionality is currently unavailable.
-Features that are not currently supported (but soon will be):
+Features that are not currently supported (but will be in a future update):
 
 - Gateways and openers can be selectively filtered. The configuration options are there, but will be silently ignored.
 - Battery support is not included. If someone has need for this functionality, create an issue and I can work with you to identify what's needed to expose this as I don't have access to devices with a battery status.
@@ -60,7 +60,7 @@ Features that are not currently supported (but soon will be):
 
 - By default, this plugin is set to silently fail if it can't login to the myQ API, but continue to retry at regular polling intervals.
 
-- The configuration block for `config.json` has changed slightly to rename the platform.
+- The configuration block for `config.json` has changed to rename the platform (and it is case sensitive as well). **This is a breaking change and you will need to update your `config.json` to reflect the updates**.
 
 # What's new in 1.1
 I've simplified some configuration options and adjusted some of the logging. There are also configuration file changes in this version - in particular, polling is no longer an optional
