@@ -58,7 +58,7 @@ Features that are not currently supported (but soon will be):
 ## Things to be aware of
 - The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future breaking changes that may come.
 
-- By default, this plugin is set to silently fail if it can't login to the myQ API, but continue to retry at regular polling intervals. In my experience, eventually the API will reconnect, sometimes taking up to 45 minutes to an hour. My advice: configure the plugin, and wait for it to successfully connect to the myQ API. You can check the homebridge log for confirmation when a connection ultimately gets made.
+- By default, this plugin is set to silently fail if it can't login to the myQ API, but continue to retry at regular polling intervals.
 
 - The configuration block for `config.json` has changed slightly to rename the platform.
 
