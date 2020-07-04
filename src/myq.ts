@@ -36,7 +36,7 @@ const myqApidev = myqApi + '.' + myqVersionMinor;
 
 // myQ app identifier and user agent used to validate against the myQ API.
 const myqAppId = 'Vj8pQggXLhLy0WHahglCD4N1nAkkXQtGYpq2HrHD7H1nvmbT55KqtN6RSF4ILB/i';
-const myqAgent = 'okhttp/3.10.0';
+const myqAgent = 'myQ/19569 CFNetwork/1107.1 Darwin/19.0.0';
 
 // Utility function to streamline the error checking of responses from the myQ API.
 const checkStatus = (log: Logging, response: Response) => {
@@ -106,8 +106,8 @@ export class myQ {
   private myqHeaders = {
     "Content-Type": "application/json",
     "User-Agent": myqAgent,
-    "BrandId": "2",
     "ApiVersion": myqVersion,
+    "BrandId": "2",
     "Culture": "en",
     "MyQApplicationId": myqAppId,
     "SecurityToken": ""
