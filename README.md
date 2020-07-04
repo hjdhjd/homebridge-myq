@@ -104,7 +104,7 @@ This step is not required. The defaults should work well for almost everyone.
 
 | Fields            | Description                                      | Default | Required |
 |-------------------|--------------------------------------------------|---------|----------|
-| platform          | Must always be `MyQ2`.                           |         | Yes      |
+| platform          | Must always be `myQ`.                            |         | Yes      |
 | name              | For logging purposes.                            |         | No       |
 | email             | Your MyQ account email.                          |         | Yes      |
 | password          | Your MyQ account password.                       |         | Yes      |
