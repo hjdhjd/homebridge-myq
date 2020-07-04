@@ -106,10 +106,10 @@ export class myQ {
   private myqHeaders = {
     "Content-Type": "application/json",
     "User-Agent": myqAgent,
-    "BrandID": "2",
+    "BrandId": "2",
     "ApiVersion": myqVersion,
     "Culture": "en",
-    "MyQApplicationID": myqAppid,
+    "MyQApplicationId": myqAppid,
     "SecurityToken": ""
   };
 
