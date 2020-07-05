@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.0.11
+  ## Changes
+  
+  * New feature: feature options. This replaces the previous gateways and openers settings and should be a bit more intuitive to use.
+  
 ## v2.0.10
   ## Changes
 
