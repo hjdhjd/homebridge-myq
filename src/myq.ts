@@ -16,6 +16,21 @@ import {
 import fetch, { Response } from 'node-fetch';
 import util from 'util';
 
+// An incomplete description of the myQ JSON, but enough for our purposes. 
+export interface myQDevice {
+  readonly device_family: string,
+  readonly device_platform: string,
+  readonly device_type: string,
+  readonly name: string,
+  readonly online: boolean,
+  readonly parent_device_id: string,
+  readonly serial_number: string,
+  readonly state: {
+    readonly door_state: string,
+    readonly firmware_version: string
+  }
+}
+
 var debug = 0;
 
 /*
@@ -71,7 +86,7 @@ export class myQ {
   private Password: string;
   private securityToken: string;
   private accountID: string;
-  Devices!: Array<JSON>;
+  Devices!: Array<myQDevice>;
   private log: Logging;
   private lastCall!: number;
 
@@ -190,7 +205,7 @@ export class myQ {
 
   // Get the list of myQ devices associated with an account.
   async refreshDevices() {
-    var items: Array<JSON>;
+    var items: Array<myQDevice>;
     var response, data, params;
     var now = Date.now();
 
@@ -255,7 +270,8 @@ export class myQ {
         }
 
         // We've discovered a new device.
-        this.log("myQ %s device discovered: %s - %s.", newDevice.device_family, newDevice.name, newDevice.serial_number);
+        this.log("myQ %s device discovered: %s (serial number: %s%s.", newDevice.device_family, newDevice.name, newDevice.serial_number,
+ 					newDevice.parent_device_id ? ", gateway: " + newDevice.parent_device_id + ")" : ")");
 
         if(debug) {
           this.log(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));

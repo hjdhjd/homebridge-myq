@@ -15,7 +15,7 @@ import {
   PlatformConfig,
 } from "homebridge";
 
-import { myQ } from './myq';
+import { myQ, myQDevice } from './myq';
 
 const PLUGIN_NAME = "homebridge-myq2";
 const PLATFORM_NAME = "myQ";
@@ -35,6 +35,8 @@ class myQPlatform implements DynamicPlatformPlugin {
   private readonly api: API;
   private myQ!: myQ;
   private myQOBSTRUCTED = 8675309;
+  
+  private configOptions: string[] = [];
 
   private configPoll = {
     longPoll: 15,
@@ -44,11 +46,6 @@ class myQPlatform implements DynamicPlatformPlugin {
     shortPollDuration: 600,
     maxCount: 0,
     count: 0
-  };
-
-  private configDevices = {
-    gateways: [],
-    openers: []
   };
 
   private pollingTimer!: NodeJS.Timeout;
@@ -61,7 +58,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     [hap.Characteristic.CurrentDoorState.STOPPED]: "stopped",
     [this.myQOBSTRUCTED]: "obstructed"
   };
-
+  
   private readonly accessories: PlatformAccessory[] = [];
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
@@ -80,6 +77,10 @@ class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // Capture configuration parameters.
+    if(config.options) {
+    	this.configOptions = config.options;
+    }
+    
     if(config.longPoll) {
       this.configPoll.longPoll = config.longPoll;
     }
@@ -102,14 +103,6 @@ class myQPlatform implements DynamicPlatformPlugin {
 
     this.configPoll.maxCount = this.configPoll.shortPollDuration / this.configPoll.shortPoll;
     this.configPoll.count = this.configPoll.maxCount;
-
-    if(Array.isArray(config.gateways)) {
-      (this.configDevices.gateways as any) = config.gateways;
-    }
-
-    if(Array.isArray(config.openers)) {
-      (this.configDevices.openers as any) = config.openers;
-    }
 
     // Initialize our connection to the myQ API.
     this.myQ = new myQ(this.log, config.email, config.password);
@@ -247,7 +240,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     };
 
     // Iterate through the list of devices that myQ has returned and sync them with what we show HomeKit.
-    this.myQ.Devices.forEach((device:any) => {
+    this.myQ.Devices.forEach((device:myQDevice) => {
       // If we have no serial number, something is wrong.
       if(!device.serial_number) {
         return;
@@ -257,6 +250,11 @@ class myQPlatform implements DynamicPlatformPlugin {
       if(!device.device_type || (device.device_type.indexOf('garagedooropener') == -1)) {
         return;
       }
+      
+      // Exclude or include certain openers based on configuration parameters.
+			if(!this.myQDeviceVisible(device)) {
+				return;
+  		}
 
       const uuid = hap.uuid.generate(device.serial_number);
       var accessory;
@@ -269,7 +267,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // Fun fact: This firmware information is stored on the gateway not the opener.
-      var gwParent: any = this.myQ.Devices.find((x: any) => x.serial_number === device.parent_device_id);
+      var gwParent = this.myQ.Devices.find((x: myQDevice) => x.serial_number === device.parent_device_id);
       var fwVersion = "0.0";
 
       if(gwParent && gwParent.state && gwParent.state.firmware_version) {
@@ -285,7 +283,9 @@ class myQPlatform implements DynamicPlatformPlugin {
 
       // Only add this device if we previously haven't added it to HomeKit.
       if(isNew) {
-        this.log("Adding new myQ %s device: %s - %s", device.device_family, device.name, device.serial_number);
+        this.log("Adding myQ %s device: %s (serial number: %s%s to HomeKit.", device.device_family, device.name, device.serial_number,
+ 					device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
+
         this.configureAccessory(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       } else {
@@ -299,15 +299,19 @@ class myQPlatform implements DynamicPlatformPlugin {
 
     // Remove myQ devices that are no longer found in the myQ API, but we still have in HomeKit.
     this.accessories.forEach((oldAccessory: PlatformAccessory) => {
-      var device = this.myQ.getDevice(hap, oldAccessory.UUID)
+      var device = this.myQ.getDevice(hap, oldAccessory.UUID);
 
-      // We found this accessory in myQ.
-      if(device) {
+      // We found this accessory in myQ and we want to see it in HomeKit. 
+      if(device && this.myQDeviceVisible(device)) {
         return;
       }
+			
+			// Remove the device and inform the user about it.
+	    this.log("Removing myQ %s device: %s (serial number: %s%s from HomeKit.", device.device_family, device.name, device.serial_number,
+				device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
 
-      this.log("Removing myQ device: %s", oldAccessory.displayName);
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [oldAccessory]);
+      delete this.accessories[this.accessories.indexOf(oldAccessory)];
     });
 
     return 1;
@@ -504,5 +508,57 @@ class myQPlatform implements DynamicPlatformPlugin {
     } else {
       return hap.Characteristic.TargetDoorState.CLOSED;
     }
+  }
+  
+  // Utility function to let us know if a my! device should be visible in HomeKit or not.
+  private myQDeviceVisible(device: myQDevice): boolean {
+    // There are a couple of ways to hide and show devices that we support. The rules of the road are:
+    //
+    // 1. Explicitly hiding, or showing a gateway device propogates to all the devices that are plugged
+    //    into that gateway. So if you have multiple gateways but only want one exposed in this plugin,
+    //    you may do so by hiding it.
+    //
+    // 2. Explicitly hiding, or showing an opener device by it's serial number will always override the above.
+    //    This means that it's possible to hide a gateway, and all the openers that are attached to it, and then
+    //    override that behavior on a single opener device that it's connected to.
+		//
+		
+		// Nothing configured - we show all myQ devices to HomeKit.
+		if(!this.configOptions) {
+		  return true;
+		}
+		
+		// No device. Sure, we'll show it.
+		if(!device) {
+		  return true;
+		}
+		
+		// We've explicitly enabled this opener.
+    if(this.configOptions.indexOf("Show." + (device.serial_number as any)) != -1) {
+			return true;
+		}
+
+		// We've explicitly hidden this opener.
+    if(this.configOptions.indexOf("Hide." + device.serial_number) != -1) {
+			return false;
+		}
+		
+		// If we don't have a gateway device attached to this opener, we're done here.
+		if(!device.parent_device_id) {
+		  return true;
+		}
+
+		// We've explicitly shown the gateway this opener is attached to.
+    if(this.configOptions.indexOf("Show." + device.parent_device_id) != -1) {
+			return true;
+		}
+
+		// We've explicitly hidden the gateway this opener is attached to.
+    if(this.configOptions.indexOf("Hide." + device.parent_device_id) != -1) {
+			return false;
+		}
+		
+		// Nothing special to do - make this opener visible.
+		return true;
   }
 }
