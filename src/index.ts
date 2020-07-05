@@ -27,7 +27,7 @@ export = (api: API) => {
   hap = api.hap;
   Accessory = api.platformAccessory;
 
-  api.registerPlatform(PLATFORM_NAME, myQPlatform);
+  api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, myQPlatform);
 };
 
 class myQPlatform implements DynamicPlatformPlugin {
