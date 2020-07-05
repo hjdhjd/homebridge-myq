@@ -59,6 +59,7 @@ Features that are not currently supported (but will be in a future update):
 - Battery support is not included. If someone has need for this functionality, create an issue and I can work with you to identify what's needed to expose this as I don't have access to devices with a battery status.
 
 ## Things to be aware of
+- This plugin requires homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of homebridge.
 - The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future breaking changes that may come.
 
 - By default, this plugin is set to silently fail if it can't login to the myQ API, but continue to retry at regular polling intervals.
