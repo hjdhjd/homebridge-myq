@@ -469,20 +469,17 @@ class myQPlatform implements DynamicPlatformPlugin {
     // our target state needs to be the completion of those actions. If we're stopped or
     // obstructed, we're going to assume the desired target state is to be open, since that
     // is the typical garage door behavior.
-    if(myQState == hap.Characteristic.CurrentDoorState.OPEN) {
-      return hap.Characteristic.CurrentDoorState.OPEN;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.CLOSED) {
-      return hap.Characteristic.CurrentDoorState.CLOSED;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.OPENING) {
-      return hap.Characteristic.CurrentDoorState.OPEN;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.CLOSING) {
-      return hap.Characteristic.CurrentDoorState.CLOSED;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.STOPPED) {
-      return hap.Characteristic.CurrentDoorState.OPEN;
-    } else if(myQState == this.myQOBSTRUCTED) {
-      return hap.Characteristic.CurrentDoorState.OPEN;
-    } else {
-      return hap.Characteristic.CurrentDoorState.CLOSED;
+    switch(myQState) {
+      case hap.Characteristic.CurrentDoorState.OPEN:
+      case hap.Characteristic.CurrentDoorState.OPENING:
+      case hap.Characteristic.CurrentDoorState.STOPPED:
+      case this.myQOBSTRUCTED:
+        return hap.Characteristic.CurrentDoorState.OPEN;
+
+      case hap.Characteristic.CurrentDoorState.CLOSED:
+      case hap.Characteristic.CurrentDoorState.CLOSING:
+      default:
+        return hap.Characteristic.CurrentDoorState.CLOSED;
     }
   }
 
@@ -493,20 +490,17 @@ class myQPlatform implements DynamicPlatformPlugin {
     // our target state needs to be the completion of those actions. If we're stopped or
     // obstructed, we're going to assume the desired target state is to be open, since that
     // is the typical garage door behavior.
-    if(myQState == hap.Characteristic.CurrentDoorState.OPEN) {
-      return hap.Characteristic.TargetDoorState.OPEN;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.CLOSED) {
-      return hap.Characteristic.TargetDoorState.CLOSED;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.OPENING) {
-      return hap.Characteristic.TargetDoorState.OPEN;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.CLOSING) {
-      return hap.Characteristic.TargetDoorState.CLOSED;
-    } else if(myQState == hap.Characteristic.CurrentDoorState.STOPPED) {
-      return hap.Characteristic.TargetDoorState.OPEN;
-    } else if(myQState == this.myQOBSTRUCTED) {
-      return hap.Characteristic.TargetDoorState.OPEN;
-    } else {
-      return hap.Characteristic.TargetDoorState.CLOSED;
+    switch(myQState) {
+      case hap.Characteristic.CurrentDoorState.OPEN:
+      case hap.Characteristic.CurrentDoorState.OPENING:
+      case hap.Characteristic.CurrentDoorState.STOPPED:
+      case this.myQOBSTRUCTED:
+        return hap.Characteristic.TargetDoorState.OPEN;
+
+      case hap.Characteristic.CurrentDoorState.CLOSED:
+      case hap.Characteristic.CurrentDoorState.CLOSING:
+      default:
+        return hap.Characteristic.TargetDoorState.CLOSED;
     }
   }
   
