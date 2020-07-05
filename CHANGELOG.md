@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.0.10
+  ## Changes
+
+  * Improved state handling for opening and closing conditions, including dealing with edge cases.
+  * Preserve door state information across homebridge instances, so we remember where we left off.
+  * myQ API cleanup.
+  
 ## v2.0.1 - v2.0.9 (2020-07-04)
 
   ### Changes

@@ -1,4 +1,4 @@
-/* Copyright(C) 2020, HJD (https://github.com/hjdhjd)
+/* Copyright(C) 2020, HJD (https://github.com/hjdhjd). All rights reserved.
  */
 import {
   API,
@@ -35,8 +35,8 @@ const myqApi = 'https://api.myqdevice.com/api/v' + myqVersionMajor;
 const myqApidev = myqApi + '.' + myqVersionMinor;
 
 // myQ app identifier and user agent used to validate against the myQ API.
-const myqAppId = 'Vj8pQggXLhLy0WHahglCD4N1nAkkXQtGYpq2HrHD7H1nvmbT55KqtN6RSF4ILB/i';
-const myqAgent = 'myQ/19569 CFNetwork/1107.1 Darwin/19.0.0';
+const myqAppId = 'JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu';
+const myqAgent = 'okhttp/3.10.0';
 
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
@@ -184,7 +184,7 @@ export class myQ {
     if(debug) {
       this.log("myQ accountID: " + this.accountID);
     }
-    
+
     return 1;
   }
 
@@ -346,7 +346,7 @@ export class myQ {
     if(!this.accountID && !await this.login()) {
         return 0;
     }
-    
+
     response = await this.myqFetch(myqApidev + '/Accounts/' + this.accountID + '/Devices/' +
                             deviceId + '/actions',
                             {
@@ -360,7 +360,7 @@ export class myQ {
       this.log("myQ API error: unable to execute command.");
       return 0;
     }
-    
+
     return 1;
   }
 
@@ -379,42 +379,34 @@ export class myQ {
     // This works because homebridge always generates the same UUID for a given input -
     // in this case the device serial number.
     if((device = this.Devices.find((x: any) =>
-      x.device_type && (x.device_type.indexOf('garagedooropener') != -1) && 
+      x.device_type && (x.device_type.indexOf('garagedooropener') != -1) &&
       x.serial_number && hap.uuid.generate(x.serial_number) === uuid)) != undefined) {
       return device;
     }
 
     return null;
   }
-  
+
   // Utility to let us streamline error handling and return checking from the myQ API.
   private async myqFetch (url: string, options: any) {
     var response;
-  
+
     try {
       response = await fetch(url, options);
-    
+
       // Bad username and password.
       if(response.status == 401) {
         this.log("Invalid username or password given. Check your login and password.");
         return undefined;
       }
-      
-      /*
-      // A 400 error means we're being locked out by the myQ API.
-      // Fail silently.
-      if(response.status == 400) {
-        return undefined;
-      }
-      */
 
       // Some other unknown error occurred.
       if(!response.ok) {
         this.log("myQ API error: %s %s", response.status, response.statusText);
         return undefined;
       }
-    
-      return response;             
+
+      return response;
     } catch(error) {
       this.log.error("Fetch error encountered: " + error);
       return undefined;
