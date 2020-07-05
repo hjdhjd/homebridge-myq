@@ -272,7 +272,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // Fun fact: This firmware information is stored on the gateway not the opener.
-      const gwParent: any = this.myQ.Devices.find((x: myQDevice) => x.serial_number === device.parent_device_id);
+      const gwParent = this.myQ.Devices.find((x: myQDevice) => x.serial_number === device.parent_device_id);
       let fwVersion = "0.0";
 
       if(gwParent && gwParent.state && gwParent.state.firmware_version) {
