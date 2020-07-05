@@ -31,10 +31,11 @@ export = (api: API) => {
 };
 
 class myQPlatform implements DynamicPlatformPlugin {
-
   private readonly log: Logging;
   private readonly api: API;
   private myQ!: myQ;
+  private myQOBSTRUCTED = 8675309;
+  
   private configPoll = {
     longPoll: 15,
     shortPoll: 5,
@@ -51,6 +52,15 @@ class myQPlatform implements DynamicPlatformPlugin {
   };
 
   private pollingTimer!: NodeJS.Timeout;
+  
+  private myQStateMap: {[index: number]:any} = {
+    [hap.Characteristic.CurrentDoorState.OPEN]: "open",
+    [hap.Characteristic.CurrentDoorState.CLOSED]: "closed",
+    [hap.Characteristic.CurrentDoorState.OPENING]: "opening",
+    [hap.Characteristic.CurrentDoorState.CLOSING]: "closing",
+    [hap.Characteristic.CurrentDoorState.STOPPED]: "stopped",
+    [this.myQOBSTRUCTED]: "obstructed"
+  };
 
   private readonly accessories: PlatformAccessory[] = [];
 
@@ -128,8 +138,20 @@ class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // Add the garage door opener service to the accessory.
-    // FIXME: GET NAME FROM MYQ DEVICES.
     const gdService = new hap.Service.GarageDoorOpener(accessory.displayName);
+    
+    // The initial door state when we first startup. We assume that if we're caught in a tweener state, we made it.
+    var doorState = hap.Characteristic.TargetDoorState.CLOSED;
+    
+    if(accessory.context.doorState === undefined) {
+      accessory.context.doorState = hap.Characteristic.CurrentDoorState.CLOSED;
+    } else if(accessory.context.doorState == hap.Characteristic.CurrentDoorState.OPENING) {
+      doorState = hap.Characteristic.TargetDoorState.OPEN;
+    } else if(accessory.context.doorState == hap.Characteristic.CurrentDoorState.CLOSING) {
+      doorState = hap.Characteristic.TargetDoorState.CLOSED;
+    } else if(accessory.context.doorState == hap.Characteristic.CurrentDoorState.STOPPED) {
+      doorState = hap.Characteristic.TargetDoorState.OPEN;
+    }
 
     // Add all the events to our accessory so we can act on HomeKit actions.
     accessory
@@ -139,22 +161,29 @@ class myQPlatform implements DynamicPlatformPlugin {
       .on(CharacteristicEventTypes.SET, (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
         if (value == hap.Characteristic.TargetDoorState.CLOSED) {
           // HomeKit is informing us to close the door.
-          this.log("Closing %s.", accessory.displayName);
+          this.log("%s is closing.", accessory.displayName);
           this.doorCommand(accessory, "close");
 
           callback();
+          
+          // We set this to closing instead of closed for a couple of reasons. First, myQ won't immediately execute
+          // this command for safety reasons - it enforces a warning tone for a few seconds before it starts the action.
+          // Second, HomeKit gets confused with our multiple updates of this value, so we'll set it to closing and hope
+          // for the best.
           accessory
             .getService(hap.Service.GarageDoorOpener)!
-            .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.CLOSED);
+            .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.CLOSING);
         } else if (value == hap.Characteristic.TargetDoorState.OPEN) {
           // HomeKit is informing us to open the door.
-          this.log("Opening %s.", accessory.displayName);
+          this.log("%s is opening.", accessory.displayName);
           this.doorCommand(accessory, "open");
 
           callback();
+          
+          // We set this to opening instad of open because we want to show our state transitions to HomeKit and end users.
           accessory
             .getService(hap.Service.GarageDoorOpener)!
-            .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.OPEN);
+            .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.OPENING);
         } else {
           // HomeKit has told us something that we don't know how to handle.
           this.log("Unknown SET event received: %s", value);
@@ -168,13 +197,33 @@ class myQPlatform implements DynamicPlatformPlugin {
     .getCharacteristic(hap.Characteristic.CurrentDoorState)!
     .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
       var err = null;
-      var device: any;
 
       // If the accessory is reachable, report back with status. Otherwise, appear as
       // unreachable.
       if(accessory.reachable) {
         callback(err, this.doorStatus(accessory))
-        // callback(err);
+      } else {
+        callback(new Error("NO RESPONSE"));
+      }
+    });
+
+  // Make sure we can detect obstructions.
+  accessory
+    .getService(hap.Service.GarageDoorOpener)!
+    .getCharacteristic(hap.Characteristic.ObstructionDetected)!
+    .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
+      var err = null;
+      
+      // If the accessory is reachable, report back with status. Otherwise, appear as
+      // unreachable.
+      if(accessory.reachable) {
+        var doorState = this.doorStatus(accessory);
+        
+        if(doorState == this.myQOBSTRUCTED) {
+          this.log("%s has detected an obstruction.", accessory.displayName);
+        }
+        
+        callback(err, doorState == this.myQOBSTRUCTED);
       } else {
         callback(new Error("NO RESPONSE"));
       }
@@ -277,7 +326,9 @@ class myQPlatform implements DynamicPlatformPlugin {
     // Iterate through our accessories and update it's status with the corresponding myQ
     // status.
     this.accessories.forEach((accessory: PlatformAccessory) => {
+      var oldState = accessory.context.doorState;
       var myQState = this.doorStatus(accessory);
+      var myQTargetState;
 
       // If we can't get our status, we're probably not able to connect to the myQ API.
       if(myQState == undefined) {
@@ -287,14 +338,20 @@ class myQPlatform implements DynamicPlatformPlugin {
 
       // Mark us as reachable.
       accessory.updateReachability(true);
+      
+      if(oldState != myQState) {
+        this.log("%s is %s.", accessory.displayName, this.myQStateMap[myQState as number]);
+      }
 
       // Update the state in HomeKit.
+      // FINDME
       accessory.getService(hap.Service.GarageDoorOpener)
         ?.setCharacteristic(hap.Characteristic.CurrentDoorState, myQState);
-
+          
       accessory.getService(hap.Service.GarageDoorOpener)
         ?.getCharacteristic(hap.Characteristic.TargetDoorState)
         .getValue();
+
     });
 
     // Check for any new or removed accessories from myQ.
@@ -338,11 +395,15 @@ class myQPlatform implements DynamicPlatformPlugin {
   private doorStatus(accessory: PlatformAccessory): CharacteristicValue {
 
     // Door state cheat sheet.
+    // autoreverse is how the myQ API communicated an obstruction...go figure. Unfortunately, it
+    // only seems to last the duration of the door reopening (reversal).
     const doorStates: {[index: string]:any} = {
       open:    hap.Characteristic.CurrentDoorState.OPEN,
       closed:  hap.Characteristic.CurrentDoorState.CLOSED,
       opening: hap.Characteristic.CurrentDoorState.OPENING,
-      closing: hap.Characteristic.CurrentDoorState.CLOSING
+      closing: hap.Characteristic.CurrentDoorState.CLOSING,
+      stopped: hap.Characteristic.CurrentDoorState.STOPPED,
+      autoreverse: this.myQOBSTRUCTED
     };
 
     var device = this.myQ.getDevice(hap, accessory.UUID);
@@ -358,6 +419,9 @@ class myQPlatform implements DynamicPlatformPlugin {
       this.log("Unknown door state encountered on myQ device %s: %s", device.name, device.state.door_state);
       return 0;
     }
+    
+    // Save the door state as well, so it's available to us on startup.
+    accessory.context.doorState = myQState;
 
     return myQState;
   }

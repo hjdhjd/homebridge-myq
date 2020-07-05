@@ -38,33 +38,6 @@ const myqApidev = myqApi + '.' + myqVersionMinor;
 const myqAppId = 'Vj8pQggXLhLy0WHahglCD4N1nAkkXQtGYpq2HrHD7H1nvmbT55KqtN6RSF4ILB/i';
 const myqAgent = 'myQ/19569 CFNetwork/1107.1 Darwin/19.0.0';
 
-// Utility function to streamline the error checking of responses from the myQ API.
-const checkStatus = (log: Logging, response: Response) => {
-  if(debug) {
-    log(response.toString());
-  }
-
-  // Bad username and password.
-  if(response.status == 401) {
-    log("Invalid username or password given. Check your login and password.");
-    return 0;
-  }
-
-  // A 400 error means we're being locked out by the myQ API.
-  // Fail silently.
-  if(response.status == 400) {
-    return 0;
-  }
-
-  // Some other unknown error occurred.
-  if(!response.ok) {
-    log("myQ API error: %s %s", response.status, response.statusText);
-    return 0;
-  }
-
-  return 1;
-};
-
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
  * reverse engineering the official app, myQ website, and trial and error.
@@ -127,7 +100,7 @@ export class myQ {
     var response, data;
 
     // Login to the myQ API and get a security token for our session.
-    response = await fetch(myqApi + '/Login',
+    response = await this.myqFetch(myqApi + '/Login',
                             {
                               method: "POST",
                               headers: this.myqHeaders,
@@ -135,7 +108,7 @@ export class myQ {
                             }
                           );
 
-    if(!checkStatus(this.log, response)) {
+    if(!response) {
       this.log("myQ API error: unable to authenticate. Will retry later.");
       return 0;
     }
@@ -180,14 +153,14 @@ export class myQ {
     // Get the account information.
     params = new URLSearchParams({ expand: 'account' });
 
-    response = await fetch(myqApi + '/My?' + params,
+    response = await this.myqFetch(myqApi + '/My?' + params,
                             {
                               method: 'GET',
                               headers: this.myqHeaders
                             }
                           );
 
-    if(!checkStatus(this.log, response)) {
+    if(!response) {
       this.log("myQ API error: unable to login. Will retry later.");
       return 0;
     }
@@ -248,14 +221,14 @@ export class myQ {
     // Get the list of device information.
     params = new URLSearchParams({ filterOn: 'true' });
 
-    response = await fetch(myqApidev + '/Accounts/' + this.accountID + '/Devices?' + params,
+    response = await this.myqFetch(myqApidev + '/Accounts/' + this.accountID + '/Devices?' + params,
                             {
                               method: 'GET',
                               headers: this.myqHeaders
                             }
                           );
 
-    if(!checkStatus(this.log, response)) {
+    if(!response) {
       this.log("myQ API error: unable to refresh. Will retry later.");
       return 0;
     }
@@ -329,14 +302,14 @@ export class myQ {
     debug = 1;
 
     // Get the list of device information.
-    response = await fetch(myqApidev + '/Accounts/' + this.accountID + '/devices/' + deviceId,
+    response = await this.myqFetch(myqApidev + '/Accounts/' + this.accountID + '/devices/' + deviceId,
                             {
                               method: 'GET',
                               headers: this.myqHeaders
                             }
                           );
 
-    if(!checkStatus(this.log, response)) {
+    if(!response) {
       this.log("myQ API error: unable to query device. Will retry later.");
       return 0;
     }
@@ -373,9 +346,8 @@ export class myQ {
     if(!this.accountID && !await this.login()) {
         return 0;
     }
-
-    // Execute the action. There are only two known actions currently: 'open' and 'close'.
-    response = await fetch(myqApidev + '/Accounts/' + this.accountID + '/Devices/' +
+    
+    response = await this.myqFetch(myqApidev + '/Accounts/' + this.accountID + '/Devices/' +
                             deviceId + '/actions',
                             {
                               method: 'PUT',
@@ -384,11 +356,11 @@ export class myQ {
                             }
                           );
 
-    if(!checkStatus(this.log, response)) {
+    if(!response) {
       this.log("myQ API error: unable to execute command.");
       return 0;
     }
-
+    
     return 1;
   }
 
@@ -413,5 +385,39 @@ export class myQ {
     }
 
     return null;
+  }
+  
+  // Utility to let us streamline error handling and return checking from the myQ API.
+  private async myqFetch (url: string, options: any) {
+    var response;
+  
+    try {
+      response = await fetch(url, options);
+    
+      // Bad username and password.
+      if(response.status == 401) {
+        this.log("Invalid username or password given. Check your login and password.");
+        return undefined;
+      }
+      
+      /*
+      // A 400 error means we're being locked out by the myQ API.
+      // Fail silently.
+      if(response.status == 400) {
+        return undefined;
+      }
+      */
+
+      // Some other unknown error occurred.
+      if(!response.ok) {
+        this.log("myQ API error: %s %s", response.status, response.statusText);
+        return undefined;
+      }
+    
+      return response;             
+    } catch(error) {
+      this.log.error("Fetch error encountered: " + error);
+      return undefined;
+    }
   }
 }
