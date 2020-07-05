@@ -196,11 +196,7 @@ export class myQ {
         this.log('Throttling myQ API call.');
       }
 
-      if(!this.Devices) {
-        return 0;
-      }
-
-      return 1;
+      return this.Devices ? 1 : 0;
     }
 
     // Reset the API call time.
