@@ -1,9 +1,9 @@
 /* Copyright(C) 2020, HJD (https://github.com/hjdhjd). All rights reserved.
  */
-import { HAP, Logging } from 'homebridge';
+import { HAP, Logging } from "homebridge";
 
-import fetch from 'node-fetch';
-import util from 'util';
+import fetch from "node-fetch";
+import util from "util";
 
 // An incomplete description of the myQ JSON, but enough for our purposes.
 export interface myQDevice {
@@ -30,17 +30,17 @@ let debug = 0;
  */
 const myqVersionMajor = 5;
 const myqVersionMinor = 1;
-const myqVersion = myqVersionMajor + '.' + myqVersionMinor;
+const myqVersion = myqVersionMajor + "." + myqVersionMinor;
 
 // myQ API base URL, currently v5.
-const myqApi = 'https://api.myqdevice.com/api/v' + myqVersionMajor;
+const myqApi = "https://api.myqdevice.com/api/v" + myqVersionMajor;
 
 // myQ API devices URL, currently v5.1
-const myqApidev = myqApi + '.' + myqVersionMinor;
+const myqApidev = myqApi + "." + myqVersionMinor;
 
 // myQ app identifier and user agent used to validate against the myQ API.
-const myqAppId = 'JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu';
-const myqAgent = 'okhttp/3.10.0';
+const myqAppId = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
+const myqAgent = "okhttp/3.10.0";
 
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
@@ -81,13 +81,13 @@ export class myQ {
 
   // Headers that the myQ API expects.
   private myqHeaders = {
-    'Content-Type': 'application/json',
-    'User-Agent': myqAgent,
+    "Content-Type": "application/json",
+    "User-Agent": myqAgent,
     ApiVersion: myqVersion,
-    BrandId: '2',
-    Culture: 'en',
+    BrandId: "2",
+    Culture: "en",
     MyQApplicationId: myqAppId,
-    SecurityToken: '',
+    SecurityToken: "",
   };
 
   // Initialize this instance with our login information.
@@ -95,21 +95,21 @@ export class myQ {
     this.log = log;
     this.Email = email;
     this.Password = password;
-    this.securityToken = '';
-    this.accountID = '';
+    this.securityToken = "";
+    this.accountID = "";
   }
 
   // Log us into myQ and get a security token.
   private async myqAuthenticate() {
     // Login to the myQ API and get a security token for our session.
-    const response = await this.myqFetch(myqApi + '/Login', {
-      method: 'POST',
+    const response = await this.myqFetch(myqApi + "/Login", {
+      method: "POST",
       headers: this.myqHeaders,
       body: JSON.stringify({ UserName: this.Email, Password: this.Password }),
     });
 
     if(!response) {
-      this.log('myQ API error: unable to authenticate. Will retry later.');
+      this.log("myQ API error: unable to authenticate. Will retry later.");
       return 0;
     }
 
@@ -123,16 +123,16 @@ export class myQ {
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
     if(!data || !data.SecurityToken) {
-      this.log('Unable to get a security token from the myQ API.');
+      this.log("Unable to get a security token from the myQ API.");
       return 0;
     }
 
     this.securityToken = data.SecurityToken;
 
-    this.log('Successfully connected to the myQ API.');
+    this.log("Successfully connected to the myQ API.");
 
     if(debug) {
-      this.log('Token: %s', this.securityToken);
+      this.log("Token: %s", this.securityToken);
     }
 
     // Add the token to our headers that we will use for subsequent API calls.
@@ -149,15 +149,15 @@ export class myQ {
     }
 
     // Get the account information.
-    const params = new URLSearchParams({ expand: 'account' });
+    const params = new URLSearchParams({ expand: "account" });
 
-    const response = await this.myqFetch(myqApi + '/My?' + params, {
-      method: 'GET',
+    const response = await this.myqFetch(myqApi + "/My?" + params, {
+      method: "GET",
       headers: this.myqHeaders,
     });
 
     if(!response) {
-      this.log('myQ API error: unable to login. Will retry later.');
+      this.log("myQ API error: unable to login. Will retry later.");
       return 0;
     }
 
@@ -170,7 +170,7 @@ export class myQ {
 
     // No account information returned.
     if(!data || !data.Account) {
-      this.log('Unable to retrieve account information from myQ servers.');
+      this.log("Unable to retrieve account information from myQ servers.");
       return 0;
     }
 
@@ -178,7 +178,7 @@ export class myQ {
     this.accountID = data.Account.Id;
 
     if(debug) {
-      this.log('myQ accountID: ' + this.accountID);
+      this.log("myQ accountID: " + this.accountID);
     }
 
     return 1;
@@ -193,7 +193,7 @@ export class myQ {
     // to potential account lockouts. The author definitely learned this one the hard way.
     if(this.lastCall && ((now - this.lastCall) < (5*1000))) {
       if(debug) {
-        this.log('Throttling myQ API call.');
+        this.log("Throttling myQ API call.");
       }
 
       return this.Devices ? 1 : 0;
@@ -208,15 +208,15 @@ export class myQ {
     }
 
     // Get the list of device information.
-    const params = new URLSearchParams({ filterOn: 'true' });
+    const params = new URLSearchParams({ filterOn: "true" });
 
-    const response = await this.myqFetch(myqApidev + '/Accounts/' + this.accountID + '/Devices?' + params, {
-      method: 'GET',
+    const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/Devices?" + params, {
+      method: "GET",
       headers: this.myqHeaders,
     });
 
     if(!response) {
-      this.log('myQ API error: unable to refresh. Will retry later.');
+      this.log("myQ API error: unable to refresh. Will retry later.");
       return 0;
     }
 
@@ -241,7 +241,7 @@ export class myQ {
 
         // We've discovered a new device.
         this.log("myQ %s device discovered: %s (serial number: %s%s.", newDevice.device_family, newDevice.name, newDevice.serial_number,
- 					newDevice.parent_device_id ? ", gateway: " + newDevice.parent_device_id + ")" : ")");
+          newDevice.parent_device_id ? ", gateway: " + newDevice.parent_device_id + ")" : ")");
 
         if(debug) {
           this.log(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
@@ -260,7 +260,7 @@ export class myQ {
         }
 
         // We've had a device disappear.
-        this.log('myQ %s device removed: %s - %s.', existingDevice.device_family, existingDevice.name, existingDevice.serial_number);
+        this.log("myQ %s device removed: %s - %s.", existingDevice.device_family, existingDevice.name, existingDevice.serial_number);
 
         if(debug) {
           this.log(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
@@ -284,13 +284,13 @@ export class myQ {
     debug = 1;
 
     // Get the list of device information.
-    const response = await this.myqFetch(myqApidev + '/Accounts/' + this.accountID + '/devices/' + deviceId, {
-      method: 'GET',
+    const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
+      method: "GET",
       headers: this.myqHeaders,
     });
 
     if(!response) {
-      this.log('myQ API error: unable to query device. Will retry later.');
+      this.log("myQ API error: unable to query device. Will retry later.");
       return 0;
     }
 
@@ -309,7 +309,7 @@ export class myQ {
     this.Devices = data.items;
 
     this.Devices.forEach((device: any) => {
-      this.log('Device:');
+      this.log("Device:");
       this.log(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
     });
 
@@ -325,14 +325,14 @@ export class myQ {
       return 0;
     }
 
-    const response = await this.myqFetch(myqApidev + '/Accounts/' + this.accountID + '/Devices/' + deviceId + '/actions', {
-      method: 'PUT',
+    const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
+      method: "PUT",
       headers: this.myqHeaders,
       body: JSON.stringify({ action_type: command }),
     });
 
     if(!response) {
-      this.log('myQ API error: unable to execute command.');
+      this.log("myQ API error: unable to execute command.");
       return 0;
     }
 
@@ -357,7 +357,7 @@ export class myQ {
       (device = this.Devices.find(
         (x: any) =>
           x.device_type &&
-          x.device_type.indexOf('garagedooropener') !== -1 &&
+          x.device_type.indexOf("garagedooropener") !== -1 &&
           x.serial_number &&
           hap.uuid.generate(x.serial_number) === uuid,
       )) !== undefined
@@ -377,19 +377,19 @@ export class myQ {
 
       // Bad username and password.
       if(response.status === 401) {
-        this.log('Invalid username or password given. Check your login and password.');
+        this.log("Invalid username or password given. Check your login and password.");
         return undefined;
       }
 
       // Some other unknown error occurred.
       if(!response.ok) {
-        this.log('myQ API error: %s %s', response.status, response.statusText);
+        this.log("myQ API error: %s %s", response.status, response.statusText);
         return undefined;
       }
 
       return response;
     } catch(error) {
-      this.log.error('Fetch error encountered: ' + error);
+      this.log.error("Fetch error encountered: " + error);
       return undefined;
     }
   }

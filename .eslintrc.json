@@ -11,7 +11,7 @@
     },
     "ignorePatterns": ["dist"],
     "rules": {
-        "quotes": ["warn", "single", {"avoidEscape": true}],
+        "quotes": ["warn", "double", {"avoidEscape": true}],
         "indent": [
             "warn",
             2,

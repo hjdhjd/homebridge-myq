@@ -13,12 +13,12 @@ import {
   PlatformAccessory,
   PlatformAccessoryEvent,
   PlatformConfig,
-} from 'homebridge';
+} from "homebridge";
 
-import { myQ, myQDevice } from './myq';
+import { myQ, myQDevice } from "./myq";
 
-const PLUGIN_NAME = 'homebridge-myq2';
-const PLATFORM_NAME = 'myQ';
+const PLUGIN_NAME = "homebridge-myq2";
+const PLATFORM_NAME = "myQ";
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
@@ -56,12 +56,12 @@ class myQPlatform implements DynamicPlatformPlugin {
   private pollingTimer!: NodeJS.Timeout;
 
   private myQStateMap: {[index: number]: string} = {
-    [hap.Characteristic.CurrentDoorState.OPEN]: 'open',
-    [hap.Characteristic.CurrentDoorState.CLOSED]: 'closed',
-    [hap.Characteristic.CurrentDoorState.OPENING]: 'opening',
-    [hap.Characteristic.CurrentDoorState.CLOSING]: 'closing',
-    [hap.Characteristic.CurrentDoorState.STOPPED]: 'stopped',
-    [this.myQOBSTRUCTED]: 'obstructed',
+    [hap.Characteristic.CurrentDoorState.OPEN]: "open",
+    [hap.Characteristic.CurrentDoorState.CLOSED]: "closed",
+    [hap.Characteristic.CurrentDoorState.OPENING]: "opening",
+    [hap.Characteristic.CurrentDoorState.CLOSING]: "closing",
+    [hap.Characteristic.CurrentDoorState.STOPPED]: "stopped",
+    [this.myQOBSTRUCTED]: "obstructed",
   };
 
   private readonly accessories: PlatformAccessory[] = [];
@@ -77,13 +77,13 @@ class myQPlatform implements DynamicPlatformPlugin {
 
     // We need login credentials or we're not starting.
     if(!config.email || !config.password) {
-      this.log('No myQ login credentials specified.');
+      this.log("No myQ login credentials specified.");
       return;
     }
 
     // Capture configuration parameters.
     if(config.options) {
-    	this.configOptions = config.options;
+      this.configOptions = config.options;
     }
 
     if(config.longPoll) {
@@ -123,7 +123,7 @@ class myQPlatform implements DynamicPlatformPlugin {
   configureAccessory(accessory: PlatformAccessory): void {
     // Give this accessory an identity handler.
     accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
-      this.log('%s identified!', accessory.displayName);
+      this.log("%s identified!", accessory.displayName);
     });
 
     const gdOpener = accessory.getService(hap.Service.GarageDoorOpener);
@@ -155,22 +155,22 @@ class myQPlatform implements DynamicPlatformPlugin {
         // interruptions to an open or close command that is currently executing - it must be allowed to
         // complete it's action before accepting a new one.
         if(myQState === hap.Characteristic.CurrentDoorState.OPENING || myQState === hap.Characteristic.CurrentDoorState.CLOSING) {
-          const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? 'opening' : 'closing';
-          const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? 'close' : 'open';
+          const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
+          const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
 
           this.log(
             "%s - unable to %s door while currently trying to finish %s. myQ must complete it's existing action " +
-              'before attmepting a new one.',
+              "before attmepting a new one.",
             accessory.displayName,
             actionAttempt,
             actionExisting,
           );
 
-          callback(new Error('Unable to accept a new set event while another is completing.'));
+          callback(new Error("Unable to accept a new set event while another is completing."));
         } else if(value === hap.Characteristic.TargetDoorState.CLOSED) {
           // HomeKit is informing us to close the door.
-          this.log('%s is closing.', accessory.displayName);
-          this.doorCommand(accessory, 'close');
+          this.log("%s is closing.", accessory.displayName);
+          this.doorCommand(accessory, "close");
 
           callback();
 
@@ -183,8 +183,8 @@ class myQPlatform implements DynamicPlatformPlugin {
             .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.CLOSING);
         } else if(value === hap.Characteristic.TargetDoorState.OPEN) {
           // HomeKit is informing us to open the door.
-          this.log('%s is opening.', accessory.displayName);
-          this.doorCommand(accessory, 'open');
+          this.log("%s is opening.", accessory.displayName);
+          this.doorCommand(accessory, "open");
 
           callback();
 
@@ -194,8 +194,8 @@ class myQPlatform implements DynamicPlatformPlugin {
             .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.OPENING);
         } else {
           // HomeKit has told us something that we don't know how to handle.
-          this.log('Unknown SET event received: %s', value);
-          callback(new Error('Unknown SET event received: ' + value));
+          this.log("Unknown SET event received: %s", value);
+          callback(new Error("Unknown SET event received: " + value));
         }
       });
 
@@ -211,7 +211,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         if(accessory.reachable) {
           callback(err, this.doorStatus(accessory));
         } else {
-          callback(new Error('NO RESPONSE'));
+          callback(new Error("NO RESPONSE"));
         }
       });
 
@@ -228,12 +228,12 @@ class myQPlatform implements DynamicPlatformPlugin {
           const doorState = this.doorStatus(accessory);
 
           if(doorState === this.myQOBSTRUCTED) {
-            this.log('%s has detected an obstruction.', accessory.displayName);
+            this.log("%s has detected an obstruction.", accessory.displayName);
           }
 
           callback(err, doorState === this.myQOBSTRUCTED);
         } else {
-          callback(new Error('NO RESPONSE'));
+          callback(new Error("NO RESPONSE"));
         }
       });
 
@@ -246,7 +246,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     // First we check if all the existing accessories we've cached still exist on the myQ API.
     // Login to myQ and refresh the full device list from the myQ API.
     if(!(await this.myQ.refreshDevices())) {
-      this.log('Unable to login to the myQ API. Will continue to retry at regular polling intervals.');
+      this.log("Unable to login to the myQ API. Will continue to retry at regular polling intervals.");
       return 0;
     }
 
@@ -258,14 +258,14 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // We are only interested in garage door openers. Perhaps more types in the future.
-      if(!device.device_type || device.device_type.indexOf('garagedooropener') === -1) {
+      if(!device.device_type || device.device_type.indexOf("garagedooropener") === -1) {
         return;
       }
 
       // Exclude or include certain openers based on configuration parameters.
-			if(!this.myQDeviceVisible(device)) {
-				return;
-  		}
+      if(!this.myQDeviceVisible(device)) {
+        return;
+      }
 
       const uuid = hap.uuid.generate(device.serial_number);
       let accessory;
@@ -274,12 +274,12 @@ class myQPlatform implements DynamicPlatformPlugin {
       // See if we already know about this accessory or if it's truly new.
       if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)) === undefined) {
         isNew = 1;
-        accessory = new Accessory('myQ ' + device.name, uuid);
+        accessory = new Accessory("myQ " + device.name, uuid);
       }
 
       // Fun fact: This firmware information is stored on the gateway not the opener.
       const gwParent: any = this.myQ.Devices.find((x: myQDevice) => x.serial_number === device.parent_device_id);
-      let fwVersion = '0.0';
+      let fwVersion = "0.0";
 
       if(gwParent && gwParent.state && gwParent.state.firmware_version) {
         fwVersion = gwParent.state.firmware_version;
@@ -289,14 +289,14 @@ class myQPlatform implements DynamicPlatformPlugin {
       accessory
         .getService(hap.Service.AccessoryInformation)!
         .setCharacteristic(hap.Characteristic.FirmwareRevision, fwVersion)
-        .setCharacteristic(hap.Characteristic.Manufacturer, 'Liftmaster')
-        .setCharacteristic(hap.Characteristic.Model, 'myQ')
+        .setCharacteristic(hap.Characteristic.Manufacturer, "Liftmaster")
+        .setCharacteristic(hap.Characteristic.Model, "myQ")
         .setCharacteristic(hap.Characteristic.SerialNumber, device.serial_number);
 
       // Only add this device if we previously haven't added it to HomeKit.
       if(isNew) {
         this.log("Adding myQ %s device: %s (serial number: %s%s to HomeKit.", device.device_family, device.name, device.serial_number,
- 					device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
+          device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
 
         this.configureAccessory(accessory);
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -318,11 +318,11 @@ class myQPlatform implements DynamicPlatformPlugin {
         return;
       }
 
-			// Remove the device and inform the user about it.
-	    this.log("Removing myQ %s device: %s (serial number: %s%s from HomeKit.", device.device_family, device.name, device.serial_number,
-				device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
+      // Remove the device and inform the user about it.
+      this.log("Removing myQ %s device: %s (serial number: %s%s from HomeKit.", device.device_family, device.name, device.serial_number,
+        device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
 
-      this.log('Removing myQ device: %s', oldAccessory.displayName);
+      this.log("Removing myQ device: %s", oldAccessory.displayName);
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [oldAccessory]);
       delete this.accessories[this.accessories.indexOf(oldAccessory)];
     });
@@ -350,7 +350,7 @@ class myQPlatform implements DynamicPlatformPlugin {
 
       // If we can't get our status, we're probably not able to connect to the myQ API.
       if(myQState === undefined) {
-        this.log('Unable to retrieve status for device: %s', accessory.displayName);
+        this.log("Unable to retrieve status for device: %s", accessory.displayName);
         return;
       }
 
@@ -358,7 +358,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       accessory.updateReachability(true);
 
       if(oldState !== myQState) {
-        this.log('%s is %s.', accessory.displayName, this.myQStateMap[myQState as number]);
+        this.log("%s is %s.", accessory.displayName, this.myQStateMap[myQState as number]);
       }
 
       // Update the state in HomeKit. Thanks to @dxdc for suggesting looking at using updateValue
@@ -399,7 +399,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     this.pollingTimer = setTimeout(async () => {
       // Refresh our myQ information and gracefully handle myQ errors.
       if(!self.updateAccessories()) {
-        self.log('Polling error: unable to connect to the myQ API.');
+        self.log("Polling error: unable to connect to the myQ API.");
         self.configPoll.count = self.configPoll.maxCount - 1;
       }
 
@@ -432,7 +432,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     const myQState = doorStates[device.state.door_state];
 
     if(myQState === undefined) {
-      this.log('Unknown door state encountered on myQ device %s: %s', device.name, device.state.door_state);
+      this.log("Unknown door state encountered on myQ device %s: %s", device.name, device.state.door_state);
       return 0;
     }
 
@@ -458,7 +458,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     }
 
     if(myQCommandPolling[command] === undefined) {
-      this.log('Unknown door commmand encountered on myQ device %s: %s', device.name, command);
+      this.log("Unknown door commmand encountered on myQ device %s: %s", device.name, command);
       return;
     }
 
@@ -522,44 +522,44 @@ class myQPlatform implements DynamicPlatformPlugin {
     // 2. Explicitly hiding, or showing an opener device by it's serial number will always override the above.
     //    This means that it's possible to hide a gateway, and all the openers that are attached to it, and then
     //    override that behavior on a single opener device that it's connected to.
-		//
+    //
 
-		// Nothing configured - we show all myQ devices to HomeKit.
-		if(!this.configOptions) {
-		  return true;
-		}
+    // Nothing configured - we show all myQ devices to HomeKit.
+    if(!this.configOptions) {
+      return true;
+    }
 
-		// No device. Sure, we'll show it.
-		if(!device) {
-		  return true;
-		}
+    // No device. Sure, we'll show it.
+    if(!device) {
+      return true;
+    }
 
-		// We've explicitly enabled this opener.
-    if(this.configOptions.indexOf("Show." + (device.serial_number as any)) != -1) {
-			return true;
-		}
+    // We've explicitly enabled this opener.
+    if(this.configOptions.indexOf("Show." + (device.serial_number as any)) !== -1) {
+      return true;
+    }
 
-		// We've explicitly hidden this opener.
-    if(this.configOptions.indexOf("Hide." + device.serial_number) != -1) {
-			return false;
-		}
+    // We've explicitly hidden this opener.
+    if(this.configOptions.indexOf("Hide." + device.serial_number) !== -1) {
+      return false;
+    }
 
-		// If we don't have a gateway device attached to this opener, we're done here.
-		if(!device.parent_device_id) {
-		  return true;
-		}
+    // If we don't have a gateway device attached to this opener, we're done here.
+    if(!device.parent_device_id) {
+      return true;
+    }
 
-		// We've explicitly shown the gateway this opener is attached to.
-    if(this.configOptions.indexOf("Show." + device.parent_device_id) != -1) {
-			return true;
-		}
+    // We've explicitly shown the gateway this opener is attached to.
+    if(this.configOptions.indexOf("Show." + device.parent_device_id) !== -1) {
+      return true;
+    }
 
-		// We've explicitly hidden the gateway this opener is attached to.
-    if(this.configOptions.indexOf("Hide." + device.parent_device_id) != -1) {
-			return false;
-		}
+    // We've explicitly hidden the gateway this opener is attached to.
+    if(this.configOptions.indexOf("Hide." + device.parent_device_id) !== -1) {
+      return false;
+    }
 
-		// Nothing special to do - make this opener visible.
-		return true;
+    // Nothing special to do - make this opener visible.
+    return true;
   }
 }
