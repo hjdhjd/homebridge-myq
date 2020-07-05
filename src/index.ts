@@ -154,17 +154,11 @@ class myQPlatform implements DynamicPlatformPlugin {
         // If we are already opening or closing the garage door, we error out. myQ doesn't appear to allow
         // interruptions to an open or close command that is currently executing - it must be allowed to
         // complete its action before accepting a new one.
-        if(myQState === hap.Characteristic.CurrentDoorState.OPENING || myQState === hap.Characteristic.CurrentDoorState.CLOSING) {
+        if((myQState === hap.Characteristic.CurrentDoorState.OPENING) || (myQState === hap.Characteristic.CurrentDoorState.CLOSING)) {
           const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
           const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
 
-          this.log(
-            "%s - unable to %s door while currently trying to finish %s. myQ must complete its existing action " +
-              "before attmepting a new one.",
-            accessory.displayName,
-            actionAttempt,
-            actionExisting,
-          );
+          this.log("%s - unable to %s door while currently trying to finish %s. myQ must complete its existing action before attmepting a new one.", accessory.displayName, actionAttempt, actionExisting);
 
           callback(new Error("Unable to accept a new set event while another is completing."));
         } else if(value === hap.Characteristic.TargetDoorState.CLOSED) {
