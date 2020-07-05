@@ -66,15 +66,6 @@ Features that are not currently supported (but will be in a future update):
 
 - The configuration block for `config.json` has changed to rename the platform (and it is case sensitive as well). **This is a breaking change and you will need to update your `config.json` to reflect the updates**.
 
-# What's new in 1.1
-I've simplified some configuration options and adjusted some of the logging. There are also configuration file changes in this version - in particular, polling is no longer an optional
-parameter. Given the intent of this plugin is to inform you of state changes in your garage door opener (and other MyQ accessories), polling is an essential component particularly when
-you have automations in place. The default polling interval is 15 seconds which should be sufficient for most purposes but is configurable below.
-
-Additionally, I've increased the polling duration for the shortPoll interval to give you more time between opening and closing the garage door to allow for more granular state changes.
-
-Eventually, I hope we can reverse engineer the service / push protocol that MyQ uses, but for the time being, polling it is.
-
 # Configuration
 Add the platform in `config.json` in your home directory inside `.homebridge`.
 
