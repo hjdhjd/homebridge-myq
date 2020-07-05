@@ -53,20 +53,19 @@ Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homeb
 
 # What's new in 2.0
 This plugin has been completely rewritten and updated to work with the modern [homebridge](https://homebridge.io) APIs. As a result, some prior functionality is currently unavailable.
-Features that are not currently supported (but will be in a future update):
+Features that are not currently supported (but may be in a future update):
 
-- Gateways and openers can be selectively filtered. The configuration options are there, but will be silently ignored.
 - Battery support is not included. If someone has need for this functionality, create an issue and I can work with you to identify what's needed to expose this as I don't have access to devices with a battery status.
 
 ## Things to be aware of
-- This plugin requires homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of homebridge.
+- **This plugin requires homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of homebridge.**
 - The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future breaking changes that may come.
 
 - By default, this plugin is set to silently fail if it can't login to the myQ API, but continue to retry at regular polling intervals.
 
 - The configuration block for `config.json` has changed to rename the platform (and it is case sensitive as well). **This is a breaking change and you will need to update your `config.json` to reflect the updates**.
 
-# Configuration
+# Plugin Configuration
 Add the platform in `config.json` in your home directory inside `.homebridge`.
 
 ```js
@@ -77,6 +76,27 @@ Add the platform in `config.json` in your home directory inside `.homebridge`.
 }]
 ```
 
+### Feature Options
+Feature options allow you to enable or disable certain features in this plugin.
+
+The `options` setting is an array of strings used to customize feature options. Available options:
+
+* <CODE>Hide.<I>serialnumber</I> - hide the opener or gateway identified by `serialnumber` from HomeKit.
+* <CODE>Show.<I>serialnumber</I> - show the opener or gateway identified by `serialnumber` from HomeKit.
+    
+The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
+
+Before using this feature, you should understand how gateways and openers work in myQ. Gateways are the devices in your home that actually communicate your status to myQ. Openers are attached to gateways. A typical home will have a single gateway and one, or more, openers. If you choose to hide a gateway, you will also hide all the openers associated with that gateway.
+
+If you've hidden a gateway, and all it's openers with it, you can selectively enable a single opener associated with that gateway by explicitly setting a `Show.` feature option. This should give you a lot of richness in how you enable or disable devices for HomeKit use.
+
+These logic behind these options works like this:
+
+* Show any opener we've explicitly said to show.
+* Show any gateway we've explicitly said to show.
+* Hide any opener we've explicitly hidden.
+* Hide any gateway we've explicitly hidden.
+
 ### Advanced Configuration (Optional)
 This step is not required. The defaults should work well for almost everyone.
 ```
@@ -85,14 +105,13 @@ This step is not required. The defaults should work well for almost everyone.
     "name": "MyQ",
     "email": "email@email.com",
     "password": "password",
-    "verbose": false,
+    "debug": false,
     "openDuration": 15,
     "closeDuration": 25,
     "longPoll": 15,
     "shortPoll": 5,
     "shortPollDuration": 600,
-    "gateways": ["My Home"],
-    "openers": ["openerid1"]
+    "options": ["Hide.GW12345", "Show.CG6789"]
 }]
 
 ```
@@ -103,12 +122,10 @@ This step is not required. The defaults should work well for almost everyone.
 | name              | For logging purposes.                            |         | No       |
 | email             | Your MyQ account email.                          |         | Yes      |
 | password          | Your MyQ account password.                       |         | Yes      |
-| verbose           | Logging verbosity for debugging purporses.       | false   | No       |
+| debug             | Logging verbosity for debugging purporses.       | false   | No       |
 | openDuration      | Time in `s` to open garage door completely.      | 15      | No       |
 | closeDuration     | Time in `s` to close garage door completely.     | 25      | No       |
 | longPoll          | Normal polling interval in `s`.                  | 15      | No       |
 | shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.              | 600     | No       |
-| gateways          | Array of gateway IDs or names to add.            | []      | No       |
-| openers           | Array of openers IDs to make available.          | []      | No       |
-
+| options           | Configure plugin [feature options](#feature-options). | []      | No       |
