@@ -153,13 +153,13 @@ class myQPlatform implements DynamicPlatformPlugin {
 
         // If we are already opening or closing the garage door, we error out. myQ doesn't appear to allow
         // interruptions to an open or close command that is currently executing - it must be allowed to
-        // complete it's action before accepting a new one.
+        // complete its action before accepting a new one.
         if(myQState === hap.Characteristic.CurrentDoorState.OPENING || myQState === hap.Characteristic.CurrentDoorState.CLOSING) {
           const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
           const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
 
           this.log(
-            "%s - unable to %s door while currently trying to finish %s. myQ must complete it's existing action " +
+            "%s - unable to %s door while currently trying to finish %s. myQ must complete its existing action " +
               "before attmepting a new one.",
             accessory.displayName,
             actionAttempt,
@@ -342,7 +342,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       return 0;
     }
 
-    // Iterate through our accessories and update it's status with the corresponding myQ
+    // Iterate through our accessories and update its status with the corresponding myQ
     // status.
     this.accessories.forEach((accessory: PlatformAccessory) => {
       const oldState = accessory.context.doorState;
@@ -519,7 +519,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     //    into that gateway. So if you have multiple gateways but only want one exposed in this plugin,
     //    you may do so by hiding it.
     //
-    // 2. Explicitly hiding, or showing an opener device by it's serial number will always override the above.
+    // 2. Explicitly hiding, or showing an opener device by its serial number will always override the above.
     //    This means that it's possible to hide a gateway, and all the openers that are attached to it, and then
     //    override that behavior on a single opener device that it's connected to.
     //
