@@ -190,8 +190,7 @@ export class myQ {
 
     // We want to throttle how often we call this API as a failsafe. If we call it more
     // than once every five seconds or so, bad things can happen on the myQ side leading
-    // to potential accounnt lockouts. The author was definitely learned this one the
-    // hard way.
+    // to potential account lockouts. The author definitely learned this one the hard way.
     if(this.lastCall && ((now - this.lastCall) < (5*1000))) {
       if(debug) {
         this.log('Throttling myQ API call.');
