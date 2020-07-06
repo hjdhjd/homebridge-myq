@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.0
+  ## Changes
+  
+  * Feature: include battery status information for devices that support it.
+  * Code cleanup.
+
+## v2.0.12-13
+  ## Changes
+  
+  * Fix: look at the `device_family` attribute to determine whether it's a garage opener or not, rather than the `device_type` attribute.
+
 ## v2.0.11
   ## Changes
   
