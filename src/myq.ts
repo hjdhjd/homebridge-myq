@@ -2,7 +2,7 @@
  */
 import { HAP, Logging } from "homebridge";
 
-import fetch from "node-fetch";
+import fetch, { Response, RequestInfo, RequestInit } from "node-fetch";
 import util from "util";
 
 // An incomplete description of the myQ JSON, but enough for our purposes.
@@ -11,13 +11,13 @@ export interface myQDevice {
   readonly device_platform: string,
   readonly device_type: string,
   readonly name: string,
-  readonly online: boolean,
-  readonly parent_device_id: string,
+  readonly parent_device_id?: string,
   readonly serial_number: string,
   readonly state: {
     readonly door_state: string,
-    readonly dps_low_battery_mode: string,
-    readonly firmware_version: string
+    readonly dps_low_battery_mode?: boolean,
+    readonly online: boolean,
+    readonly firmware_version?: string
   }
 }
 
@@ -242,10 +242,10 @@ export class myQ {
 
     // Notify the user about any new devices that we've discovered.
     if(items) {
-      items.forEach((newDevice: any) => {
+      items.forEach((newDevice: myQDevice) => {
         if(this.Devices) {
           // We already know about this device.
-          if(this.Devices.find((x: any) => x.serial_number === newDevice.serial_number) !== undefined) {
+          if(this.Devices.find((x: myQDevice) => x.serial_number === newDevice.serial_number) !== undefined) {
             return;
           }
         }
@@ -262,10 +262,10 @@ export class myQ {
 
     // Notify the user about any devices that have disappeared.
     if(this.Devices) {
-      this.Devices.forEach((existingDevice: any) => {
+      this.Devices.forEach((existingDevice: myQDevice) => {
         if(items) {
           // This device still is visible.
-          if(items.find((x: any) => x.serial_number === existingDevice.serial_number) !== undefined) {
+          if(items.find((x: myQDevice) => x.serial_number === existingDevice.serial_number) !== undefined) {
             return;
           }
         }
@@ -382,8 +382,8 @@ export class myQ {
   }
 
   // Utility to let us streamline error handling and return checking from the myQ API.
-  private async myqFetch(url: string, options: any) {
-    let response;
+  private async myqFetch(url: RequestInfo, options: RequestInit): Promise<Response> {
+    let response: Response;
 
     try {
       response = await fetch(url, options);
@@ -391,19 +391,19 @@ export class myQ {
       // Bad username and password.
       if(response.status === 401) {
         this.log("Invalid username or password given. Check your login and password.");
-        return null;
+        return null as unknown as Promise<Response>;
       }
 
       // Some other unknown error occurred.
       if(!response.ok) {
         this.log("myQ API error: %s %s", response.status, response.statusText);
-        return null;
+        return null as unknown as Promise<Response>;
       }
 
       return response;
     } catch(error) {
       this.log.error("Fetch error encountered: " + error);
-      return null;
+      return null as unknown as Promise<Response>;
     }
   }
 }
