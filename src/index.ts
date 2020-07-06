@@ -85,7 +85,7 @@ class myQPlatform implements DynamicPlatformPlugin {
 
     // Capture configuration parameters.
     if(config.debug) {
-      debug = config.debug == true;
+      debug = config.debug === true;
       this.log("Debugging: %s", debug);
     }
     

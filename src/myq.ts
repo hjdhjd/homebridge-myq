@@ -92,11 +92,11 @@ export class myQ {
   
   // List all the door types we know about. For future use...
   private myqDoorTypes = [
-  	"commercialdooropener",
-  	"garagedooropener",
-  	"gate",
-  	"virtualgaragedooropener",
-  	"wifigaragedooropener"
+    "commercialdooropener",
+    "garagedooropener",
+    "gate",
+    "virtualgaragedooropener",
+    "wifigaragedooropener",
   ];
 
   // Initialize this instance with our login information.
@@ -366,7 +366,7 @@ export class myQ {
           x.device_family.indexOf("garagedoor") !== -1 &&
           x.serial_number &&
           hap.uuid.generate(x.serial_number) === uuid,
-      )) != undefined
+      )) !== undefined
     ) {
       return device;
     }
