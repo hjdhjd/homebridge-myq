@@ -170,7 +170,7 @@ class myQPlatform implements DynamicPlatformPlugin {
           const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
 
           this.log(
-            "%s - unable to %s door while currently trying to finish %s. myQ must complete its existing action before attmepting a new one.",
+            "%s - unable to %s door while currently trying to finish %s. myQ must complete its existing action before attempting a new one.",
             accessory.displayName, actionAttempt, actionExisting);
 
           callback(new Error("Unable to accept a new set event while another is completing."));
@@ -312,7 +312,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         .getService(hap.Service.AccessoryInformation)!
         .getCharacteristic(hap.Characteristic.SerialNumber).updateValue(device.serial_number);
 
-      // Set us up to report battery status, but only if supported by the device.
+      // Set us up to report battery status, but only if it's supported by the device.
       // This has to go here rather than in configureAccessory since we won't have a connection yet to the myQ API
       // at that point to verify whether or not we have a battery-capable device to status against.
       if(!this.batteryStatusConfigured[accessory.UUID] && (this.doorPositionSensorBatteryStatus(accessory) !== -1)) {
