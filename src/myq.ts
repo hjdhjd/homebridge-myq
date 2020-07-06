@@ -87,7 +87,7 @@ export class myQ {
     BrandId: "2",
     Culture: "en",
     MyQApplicationId: myqAppId,
-    SecurityToken: "",
+    SecurityToken: ""
   };
   
   // List all the door types we know about. For future use...
@@ -96,7 +96,7 @@ export class myQ {
     "garagedooropener",
     "gate",
     "virtualgaragedooropener",
-    "wifigaragedooropener",
+    "wifigaragedooropener"
   ];
 
   // Initialize this instance with our login information.
@@ -115,7 +115,7 @@ export class myQ {
     const response = await this.myqFetch(myqApi + "/Login", {
       method: "POST",
       headers: this.myqHeaders,
-      body: JSON.stringify({ UserName: this.Email, Password: this.Password }),
+      body: JSON.stringify({ UserName: this.Email, Password: this.Password })
     });
 
     if(!response) {
@@ -163,7 +163,7 @@ export class myQ {
 
     const response = await this.myqFetch(myqApi + "/My?" + params, {
       method: "GET",
-      headers: this.myqHeaders,
+      headers: this.myqHeaders
     });
 
     if(!response) {
@@ -222,7 +222,7 @@ export class myQ {
 
     const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/Devices?" + params, {
       method: "GET",
-      headers: this.myqHeaders,
+      headers: this.myqHeaders
     });
 
     if(!response) {
@@ -294,7 +294,7 @@ export class myQ {
     // Get the list of device information.
     const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
       method: "GET",
-      headers: this.myqHeaders,
+      headers: this.myqHeaders
     });
 
     if(!response) {
@@ -334,7 +334,7 @@ export class myQ {
     const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
       method: "PUT",
       headers: this.myqHeaders,
-      body: JSON.stringify({ action_type: command }),
+      body: JSON.stringify({ action_type: command })
     });
 
     if(!response) {
@@ -346,32 +346,38 @@ export class myQ {
   }
 
   // Get the details of a specific device in our list.
-  getDevice(hap: HAP, uuid: string) {
-    let device: any;
+  getDevice(hap: HAP, uuid: string): myQDevice {
+    let device: myQDevice;
     const now = Date.now();
 
     // Check to make sure we have fresh information from myQ. If it's less than a minute
     // old, it looks good to us.
     if(!this.Devices || !this.lastCall || ((now - this.lastCall) > (60 * 1000))) {
-      return null;
+      return null as unknown as myQDevice;
     }
+
+    device = this.Devices!.find(
+      (x: myQDevice) =>
+        x.device_family &&
+        x.device_family.indexOf("garagedoor") !== -1 &&
+        x.serial_number &&
+        hap.uuid.generate(x.serial_number) === uuid
+    )!;
 
     // Iterate through the list and find the device that matches the UUID we seek.
     // This works because homebridge always generates the same UUID for a given input -
     // in this case the device serial number.
-    if(
-      (device = this.Devices.find(
-        (x: any) =>
-          x.device_family &&
-          x.device_family.indexOf("garagedoor") !== -1 &&
-          x.serial_number &&
-          hap.uuid.generate(x.serial_number) === uuid,
-      )) !== undefined
-    ) {
+    if((device = this.Devices.find(
+      (x: myQDevice) =>
+        x.device_family &&
+        (x.device_family.indexOf("garagedoor") !== -1) &&
+        x.serial_number &&
+        (hap.uuid.generate(x.serial_number) === uuid)
+    )!) !== undefined) {
       return device;
     }
 
-    return null;
+    return null as unknown as myQDevice;
   }
 
   // Utility to let us streamline error handling and return checking from the myQ API.

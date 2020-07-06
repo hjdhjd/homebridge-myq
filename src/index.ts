@@ -12,7 +12,7 @@ import {
   NodeCallback,
   PlatformAccessory,
   PlatformAccessoryEvent,
-  PlatformConfig,
+  PlatformConfig
 } from "homebridge";
 
 import { myQ, myQDevice } from "./myq";
@@ -47,12 +47,12 @@ class myQPlatform implements DynamicPlatformPlugin {
     closeDuration: 25,
     shortPollDuration: 600,
     maxCount: 0,
-    count: 0,
+    count: 0
   };
 
   private configDevices = {
     gateways: [],
-    openers: [],
+    openers: []
   };
 
   private pollingTimer!: NodeJS.Timeout;
@@ -63,7 +63,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     [hap.Characteristic.CurrentDoorState.OPENING]: "opening",
     [hap.Characteristic.CurrentDoorState.CLOSING]: "closing",
     [hap.Characteristic.CurrentDoorState.STOPPED]: "stopped",
-    [this.myQOBSTRUCTED]: "obstructed",
+    [this.myQOBSTRUCTED]: "obstructed"
   };
 
   private readonly accessories: PlatformAccessory[] = [];
@@ -86,7 +86,9 @@ class myQPlatform implements DynamicPlatformPlugin {
     // Capture configuration parameters.
     if(config.debug) {
       debug = config.debug === true;
-      this.log("Debugging: %s", debug);
+      if(debug) {
+        this.log("Debug logging on. Expect a lot of data.");
+      }
     }
     
     if(config.options) {
@@ -165,7 +167,9 @@ class myQPlatform implements DynamicPlatformPlugin {
           const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
           const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
 
-          this.log("%s - unable to %s door while currently trying to finish %s. myQ must complete its existing action before attmepting a new one.", accessory.displayName, actionAttempt, actionExisting);
+          this.log(
+            "%s - unable to %s door while currently trying to finish %s. myQ must complete its existing action before attmepting a new one.",
+            accessory.displayName, actionAttempt, actionExisting);
 
           callback(new Error("Unable to accept a new set event while another is completing."));
         } else if(value === hap.Characteristic.TargetDoorState.CLOSED) {
@@ -315,14 +319,16 @@ class myQPlatform implements DynamicPlatformPlugin {
       const device = this.myQ.getDevice(hap, oldAccessory.UUID);
 
       // We found this accessory in myQ and we want to see it in HomeKit.
-      if(device && this.myQDeviceVisible(device)) {
-        return;
+      if(device) {
+        if(this.myQDeviceVisible(device)) {
+          return;
+        }
+
+        // Remove the device and inform the user about it.
+        this.log("Removing myQ %s device: %s (serial number: %s%s from HomeKit.", device.device_family, device.name, device.serial_number,
+          device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
       }
-
-      // Remove the device and inform the user about it.
-      this.log("Removing myQ %s device: %s (serial number: %s%s from HomeKit.", device.device_family, device.name, device.serial_number,
-        device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
-
+      
       this.log("Removing myQ device: %s", oldAccessory.displayName);
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [oldAccessory]);
       delete this.accessories[this.accessories.indexOf(oldAccessory)];
@@ -420,7 +426,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       opening: hap.Characteristic.CurrentDoorState.OPENING,
       closing: hap.Characteristic.CurrentDoorState.CLOSING,
       stopped: hap.Characteristic.CurrentDoorState.STOPPED,
-      autoreverse: this.myQOBSTRUCTED,
+      autoreverse: this.myQOBSTRUCTED
     };
 
     const device = this.myQ.getDevice(hap, accessory.UUID);
@@ -445,10 +451,11 @@ class myQPlatform implements DynamicPlatformPlugin {
 
   // Open or close the door for an accessory.
   private doorCommand(accessory: PlatformAccessory, command: string) {
+  
     // myQ commands and the associated polling intervals to go with them.
     const myQCommandPolling: {[index: string]: number} = {
       open:  this.configPoll.openDuration,
-      close: this.configPoll.closeDuration,
+      close: this.configPoll.closeDuration
     };
 
     const device = this.myQ.getDevice(hap, accessory.UUID);
