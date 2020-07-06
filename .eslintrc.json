@@ -27,7 +27,7 @@
         "curly": ["warn", "all"],
         "brace-style": ["warn"],
         "prefer-arrow-callback": ["warn"],
-        "max-len": ["warn", 150],
+        "max-len": ["warn", 170],
         "no-console": ["warn"],
         "lines-between-class-members": [
             "warn",

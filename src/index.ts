@@ -216,7 +216,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         if(accessory.reachable) {
           callback(err, this.doorStatus(accessory));
         } else {
-          callback(new Error("NO RESPONSE"));
+          callback(new Error("Unable to update door status, accessory unreachable."));
         }
       });
 
@@ -238,22 +238,22 @@ class myQPlatform implements DynamicPlatformPlugin {
 
           callback(err, doorState === this.myQOBSTRUCTED);
         } else {
-          callback(new Error("NO RESPONSE"));
+          callback(new Error("Unable to update obstruction status, accessory unreachable."));
         }
       });
 
-    // Report battery status only if supported
-    if (this.doorPositionSensorBatteryStatus(accessory) > -1) {
+    // Report battery status, but only if supported.
+    if(this.doorPositionSensorBatteryStatus(accessory) !== -1) {
       accessory
-      .getService(hap.Service.GarageDoorOpener)!
-      .getCharacteristic(hap.Characteristic.StatusLowBattery)!
-      .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
-        if (accessory.reachable) {
-          callback(null, this.doorPositionSensorBatteryStatus(accessory));
-        } else {
-          callback(new Error("Unable to update battery status, accessory unreachable."));
-        }
-      });
+        .getService(hap.Service.GarageDoorOpener)!
+        .getCharacteristic(hap.Characteristic.StatusLowBattery)!
+        .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
+          if(accessory.reachable) {
+            callback(null, this.doorPositionSensorBatteryStatus(accessory));
+          } else {
+            callback(new Error("Unable to update battery status, accessory unreachable."));
+          }
+        });
     }
 
     // Add this to the accessory array so we can track it.
@@ -392,8 +392,9 @@ class myQPlatform implements DynamicPlatformPlugin {
       accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
 
       const batteryStatus = this.doorPositionSensorBatteryStatus(accessory);
-      // only if supported
-      if (batteryStatus > -1) {
+      
+      // Update battery status only if it's supported by the device.
+      if(batteryStatus !== -1) {
         accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.StatusLowBattery)?.updateValue(batteryStatus);
       }
     });
@@ -452,14 +453,14 @@ class myQPlatform implements DynamicPlatformPlugin {
     const device = this.myQ.getDevice(hap, accessory.UUID);
 
     if(!device) {
-      this.log("Can't find device: %s - %s", accessory.displayName, accessory.UUID);
+      this.log("Can't find device: %s - %s.", accessory.displayName, accessory.UUID);
       return 0;
     }
 
     const myQState = doorStates[device.state.door_state];
 
     if(myQState === undefined) {
-      this.log("Unknown door state encountered on myQ device %s: %s", device.name, device.state.door_state);
+      this.log("Unknown door state encountered on myQ device %s: %s.", device.name, device.state.door_state);
       return 0;
     }
 
@@ -481,12 +482,12 @@ class myQPlatform implements DynamicPlatformPlugin {
     const device = this.myQ.getDevice(hap, accessory.UUID);
 
     if(!device) {
-      this.log("Can't find device: %s - %s", accessory.displayName, accessory.UUID);
+      this.log("Can't find device: %s - %s.", accessory.displayName, accessory.UUID);
       return;
     }
 
     if(myQCommandPolling[command] === undefined) {
-      this.log("Unknown door commmand encountered on myQ device %s: %s", device.name, command);
+      this.log("Unknown door command encountered on myQ device %s: %s.", device.name, command);
       return;
     }
 
@@ -539,17 +540,19 @@ class myQPlatform implements DynamicPlatformPlugin {
     }
   }
 
-  // Return the battery status of the door sensor
+  // Return the battery status of the door sensor, if supported on the device.
   private doorPositionSensorBatteryStatus(accessory: PlatformAccessory): CharacteristicValue {
     const device = this.myQ.getDevice(hap, accessory.UUID);
 
-    if (!device) {
-      this.log("Can't find device: %s - %s", accessory.displayName, accessory.UUID);
+    if(!device) {
+      this.log("Can't find device: %s - %s.", accessory.displayName, accessory.UUID);
       return -1;
     }
 
-    // if we dont find dps_low_battery_mode this device may not support it
-    if (device.state.dps_low_battery_mode === undefined) return -1;
+    // If we don't find the dps_low_battery_mode attribute, then this device may not support it.
+    if(device.state.dps_low_battery_mode === undefined) {
+      return -1;
+    }
 
     return device.state.dps_low_battery_mode ? hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
   }
