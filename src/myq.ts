@@ -89,6 +89,15 @@ export class myQ {
     MyQApplicationId: myqAppId,
     SecurityToken: "",
   };
+  
+  // List all the door types we know about. For future use...
+  private myqDoorTypes = [
+  	"commercialdooropener",
+  	"garagedooropener",
+  	"gate",
+  	"virtualgaragedooropener",
+  	"wifigaragedooropener"
+  ];
 
   // Initialize this instance with our login information.
   constructor(log: Logging, email: string, password: string, wantDebug: boolean) {
@@ -101,7 +110,7 @@ export class myQ {
   }
 
   // Log us into myQ and get a security token.
-  private async myqAuthenticate() {
+  private async myqAuthenticate(): Promise<boolean> {
     // Login to the myQ API and get a security token for our session.
     const response = await this.myqFetch(myqApi + "/Login", {
       method: "POST",
@@ -111,7 +120,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to authenticate. Will retry later.");
-      return 0;
+      return false;
     }
 
     // Now let's get our security token.
@@ -125,7 +134,7 @@ export class myQ {
     // use in future API calls this session.
     if(!data || !data.SecurityToken) {
       this.log("Unable to get a security token from the myQ API.");
-      return 0;
+      return false;
     }
 
     this.securityToken = data.SecurityToken;
@@ -139,14 +148,14 @@ export class myQ {
     // Add the token to our headers that we will use for subsequent API calls.
     this.myqHeaders.SecurityToken = this.securityToken;
 
-    return 1;
+    return true;
   }
 
   // Login and get our account information.
-  async login() {
+  async login(): Promise<boolean> {
     // If we don't have a security token yet, acquire one before proceeding.
     if(!this.securityToken && !(await this.myqAuthenticate())) {
-      return 0;
+      return false;
     }
 
     // Get the account information.
@@ -159,7 +168,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to login. Will retry later.");
-      return 0;
+      return false;
     }
 
     // Now let's get our account information.
@@ -172,7 +181,7 @@ export class myQ {
     // No account information returned.
     if(!data || !data.Account) {
       this.log("Unable to retrieve account information from myQ servers.");
-      return 0;
+      return false;
     }
 
     // Save the user information.
@@ -182,11 +191,11 @@ export class myQ {
       this.log("myQ accountID: " + this.accountID);
     }
 
-    return 1;
+    return true;
   }
 
   // Get the list of myQ devices associated with an account.
-  async refreshDevices() {
+  async refreshDevices(): Promise<boolean> {
     const now = Date.now();
 
     // We want to throttle how often we call this API as a failsafe. If we call it more
@@ -197,7 +206,7 @@ export class myQ {
         this.log("Throttling myQ API call. Using cached data from the past five seconds.");
       }
 
-      return this.Devices ? 1 : 0;
+      return this.Devices ? true : false;
     }
 
     // Reset the API call time.
@@ -205,7 +214,7 @@ export class myQ {
 
     // If we don't have our account information yet, acquire it before proceeding.
     if(!this.accountID && !(await this.login())) {
-      return 0;
+      return false;
     }
 
     // Get the list of device information.
@@ -218,7 +227,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to refresh. Will retry later.");
-      return 0;
+      return false;
     }
 
     // Now let's get our account information.
@@ -272,14 +281,14 @@ export class myQ {
     // Save the updated list of devices.
     this.Devices = items;
 
-    return 1;
+    return true;
   }
 
   // Query the details of a specific myQ device.
-  async queryDevice(log: Logging, deviceId: string) {
+  async queryDevice(log: Logging, deviceId: string): Promise<boolean> {
     // If we don't have our account information yet, acquire it before proceeding.
     if(!this.accountID && !(await this.login())) {
-      return 0;
+      return false;
     }
 
     // Get the list of device information.
@@ -290,7 +299,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to query device. Will retry later.");
-      return 0;
+      return false;
     }
 
     // Now let's get our account information.
@@ -298,7 +307,7 @@ export class myQ {
 
     if(!data || !data.items) {
       log("Error querying device '%s'", deviceId);
-      return 0;
+      return false;
     }
 
     if(debug) {
@@ -312,14 +321,14 @@ export class myQ {
       this.log(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
     });
 
-    return 1;
+    return true;
   }
 
   // Execute an action on a myQ device.
-  async execute(deviceId: string, command: string) {
+  async execute(deviceId: string, command: string): Promise<boolean> {
     // If we don't have our account information yet, acquire it before proceeding.
     if(!this.accountID && !(await this.login())) {
-      return 0;
+      return false;
     }
 
     const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
@@ -330,10 +339,10 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to execute command.");
-      return 0;
+      return false;
     }
 
-    return 1;
+    return true;
   }
 
   // Get the details of a specific device in our list.
@@ -353,11 +362,11 @@ export class myQ {
     if(
       (device = this.Devices.find(
         (x: any) =>
-          x.device_type &&
-          x.device_type.indexOf("garagedoor") !== -1 &&
+          x.device_family &&
+          x.device_family.indexOf("garagedoor") !== -1 &&
           x.serial_number &&
           hap.uuid.generate(x.serial_number) === uuid,
-      )) !== undefined
+      )) != undefined
     ) {
       return device;
     }

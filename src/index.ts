@@ -259,7 +259,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // We are only interested in garage door openers. Perhaps more types in the future.
-      if(!device.device_type || device.device_type.indexOf("garagedoor") === -1) {
+      if(!device.device_family || device.device_family.indexOf("garagedoor") === -1) {
         return;
       }
 
