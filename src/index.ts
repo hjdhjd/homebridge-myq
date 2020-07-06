@@ -23,6 +23,8 @@ const PLATFORM_NAME = "myQ";
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
 
+let debug = false;
+
 export = (api: API) => {
   hap = api.hap;
   Accessory = api.platformAccessory;
@@ -82,6 +84,11 @@ class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // Capture configuration parameters.
+    if(config.debug) {
+      debug = config.debug == true;
+      this.log("Debugging: %s", debug);
+    }
+    
     if(config.options) {
       this.configOptions = config.options;
     }
@@ -110,7 +117,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     this.configPoll.count = this.configPoll.maxCount;
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQ(this.log, config.email, config.password);
+    this.myQ = new myQ(this.log, config.email, config.password, config.debug);
 
     // This event gets fired after homebridge has restored all cached accessories and called their respective
     // `configureAccessory` function.
@@ -252,7 +259,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // We are only interested in garage door openers. Perhaps more types in the future.
-      if(!device.device_type || device.device_type.indexOf("garagedooropener") === -1) {
+      if(!device.device_type || device.device_type.indexOf("garagedoor") === -1) {
         return;
       }
 

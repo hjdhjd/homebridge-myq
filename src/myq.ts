@@ -20,7 +20,7 @@ export interface myQDevice {
   }
 }
 
-let debug = 0;
+let debug = false;
 
 /*
  * myQ API version information. This is more intricate than it seems because the myQ
@@ -91,12 +91,13 @@ export class myQ {
   };
 
   // Initialize this instance with our login information.
-  constructor(log: Logging, email: string, password: string) {
+  constructor(log: Logging, email: string, password: string, wantDebug: boolean) {
     this.log = log;
     this.Email = email;
     this.Password = password;
     this.securityToken = "";
     this.accountID = "";
+    debug = wantDebug;
   }
 
   // Log us into myQ and get a security token.
@@ -117,7 +118,7 @@ export class myQ {
     const data = await response.json();
 
     if(debug) {
-      this.log(data);
+      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
     }
 
     // What we should get back upon successfully calling /Login is a security token for
@@ -165,7 +166,7 @@ export class myQ {
     const data = await response.json();
 
     if(debug) {
-      this.log(data);
+      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
     }
 
     // No account information returned.
@@ -193,7 +194,7 @@ export class myQ {
     // to potential account lockouts. The author definitely learned this one the hard way.
     if(this.lastCall && ((now - this.lastCall) < (5*1000))) {
       if(debug) {
-        this.log("Throttling myQ API call.");
+        this.log("Throttling myQ API call. Using cached data from the past five seconds.");
       }
 
       return this.Devices ? 1 : 0;
@@ -224,7 +225,7 @@ export class myQ {
     const data = await response.json();
 
     if(debug) {
-      this.log(data);
+      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
     }
 
     const items: Array<myQDevice> = data.items;
@@ -281,8 +282,6 @@ export class myQ {
       return 0;
     }
 
-    debug = 1;
-
     // Get the list of device information.
     const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
       method: "GET",
@@ -303,7 +302,7 @@ export class myQ {
     }
 
     if(debug) {
-      this.log(data);
+      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
     }
 
     this.Devices = data.items;
@@ -312,8 +311,6 @@ export class myQ {
       this.log("Device:");
       this.log(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
     });
-
-    debug = 0;
 
     return 1;
   }
@@ -357,7 +354,7 @@ export class myQ {
       (device = this.Devices.find(
         (x: any) =>
           x.device_type &&
-          x.device_type.indexOf("garagedooropener") !== -1 &&
+          x.device_type.indexOf("garagedoor") !== -1 &&
           x.serial_number &&
           hap.uuid.generate(x.serial_number) === uuid,
       )) !== undefined
