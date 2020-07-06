@@ -225,7 +225,6 @@ class myQPlatform implements DynamicPlatformPlugin {
         }
       });
 
-/*
     // Make sure we can detect obstructions.
     accessory
       .getService(hap.Service.GarageDoorOpener)!
@@ -247,7 +246,7 @@ class myQPlatform implements DynamicPlatformPlugin {
           callback(new Error("Unable to update obstruction status, accessory unreachable."));
         }
       });
-*/
+
     // Add this to the accessory array so we can track it.
     this.accessories.push(accessory);
   }
@@ -313,6 +312,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         .getService(hap.Service.AccessoryInformation)!
         .getCharacteristic(hap.Characteristic.SerialNumber).updateValue(device.serial_number);
 
+/*
       // Set us up to report battery status, but only if it's supported by the device.
       // This has to go here rather than in configureAccessory since we won't have a connection yet to the myQ API
       // at that point to verify whether or not we have a battery-capable device to status against.
@@ -332,6 +332,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         // Not the most elegant solution, but it gets the job done.
         this.batteryStatusConfigured[accessory.UUID] = true;
       }
+  */
 
       // Only add this device if we previously haven't added it to HomeKit.
       if(isNew) {
@@ -411,13 +412,14 @@ class myQPlatform implements DynamicPlatformPlugin {
       const targetState = this.doorTargetBias(myQState);
 
       accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
-
+/*
       const batteryStatus = this.doorPositionSensorBatteryStatus(accessory);
       
       // Update battery status only if it's supported by the device.
       if(batteryStatus !== -1) {
         accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.StatusLowBattery)?.updateValue(batteryStatus);
       }
+*/
     });
 
     // Check for any new or removed accessories from myQ.
