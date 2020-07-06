@@ -56,6 +56,8 @@ class myQPlatform implements DynamicPlatformPlugin {
   };
 
   private pollingTimer!: NodeJS.Timeout;
+  
+  private batteryStatusConfigured: { [index: string]: boolean } = {};
 
   private myQStateMap: {[index: number]: string} = {
     [hap.Characteristic.CurrentDoorState.OPEN]: "open",
@@ -185,8 +187,10 @@ class myQPlatform implements DynamicPlatformPlugin {
           // for the best.
           accessory
             .getService(hap.Service.GarageDoorOpener)!
-            .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.CLOSING);
+            .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.CLOSING);
+
         } else if(value === hap.Characteristic.TargetDoorState.OPEN) {
+
           // HomeKit is informing us to open the door.
           this.log("%s is opening.", accessory.displayName);
           this.doorCommand(accessory, "open");
@@ -196,7 +200,8 @@ class myQPlatform implements DynamicPlatformPlugin {
           // We set this to opening instad of open because we want to show our state transitions to HomeKit and end users.
           accessory
             .getService(hap.Service.GarageDoorOpener)!
-            .setCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.OPENING);
+            .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.OPENING);
+
         } else {
           // HomeKit has told us something that we don't know how to handle.
           this.log("Unknown SET event received: %s", value);
@@ -242,20 +247,6 @@ class myQPlatform implements DynamicPlatformPlugin {
         }
       });
 
-    // Report battery status, but only if supported.
-    if(this.doorPositionSensorBatteryStatus(accessory) !== -1) {
-      accessory
-        .getService(hap.Service.GarageDoorOpener)!
-        .getCharacteristic(hap.Characteristic.StatusLowBattery)!
-        .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
-          if(accessory.reachable) {
-            callback(null, this.doorPositionSensorBatteryStatus(accessory));
-          } else {
-            callback(new Error("Unable to update battery status, accessory unreachable."));
-          }
-        });
-    }
-
     // Add this to the accessory array so we can track it.
     this.accessories.push(accessory);
   }
@@ -287,30 +278,59 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       const uuid = hap.uuid.generate(device.serial_number);
-      let accessory;
+      let accessory: PlatformAccessory;
       let isNew = 0;
 
       // See if we already know about this accessory or if it's truly new.
-      if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)) === undefined) {
+      if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)!) === undefined) {
         isNew = 1;
         accessory = new Accessory("myQ " + device.name, uuid);
       }
 
+      // Update the firmware revision for this device.
       // Fun fact: This firmware information is stored on the gateway not the opener.
       const gwParent = this.myQ.Devices.find((x: myQDevice) => x.serial_number === device.parent_device_id);
-      let fwVersion = "0.0";
 
       if(gwParent && gwParent.state && gwParent.state.firmware_version) {
-        fwVersion = gwParent.state.firmware_version;
+        accessory
+          .getService(hap.Service.AccessoryInformation)!
+          .getCharacteristic(hap.Characteristic.FirmwareRevision).updateValue(gwParent.state.firmware_version);
       }
 
-      // Now let's set (or update) the information on this accessory.
+      // Update the manufacturer information for this device.
       accessory
         .getService(hap.Service.AccessoryInformation)!
-        .setCharacteristic(hap.Characteristic.FirmwareRevision, fwVersion)
-        .setCharacteristic(hap.Characteristic.Manufacturer, "Liftmaster")
-        .setCharacteristic(hap.Characteristic.Model, "myQ")
-        .setCharacteristic(hap.Characteristic.SerialNumber, device.serial_number);
+        .getCharacteristic(hap.Characteristic.Manufacturer).updateValue("Liftmaster");
+
+      // Update the model information for this device.
+      accessory
+        .getService(hap.Service.AccessoryInformation)!
+        .getCharacteristic(hap.Characteristic.Model).updateValue("myQ");
+          
+      // Update the serial number for this device.
+      accessory
+        .getService(hap.Service.AccessoryInformation)!
+        .getCharacteristic(hap.Characteristic.SerialNumber).updateValue(device.serial_number);
+
+      // Set us up to report battery status, but only if supported by the device.
+      // This has to go here rather than in configureAccessory since we won't have a connection yet to the myQ API
+      // at that point to verify whether or not we have a battery-capable device to status against.
+      if(!this.batteryStatusConfigured[accessory.UUID] && (this.doorPositionSensorBatteryStatus(accessory) !== -1)) {
+        accessory
+          .getService(hap.Service.GarageDoorOpener)!
+          .getCharacteristic(hap.Characteristic.StatusLowBattery)!
+          .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
+            if(accessory.reachable) {
+              callback(null, this.doorPositionSensorBatteryStatus(accessory));
+            } else {
+              callback(new Error("Unable to update battery status, accessory unreachable."));
+            }
+          });
+        
+        // We only want to configure this once, not on each update.
+        // Not the most elegant solution, but it gets the job done.
+        this.batteryStatusConfigured[accessory.UUID] = true;
+      }
 
       // Only add this device if we previously haven't added it to HomeKit.
       if(isNew) {
