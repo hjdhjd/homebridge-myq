@@ -88,7 +88,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       debug = config.debug === true;
       this.log("Debugging: %s", debug);
     }
-    
+
     if(config.options) {
       this.configOptions = config.options;
     }
@@ -238,6 +238,20 @@ class myQPlatform implements DynamicPlatformPlugin {
         }
       });
 
+    // Report battery status only if supported
+    if (this.doorPositionSensorBatteryStatus(accessory) > -1) {
+      accessory
+      .getService(hap.Service.GarageDoorOpener)!
+      .getCharacteristic(hap.Characteristic.StatusLowBattery)!
+      .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
+        if (accessory.reachable) {
+          callback(null, this.doorPositionSensorBatteryStatus(accessory));
+        } else {
+          callback(new Error("Unable to update battery status, accessory unreachable."));
+        }
+      });
+    }
+
     // Add this to the accessory array so we can track it.
     this.accessories.push(accessory);
   }
@@ -370,6 +384,12 @@ class myQPlatform implements DynamicPlatformPlugin {
       const targetState = this.doorTargetBias(myQState);
 
       accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
+
+      const batteryStatus = this.doorPositionSensorBatteryStatus(accessory);
+      // only if supported
+      if (batteryStatus > -1) {
+        accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.StatusLowBattery)?.updateValue(batteryStatus);
+      }
     });
 
     // Check for any new or removed accessories from myQ.
@@ -510,6 +530,21 @@ class myQPlatform implements DynamicPlatformPlugin {
       default:
         return hap.Characteristic.TargetDoorState.CLOSED;
     }
+  }
+
+  // Return the battery status of the door sensor
+  private doorPositionSensorBatteryStatus(accessory: PlatformAccessory): CharacteristicValue {
+    const device = this.myQ.getDevice(hap, accessory.UUID);
+
+    if (!device) {
+      this.log("Can't find device: %s - %s", accessory.displayName, accessory.UUID);
+      return -1;
+    }
+
+    // if we dont find dps_low_battery_mode this device may not support it
+    if (device.state.dps_low_battery_mode === undefined) return -1;
+
+    return device.state.dps_low_battery_mode ? hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
   }
 
   // Utility function to let us know if a my! device should be visible in HomeKit or not.
