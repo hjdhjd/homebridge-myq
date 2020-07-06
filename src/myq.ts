@@ -380,7 +380,16 @@ export class myQ {
 
     return null as unknown as myQDevice;
   }
-
+  /*
+  // Return device manufacturer and model information based on the serial number, if we can.
+  getInfo(serial: string): ??? {
+    
+     // We only know about gateway devices and not individual openers, so we can only decode those.
+     // According to Liftmaster, here's how you can decode what device you're using.
+     const myQInfo = {
+     };
+  }
+  */
   // Utility to let us streamline error handling and return checking from the myQ API.
   private async myqFetch(url: RequestInfo, options: RequestInit): Promise<Response> {
     let response: Response;

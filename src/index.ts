@@ -225,6 +225,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         }
       });
 
+/*
     // Make sure we can detect obstructions.
     accessory
       .getService(hap.Service.GarageDoorOpener)!
@@ -246,7 +247,7 @@ class myQPlatform implements DynamicPlatformPlugin {
           callback(new Error("Unable to update obstruction status, accessory unreachable."));
         }
       });
-
+*/
     // Add this to the accessory array so we can track it.
     this.accessories.push(accessory);
   }
