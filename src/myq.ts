@@ -16,6 +16,7 @@ export interface myQDevice {
   readonly serial_number: string,
   readonly state: {
     readonly door_state: string,
+    readonly dps_low_battery_mode: string,
     readonly firmware_version: string
   }
 }
@@ -390,19 +391,19 @@ export class myQ {
       // Bad username and password.
       if(response.status === 401) {
         this.log("Invalid username or password given. Check your login and password.");
-        return undefined;
+        return null;
       }
 
       // Some other unknown error occurred.
       if(!response.ok) {
         this.log("myQ API error: %s %s", response.status, response.statusText);
-        return undefined;
+        return null;
       }
 
       return response;
     } catch(error) {
       this.log.error("Fetch error encountered: " + error);
-      return undefined;
+      return null;
     }
   }
 }
