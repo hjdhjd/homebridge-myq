@@ -317,7 +317,7 @@ export class myQ {
 
     this.Devices = data.items;
 
-    this.Devices.forEach((device: any) => {
+    this.Devices.forEach((device: myQDevice) => {
       this.log("Device:");
       this.log(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
     });

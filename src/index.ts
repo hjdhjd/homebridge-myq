@@ -581,7 +581,7 @@ class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // We've explicitly enabled this opener.
-    if(this.configOptions.indexOf("Show." + (device.serial_number as any)) !== -1) {
+    if(this.configOptions.indexOf("Show." + (device.serial_number)) !== -1) {
       return true;
     }
 
