@@ -52,10 +52,7 @@ sudo npm install -g homebridge-myq2
 Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq2/edit/master/CHANGELOG.md).
 
 # What's new in 2.0
-This plugin has been completely rewritten and updated to work with the modern [homebridge](https://homebridge.io) APIs. As a result, some prior functionality is currently unavailable.
-Features that are not currently supported (but may be in a future update):
-
-- Battery support is not included. If someone has need for this functionality, create an issue and I can work with you to identify what's needed to expose this as I don't have access to devices with a battery status.
+This plugin has been completely rewritten and updated to work with the modern [homebridge](https://homebridge.io) APIs.
 
 ## Things to be aware of
 - **This plugin requires homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of homebridge.**
@@ -83,7 +80,7 @@ The `options` setting is an array of strings used to customize feature options. 
 
 * <CODE>Hide.<i>serialnumber</I></CODE> - hide the opener or gateway identified by `serialnumber` from HomeKit.
 * <CODE>Show.<i>serialnumber</I></CODE> - show the opener or gateway identified by `serialnumber` from HomeKit.
-    
+
 The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
 
 Before using this feature, you should understand how gateways and openers work in myQ. Gateways are the devices in your home that actually communicate your status to myQ. Openers are attached to gateways. A typical home will have a single gateway and one, or more, openers. If you choose to hide a gateway, you will also hide all the openers associated with that gateway.
