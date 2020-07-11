@@ -312,7 +312,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         .getService(hap.Service.AccessoryInformation)!
         .getCharacteristic(hap.Characteristic.SerialNumber).updateValue(device.serial_number);
 
-/*
+      /*
       // Set us up to report battery status, but only if it's supported by the device.
       // This has to go here rather than in configureAccessory since we won't have a connection yet to the myQ API
       // at that point to verify whether or not we have a battery-capable device to status against.
@@ -412,7 +412,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       const targetState = this.doorTargetBias(myQState);
 
       accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
-/*
+      /*
       const batteryStatus = this.doorPositionSensorBatteryStatus(accessory);
       
       // Update battery status only if it's supported by the device.
