@@ -248,7 +248,6 @@ export class myQ {
     // Notify the user about any new devices that we've discovered.
     if(items) {
       items.forEach((newDevice: myQDevice) => {
-        var hwInfo;
 
         if(this.Devices) {
           // We already know about this device.
@@ -258,7 +257,7 @@ export class myQ {
         }
 
         // Get what type of device we are, if we know it.
-        hwInfo = this.getHwInfo(newDevice.serial_number);
+        const hwInfo = this.getHwInfo(newDevice.serial_number);
 
         // We've discovered a new device.
         this.log("myQ %s discovered: %s%s (serial number: %s%s.",

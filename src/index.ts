@@ -15,7 +15,7 @@ import {
   PlatformConfig
 } from "homebridge";
 
-import { myQ, myQDevice, myQHwInfo } from "./myq";
+import { myQ, myQDevice } from "./myq";
 
 const PLUGIN_NAME = "homebridge-myq2";
 const PLATFORM_NAME = "myQ";
@@ -172,7 +172,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         } else if(value === hap.Characteristic.TargetDoorState.CLOSED) {
 
           // HomeKit is informing us to close the door, but let's make sure it's not already closed first.
-          if(myQState != hap.Characteristic.CurrentDoorState.CLOSED) {
+          if(myQState !== hap.Characteristic.CurrentDoorState.CLOSED) {
             this.log("%s is closing.", accessory.displayName);
             this.doorCommand(accessory, "close");
 
@@ -190,7 +190,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         } else if(value === hap.Characteristic.TargetDoorState.OPEN) {
 
           // HomeKit is informing us to open the door, but we don't want to act if it's already open.
-          if(myQState != hap.Characteristic.CurrentDoorState.OPEN) {
+          if(myQState !== hap.Characteristic.CurrentDoorState.OPEN) {
             this.log("%s is opening.", accessory.displayName);
             this.doorCommand(accessory, "open");
 
@@ -290,11 +290,11 @@ class myQPlatform implements DynamicPlatformPlugin {
       // Update the firmware revision for this device.
       // Fun fact: This firmware information is stored on the gateway not the opener.
       const gwParent = this.myQ.Devices.find((x: myQDevice) => x.serial_number === device.parent_device_id);
-      var gwBrand = "Liftmaster";
-      var gwProduct = "myQ";
+      let gwBrand = "Liftmaster";
+      let gwProduct = "myQ";
 
       if(gwParent && gwParent.state && gwParent.state.firmware_version) {
-        var gwInfo = this.myQ.getHwInfo(gwParent.serial_number);
+        const gwInfo = this.myQ.getHwInfo(gwParent.serial_number);
 
         accessory
           .getService(hap.Service.AccessoryInformation)!
