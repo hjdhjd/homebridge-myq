@@ -19,12 +19,12 @@ export interface myQDevice {
     readonly online: boolean,
     readonly firmware_version?: string
   }
-};
+}
 
 export interface myQHwInfo {
   readonly product: string,
   readonly brand: string
-};
+}
 
 let debug = false;
 

@@ -39,6 +39,7 @@ class myQPlatform implements DynamicPlatformPlugin {
   private myQOBSTRUCTED = 8675309;
 
   private configOptions: string[] = [];
+  private unsupportedDevices: string[] = [];
 
   private configPoll = {
     longPoll: 15,
@@ -280,6 +281,17 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       const uuid = hap.uuid.generate(device.serial_number);
+
+      // We are only interested in garage door openers. Perhaps more types in the future.
+      if(!device.device_family || device.device_family.indexOf("garagedoor") === -1) {
+        if((this.unsupportedDevices.find((x: string) => x === uuid)!) === undefined) {
+          this.unsupportedDevices.push(uuid);
+          this.log("myQ %s device not supported, skipped: %s (serial number: %s%s.", device.device_family, device.name, device.serial_number,
+            device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
+        }
+        return;
+      }
+
       let accessory: PlatformAccessory;
       let isNew = 0;
 
