@@ -279,7 +279,6 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to refresh. Will retry later.");
-
       return false;
     }
 

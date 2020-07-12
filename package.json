@@ -7,7 +7,6 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "rimraf ./dist && tsc",
-    "install": "npm run build",
     "lint": "eslint src/**.ts",
     "prepublishOnly": "npm run lint && npm run build",
     "postpublish": "npm run clean",
