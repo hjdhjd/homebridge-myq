@@ -19,7 +19,12 @@ export interface myQDevice {
     readonly online: boolean,
     readonly firmware_version?: string
   }
-}
+};
+
+export interface myQHwInfo {
+  readonly product: string,
+  readonly brand: string
+};
 
 let debug = false;
 
@@ -90,7 +95,7 @@ export class myQ {
     MyQApplicationId: myqAppId,
     SecurityToken: ""
   };
-  
+
   // List all the door types we know about. For future use...
   private myqDoorTypes = [
     "commercialdooropener",
@@ -243,6 +248,8 @@ export class myQ {
     // Notify the user about any new devices that we've discovered.
     if(items) {
       items.forEach((newDevice: myQDevice) => {
+        var hwInfo;
+
         if(this.Devices) {
           // We already know about this device.
           if(this.Devices.find((x: myQDevice) => x.serial_number === newDevice.serial_number) !== undefined) {
@@ -250,8 +257,15 @@ export class myQ {
           }
         }
 
+        // Get what type of device we are, if we know it.
+        hwInfo = this.getHwInfo(newDevice.serial_number);
+
         // We've discovered a new device.
-        this.log("myQ %s device discovered: %s (serial number: %s%s.", newDevice.device_family, newDevice.name, newDevice.serial_number,
+        this.log("myQ %s discovered: %s%s (serial number: %s%s.",
+          newDevice.device_family,
+          newDevice.name,
+          hwInfo ? " [" + hwInfo.brand + " " + hwInfo.product + "]": "",
+          newDevice.serial_number,
           newDevice.parent_device_id ? ", gateway: " + newDevice.parent_device_id + ")" : ")");
 
         if(debug) {
@@ -380,16 +394,54 @@ export class myQ {
 
     return null as unknown as myQDevice;
   }
-  /*
+
   // Return device manufacturer and model information based on the serial number, if we can.
-  getInfo(serial: string): ??? {
-    
-     // We only know about gateway devices and not individual openers, so we can only decode those.
-     // According to Liftmaster, here's how you can decode what device you're using.
-     const myQInfo = {
-     };
+  getHwInfo(serial: string): myQHwInfo {
+
+    // We only know about gateway devices and not individual openers, so we can only decode those.
+    // According to Liftmaster, here's how you can decode what device you're using:
+    //
+    // The MyQ serial number for the Wi-Fi GDO, MyQ Home Bridge, MyQ Smart Garage Hub,
+    // MyQ Garage (Wi-Fi Hub) and Internet Gateway is 12 characters long. The first two characters,
+    // typically "GW", followed by 2 characters that are decoded according to the table below to
+    // identify the device type and brand, with the remaining 8 characters representing the serial number.
+    const HwInfo: {[index: string]: myQHwInfo} = {
+      "00": { product: "Ethernet Gateway",          brand: "Chamberlain" },
+      "01": { product: "Ethernet Gateway",          brand: "Liftmaster" },
+      "02": { product: "Ethernet Gateway",          brand: "Craftsman" },
+      "03": { product: "WiFi Hub",                  brand: "Chamberlain" },
+      "04": { product: "WiFi Hub",                  brand: "Liftmaster" },
+      "05": { product: "WiFi Hub",                  brand: "Craftsman" },
+      "0A": { product: "WiFi GDO AC",               brand: "Chamberlain" },
+      "0B": { product: "WiFi GDO AC",               brand: "Liftmaster" },
+      "0C": { product: "WiFi GDO AC",               brand: "Craftsman" },
+      "0D": { product: "WiFi GDO AC",               brand: "myQ Replacement Logic Board" },
+      "0E": { product: "WiFi GDO AC 3/4 HP",        brand: "Chamberlain" },
+      "0F": { product: "WiFi GDO AC 3/4 HP",        brand: "Liftmaster" },
+      "10": { product: "WiFi GDO AC 3/4 HP",        brand: "Craftsman" },
+      "11": { product: "WiFi GDO AC 3/4 HP",        brand: "myQ Replacement Logic Board" },
+      "12": { product: "WiFi GDO DC 1.25 HP",       brand: "Chamberlain" },
+      "13": { product: "WiFi GDO DC 1.25 HP",       brand: "Liftmaster" },
+      "14": { product: "WiFi GDO DC 1.25 HP",       brand: "Craftsman" },
+      "15": { product: "WiFi GDO DC 1.25 HP",       brand: "myQ Replacement Logic Board" },
+      "20": { product: "myQ Home Bridge",           brand: "Chamberlain" },
+      "21": { product: "myQ Home Bridge",           brand: "Liftmaster" },
+      "23": { product: "Smart Garage Hub",          brand: "Chamberlain" },
+      "24": { product: "Smart Garage Hub",          brand: "Liftmaster" },
+      "27": { product: "WiFi Wall Mount Opener",    brand: "Liftmaster" },
+      "28": { product: "WiFi Wall Mount Operator",  brand: "Liftmaster Commercial" },
+      "80": { product: "Ethernet Gateway",          brand: "Liftmaster EU" },
+      "81": { product: "Ethernet Gateway",          brand: "Chamberlain EU" }
+    };
+
+    if(!serial || (serial.length < 4)) {
+      return undefined as unknown as myQHwInfo;
+    }
+
+    // Use the third and fourth characters as indices into the hardware matrix.
+    return HwInfo[serial[2] + serial[3]];
   }
-  */
+
   // Utility to let us streamline error handling and return checking from the myQ API.
   private async myqFetch(url: RequestInfo, options: RequestInit): Promise<Response> {
     let response: Response;
