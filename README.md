@@ -58,6 +58,12 @@ This plugin has been completely rewritten and updated to work with the modern [h
 
 - The configuration block for `config.json` has changed to rename the platform (and it is case sensitive as well). **This is a breaking change and you will need to update your `config.json` to reflect the updates**.
 
+- If your myQ device has support for battery status, `homebridge-myq2` will automatically detect this and add support for it to HomeKit. However, you **will** see a warning message in the [homebridge](https://homebridge.io) logs along the lines of:
+    ```
+    HAP Warning: Characteristic 00000079-0000-1000-8000-0026BB765291 not in required or optional characteristics for service 00000041-0000-1000-8000-0026BB765291. Adding anyway.
+    ```
+  This can be safely ignored. It's an error message indicating that, in HomeKit, garage door opener accessory service doesn't normally support battery status. HomeKit will still report it correctly, and alert you accordingly.
+
 # Plugin Configuration
 Add the platform in `config.json` in your home directory inside `.homebridge`.
 

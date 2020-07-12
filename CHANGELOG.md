@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.1
+  ## Changes
+  
+  * Enhancement: deduce the type of device and brand based on serial number.
+  * Enhancement: inform users when we choose not to add a device to HomeKit because we don't support it yet.
+  * Bugfix: don't attempt to open or close the door if we're already in that state.
+  * Bugfix: acquire a new myQ API security token regularly (thanks @dxdc for helping track this one down).
+  * Bugfix: address a potential race condition when we check for battery information availability (on supported models).
+
 ## v2.1.0
   ## Changes
   
@@ -48,4 +57,3 @@ All notable changes to this project will be documented in this file. This projec
 	* Platform name has changed to `myQ`. **This will break existing configurations, so ensure you regenerate or update your `config.json` accordingly**.
 	* The settings `gateways` and `openers` still exist but currently do nothing. This will be fixed in a future release.
 	* Battery status is no longer provided as it doesn't seem to exist in the most recent myQ API. **If you were using this feature, please open an issue and the author can work with you to determine if the API exposes this functionality and make it available in this plugin**.
-
