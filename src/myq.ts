@@ -49,7 +49,7 @@ const myqAppId = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzH
 const myqAgent = "okhttp/3.10.0";
 
 // Renew myQ security credentials every 20 hours.
-const tokenExpirationWindow = 20 * 60 * 60 * 1000;
+const myqTokenExpirationWindow = 20 * 60 * 60 * 1000;
 
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
@@ -121,7 +121,7 @@ export class myQ {
   }
 
   // Log us into myQ and get a security token.
-  private async myqAuthenticate(): Promise<boolean> {
+  private async acquireSecurityToken(): Promise<boolean> {
     const now = Date.now();
 
     // Reset the API call time.
@@ -153,10 +153,14 @@ export class myQ {
       return false;
     }
 
+    if(this.securityToken) {
+      this.log("Refreshed the myQ security token.");
+    } else {
+      this.log("Successfully connected to the myQ API.");
+    }
+
     this.securityToken = data.SecurityToken;
     this.securityTokenTimestamp = now;
-
-    this.log("Successfully connected to the myQ API.");
 
     if(debug) {
       this.log("Token: %s", this.securityToken);
@@ -168,10 +172,41 @@ export class myQ {
     return true;
   }
 
-  // Login and get our account information.
-  async login(): Promise<boolean> {
+  // Refresh the security token.
+  private async checkSecurityToken(): Promise<boolean> {
+    const now = Date.now();
+
     // If we don't have a security token yet, acquire one before proceeding.
-    if(!this.securityToken && !(await this.myqAuthenticate())) {
+    if(!this.accountID && !(await this.getAccount())) {
+      return false;
+    }
+
+    // Is it time to refresh? If not, we're good for now.
+    if((now - this.securityTokenTimestamp) < myqTokenExpirationWindow) {
+      return true;
+    }
+
+    // We want to throttle how often we call this API to no more than once every 15 minutes.
+    if((now - this.lastAuthenticateCall) < (15 * 60 * 1000)) {
+      if(debug) {
+        this.log("Throttling acquireSecurityToken API call.");
+      }
+
+      return true;
+    }
+
+    if(debug) {
+      this.log("Refreshing myQ security token.");
+    }
+
+    // Now regenerate our security token.
+    return await this.acquireSecurityToken();
+  }
+
+  // Get our myQ account information.
+  private async getAccount(): Promise<boolean> {
+    // If we don't have a security token yet, acquire one before proceeding.
+    if(!this.securityToken && !(await this.acquireSecurityToken())) {
       return false;
     }
 
@@ -229,8 +264,8 @@ export class myQ {
     // Reset the API call time.
     this.lastRefreshDevicesCall = now;
 
-    // If we don't have our account information yet, acquire it before proceeding.
-    if(!this.accountID && !(await this.login())) {
+    // Validate and potentially refresh our security token.
+    if(!(await this.checkSecurityToken())) {
       return false;
     }
 
@@ -244,19 +279,6 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to refresh. Will retry later.");
-
-      if((now - this.securityTokenTimestamp) > tokenExpirationWindow) {
-        this.log("myQ security token may be expired. Will attempt to refresh token.");
-
-        // We want to throttle how often we call this API to no more than once every 15 minutes.
-        if((now - this.lastAuthenticateCall) < (15 * 60 * 1000)) {
-          if(debug) {
-            this.log("Throttling myqAuthenticate API call.");
-          }
-        } else {
-          await this.myqAuthenticate();
-        }
-      }
 
       return false;
     }
@@ -325,8 +347,8 @@ export class myQ {
 
   // Query the details of a specific myQ device.
   async queryDevice(log: Logging, deviceId: string): Promise<boolean> {
-    // If we don't have our account information yet, acquire it before proceeding.
-    if(!this.accountID && !(await this.login())) {
+    // Validate and potentially refresh our security token.
+    if(!(await this.checkSecurityToken())) {
       return false;
     }
 
@@ -365,8 +387,8 @@ export class myQ {
 
   // Execute an action on a myQ device.
   async execute(deviceId: string, command: string): Promise<boolean> {
-    // If we don't have our account information yet, acquire it before proceeding.
-    if(!this.accountID && !(await this.login())) {
+    // Validate and potentially refresh our security token.
+    if(!(await this.checkSecurityToken())) {
       return false;
     }
 
@@ -384,7 +406,7 @@ export class myQ {
     return true;
   }
 
-  // Get the details of a specific device in our list.
+  // Get the details of a specific device in the myQ device list.
   getDevice(hap: HAP, uuid: string): myQDevice {
     let device: myQDevice;
     const now = Date.now();
