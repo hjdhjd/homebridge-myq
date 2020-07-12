@@ -46,7 +46,7 @@ sudo npm install -g homebridge-myq2
 # Changelog
 Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq2/blob/master/CHANGELOG.md).
 
-# What's new in 2.0
+# What's new in 2.x
 This plugin has been completely rewritten and updated to work with the modern [homebridge](https://homebridge.io) APIs.
 
 ## Things to be aware of
