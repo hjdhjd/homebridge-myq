@@ -39,7 +39,6 @@ class myQPlatform implements DynamicPlatformPlugin {
   private myQOBSTRUCTED = 8675309;
 
   private configOptions: string[] = [];
-  private unsupportedDevices: string[] = [];
 
   private configPoll = {
     longPoll: 15,
@@ -53,7 +52,8 @@ class myQPlatform implements DynamicPlatformPlugin {
 
   private pollingTimer!: NodeJS.Timeout;
 
-  private batteryStatusConfigured: { [index: string]: boolean } = {};
+  private batteryDeviceSupport: { [index: string]: boolean } = {};
+  private unsupportedDevices: { [index: string]: boolean } = {};
 
   private myQStateMap: {[index: number]: string} = {
     [hap.Characteristic.CurrentDoorState.OPEN]: "open",
@@ -272,6 +272,17 @@ class myQPlatform implements DynamicPlatformPlugin {
 
       // We are only interested in garage door openers. Perhaps more types in the future.
       if(!device.device_family || device.device_family.indexOf("garagedoor") === -1) {
+
+        // Notify the user we see this device, but we aren't adding it to HomeKit.
+        if(this.unsupportedDevices[device.serial_number]) {
+
+          this.unsupportedDevices[device.serial_number] = true;
+
+          this.log("myQ device category '%s' is not currently supported, ignoring: %s (serial number: %s%s).",
+            device.device_family, device.name, device.serial_number,
+            device.parent_device_id ? ", gateway: " + device.parent_device_id : "");
+        }
+
         return;
       }
 
@@ -281,16 +292,6 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
 
       const uuid = hap.uuid.generate(device.serial_number);
-
-      // We are only interested in garage door openers. Perhaps more types in the future.
-      if(!device.device_family || device.device_family.indexOf("garagedoor") === -1) {
-        if((this.unsupportedDevices.find((x: string) => x === uuid)!) === undefined) {
-          this.unsupportedDevices.push(uuid);
-          this.log("myQ %s device not supported, skipped: %s (serial number: %s%s.", device.device_family, device.name, device.serial_number,
-            device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
-        }
-        return;
-      }
 
       let accessory: PlatformAccessory;
       let isNew = 0;
@@ -340,7 +341,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       // Set us up to report battery status, but only if it's supported by the device.
       // This has to go here rather than in configureAccessory since we won't have a connection yet to the myQ API
       // at that point to verify whether or not we have a battery-capable device to status against.
-      if(!this.batteryStatusConfigured[accessory.UUID] && (this.doorPositionSensorBatteryStatus(accessory) !== -1)) {
+      if(!this.batteryDeviceSupport[accessory.UUID] && (this.doorPositionSensorBatteryStatus(accessory) !== -1)) {
         accessory
           .getService(hap.Service.GarageDoorOpener)!
           .getCharacteristic(hap.Characteristic.StatusLowBattery)!
@@ -354,7 +355,7 @@ class myQPlatform implements DynamicPlatformPlugin {
 
         // We only want to configure this once, not on each update.
         // Not the most elegant solution, but it gets the job done.
-        this.batteryStatusConfigured[accessory.UUID] = true;
+        this.batteryDeviceSupport[accessory.UUID] = true;
       }
 
       // Only add this device if we previously haven't added it to HomeKit.

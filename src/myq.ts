@@ -285,12 +285,12 @@ export class myQ {
         const hwInfo = this.getHwInfo(newDevice.serial_number);
 
         // We've discovered a new device.
-        this.log("myQ %s discovered: %s%s (serial number: %s%s.",
+        this.log("myQ %s discovered: %s%s (serial number: %s%s).",
           newDevice.device_family,
           newDevice.name,
           hwInfo ? " [" + hwInfo.brand + " " + hwInfo.product + "]": "",
           newDevice.serial_number,
-          newDevice.parent_device_id ? ", gateway: " + newDevice.parent_device_id + ")" : ")");
+          newDevice.parent_device_id ? ", gateway: " + newDevice.parent_device_id : "");
 
         if(debug) {
           this.log(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
