@@ -169,6 +169,7 @@ class myQPlatform implements DynamicPlatformPlugin {
             accessory.displayName, actionAttempt, actionExisting);
 
           callback(new Error("Unable to accept a new set event while another is completing."));
+
         } else if(value === hap.Characteristic.TargetDoorState.CLOSED) {
 
           // HomeKit is informing us to close the door, but let's make sure it's not already closed first.
@@ -188,7 +189,6 @@ class myQPlatform implements DynamicPlatformPlugin {
           callback();
 
         } else if(value === hap.Characteristic.TargetDoorState.OPEN) {
-
           // HomeKit is informing us to open the door, but we don't want to act if it's already open.
           if(myQState !== hap.Characteristic.CurrentDoorState.OPEN) {
             this.log("%s is opening.", accessory.displayName);
@@ -203,9 +203,11 @@ class myQPlatform implements DynamicPlatformPlugin {
           callback();
 
         } else {
+
           // HomeKit has told us something that we don't know how to handle.
           this.log("Unknown SET event received: %s", value);
           callback(new Error("Unknown SET event received: " + value));
+
         }
       });
 

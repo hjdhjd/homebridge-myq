@@ -48,7 +48,8 @@ const myqApidev = myqApi + "." + myqVersionMinor;
 const myqAppId = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
 const myqAgent = "okhttp/3.10.0";
 
-const tokenExpirationWindow = 20*60*60*1000; // 20 hours
+// Renew myQ security credentials every 20 hours.
+const tokenExpirationWindow = 20 * 60 * 60 * 1000;
 
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
@@ -217,7 +218,7 @@ export class myQ {
     // We want to throttle how often we call this API as a failsafe. If we call it more
     // than once every five seconds or so, bad things can happen on the myQ side leading
     // to potential account lockouts. The author definitely learned this one the hard way.
-    if(this.lastRefreshDevicesCall && ((now - this.lastRefreshDevicesCall) < (5*1000))) {
+    if(this.lastRefreshDevicesCall && ((now - this.lastRefreshDevicesCall) < (5 * 1000))) {
       if(debug) {
         this.log("Throttling refreshDevices API call. Using cached data from the past five seconds.");
       }
@@ -247,8 +248,8 @@ export class myQ {
       if((now - this.securityTokenTimestamp) > tokenExpirationWindow) {
         this.log("myQ security token may be expired. Will attempt to refresh token.");
 
-        // We want to throttle how often we call this API
-        if((now - this.lastAuthenticateCall) < 15*60*1000) {
+        // We want to throttle how often we call this API to no more than once every 15 minutes.
+        if((now - this.lastAuthenticateCall) < (15 * 60 * 1000)) {
           if(debug) {
             this.log("Throttling myqAuthenticate API call.");
           }
@@ -390,17 +391,9 @@ export class myQ {
 
     // Check to make sure we have fresh information from myQ. If it's less than a minute
     // old, it looks good to us.
-    if(!this.Devices || !this.lastRefreshDevicesCall || ((now - this.lastRefreshDevicesCall) > (60*1000))) {
+    if(!this.Devices || !this.lastRefreshDevicesCall || ((now - this.lastRefreshDevicesCall) > (60 * 1000))) {
       return null as unknown as myQDevice;
     }
-
-    device = this.Devices!.find(
-      (x: myQDevice) =>
-        x.device_family &&
-        x.device_family.indexOf("garagedoor") !== -1 &&
-        x.serial_number &&
-        hap.uuid.generate(x.serial_number) === uuid
-    )!;
 
     // Iterate through the list and find the device that matches the UUID we seek.
     // This works because homebridge always generates the same UUID for a given input -
@@ -461,7 +454,9 @@ export class myQ {
       return undefined as unknown as myQHwInfo;
     }
 
-    // Use the third and fourth characters as indices into the hardware matrix.
+    // Use the third and fourth characters as indices into the hardware matrix. Admittedly,
+    // we don't have a way to resolve the first two characters to ensure we are matching
+    // against the right category of devices.
     return HwInfo[serial[2] + serial[3]];
   }
 
