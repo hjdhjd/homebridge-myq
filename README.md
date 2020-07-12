@@ -98,8 +98,10 @@ The priority given to these options works in this order, from highest to lowest 
 
 ### Advanced Configuration (Optional)
 This step is not required. The defaults should work well for almost everyone.
+
 ```js
-"platforms": [{
+"platforms": [
+  {
     "platform": "myQ",
     "name": "myQ",
     "email": "email@email.com",
@@ -111,20 +113,20 @@ This step is not required. The defaults should work well for almost everyone.
     "shortPoll": 5,
     "shortPollDuration": 600,
     "options": ["Hide.GW12345", "Show.CG6789"]
-}]
-
+  }
+]
 ```
 
-| Fields            | Description                                      | Default | Required |
-|-------------------|--------------------------------------------------|---------|----------|
-| platform          | Must always be `myQ`.                            |         | Yes      |
-| name              | For logging purposes.                            |         | No       |
-| email             | Your myQ account email.                          |         | Yes      |
-| password          | Your myQ account password.                       |         | Yes      |
-| debug             | Logging verbosity for debugging purporses.       | false   | No       |
-| openDuration      | Time in `s` to open garage door completely.      | 15      | No       |
-| closeDuration     | Time in `s` to close garage door completely.     | 25      | No       |
-| longPoll          | Normal polling interval in `s`.                  | 15      | No       |
-| shortPoll         | Polling interval in `s` when door state changes. | 5       | No       |
-| shortPollDuration | Duration in `s` to use `shortPoll`.              | 600     | No       |
-| options           | Configure plugin [feature options](#feature-options). | []      | No       |
+| Fields            | Description                                             | Default | Required |
+|-------------------|---------------------------------------------------------|---------|----------|
+| platform          | Must always be `myQ`.                                   |         | Yes      |
+| name              | For logging purposes.                                   |         | No       |
+| email             | Your myQ account email.                                 |         | Yes      |
+| password          | Your myQ account password.                              |         | Yes      |
+| debug             | Logging verbosity for debugging purporses.              | false   | No       |
+| openDuration      | Time in `s` to open garage door completely.             | 15      | No       |
+| closeDuration     | Time in `s` to close garage door completely.            | 25      | No       |
+| longPoll          | Normal polling interval in `s`.                         | 15      | No       |
+| shortPoll         | Polling interval in `s` when door state changes.        | 5       | No       |
+| shortPollDuration | Duration in `s` to use `shortPoll`.                     | 600     | No       |
+| options           | Configure plugin [feature options](#feature-options).   | []      | No       |
