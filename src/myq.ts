@@ -154,7 +154,7 @@ export class myQ {
     }
 
     if(this.securityToken) {
-      this.log("Refreshed the myQ security token.");
+      this.log("Successfully refreshed myQ security token.");
     } else {
       this.log("Successfully connected to the myQ API.");
     }
