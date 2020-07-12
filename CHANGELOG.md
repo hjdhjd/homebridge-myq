@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. This projec
 
 ## v2.1.2
   
-  * Fix: fix npm install script.
+  * Fix: repair npm install script.
 
 ## v2.1.1
   
