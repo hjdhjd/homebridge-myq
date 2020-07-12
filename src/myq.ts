@@ -128,7 +128,7 @@ export class myQ {
     this.lastAuthenticateCall = now;
 
     // Login to the myQ API and get a security token for our session.
-    const response = await this.myqFetch(myqApi + "/Login", {
+    const response = await this.fetch(myqApi + "/Login", {
       method: "POST",
       headers: this.myqHeaders,
       body: JSON.stringify({ UserName: this.Email, Password: this.Password })
@@ -213,7 +213,7 @@ export class myQ {
     // Get the account information.
     const params = new URLSearchParams({ expand: "account" });
 
-    const response = await this.myqFetch(myqApi + "/My?" + params, {
+    const response = await this.fetch(myqApi + "/My?" + params, {
       method: "GET",
       headers: this.myqHeaders
     });
@@ -272,7 +272,7 @@ export class myQ {
     // Get the list of device information.
     const params = new URLSearchParams({ filterOn: "true" });
 
-    const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/Devices?" + params, {
+    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/Devices?" + params, {
       method: "GET",
       headers: this.myqHeaders
     });
@@ -353,7 +353,7 @@ export class myQ {
     }
 
     // Get the list of device information.
-    const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
+    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
       method: "GET",
       headers: this.myqHeaders
     });
@@ -392,7 +392,7 @@ export class myQ {
       return false;
     }
 
-    const response = await this.myqFetch(myqApidev + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
+    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
       method: "PUT",
       headers: this.myqHeaders,
       body: JSON.stringify({ action_type: command })
@@ -483,7 +483,7 @@ export class myQ {
   }
 
   // Utility to let us streamline error handling and return checking from the myQ API.
-  private async myqFetch(url: RequestInfo, options: RequestInit): Promise<Response> {
+  private async fetch(url: RequestInfo, options: RequestInit): Promise<Response> {
     let response: Response;
 
     try {
