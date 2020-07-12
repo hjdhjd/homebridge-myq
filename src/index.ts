@@ -15,7 +15,7 @@ import {
   PlatformConfig
 } from "homebridge";
 
-import { myQ, myQDevice } from "./myq";
+import { myQ, myQDevice, myQHwInfo } from "./myq";
 
 const PLUGIN_NAME = "homebridge-myq2";
 const PLATFORM_NAME = "myQ";
@@ -50,13 +50,8 @@ class myQPlatform implements DynamicPlatformPlugin {
     count: 0
   };
 
-  private configDevices = {
-    gateways: [],
-    openers: []
-  };
-
   private pollingTimer!: NodeJS.Timeout;
-  
+
   private batteryStatusConfigured: { [index: string]: boolean } = {};
 
   private myQStateMap: {[index: number]: string} = {
@@ -134,7 +129,7 @@ class myQPlatform implements DynamicPlatformPlugin {
   configureAccessory(accessory: PlatformAccessory): void {
     // Give this accessory an identity handler.
     accessory.on(PlatformAccessoryEvent.IDENTIFY, () => {
-      this.log("%s identified!", accessory.displayName);
+      this.log("%s identified.", accessory.displayName);
     });
 
     const gdOpener = accessory.getService(hap.Service.GarageDoorOpener);
@@ -175,32 +170,37 @@ class myQPlatform implements DynamicPlatformPlugin {
 
           callback(new Error("Unable to accept a new set event while another is completing."));
         } else if(value === hap.Characteristic.TargetDoorState.CLOSED) {
-          // HomeKit is informing us to close the door.
-          this.log("%s is closing.", accessory.displayName);
-          this.doorCommand(accessory, "close");
+
+          // HomeKit is informing us to close the door, but let's make sure it's not already closed first.
+          if(myQState != hap.Characteristic.CurrentDoorState.CLOSED) {
+            this.log("%s is closing.", accessory.displayName);
+            this.doorCommand(accessory, "close");
+
+            // We set this to closing instead of closed for a couple of reasons. First, myQ won't immediately execute
+            // this command for safety reasons - it enforces a warning tone for a few seconds before it starts the action.
+            // Second, HomeKit gets confused with our multiple updates of this value, so we'll set it to closing and hope
+            // for the best.
+            accessory
+              .getService(hap.Service.GarageDoorOpener)!
+              .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.CLOSING);
+          }
 
           callback();
-
-          // We set this to closing instead of closed for a couple of reasons. First, myQ won't immediately execute
-          // this command for safety reasons - it enforces a warning tone for a few seconds before it starts the action.
-          // Second, HomeKit gets confused with our multiple updates of this value, so we'll set it to closing and hope
-          // for the best.
-          accessory
-            .getService(hap.Service.GarageDoorOpener)!
-            .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.CLOSING);
 
         } else if(value === hap.Characteristic.TargetDoorState.OPEN) {
 
-          // HomeKit is informing us to open the door.
-          this.log("%s is opening.", accessory.displayName);
-          this.doorCommand(accessory, "open");
+          // HomeKit is informing us to open the door, but we don't want to act if it's already open.
+          if(myQState != hap.Characteristic.CurrentDoorState.OPEN) {
+            this.log("%s is opening.", accessory.displayName);
+            this.doorCommand(accessory, "open");
+
+            // We set this to opening instad of open because we want to show our state transitions to HomeKit and end users.
+            accessory
+              .getService(hap.Service.GarageDoorOpener)!
+              .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.OPENING);
+          }
 
           callback();
-
-          // We set this to opening instad of open because we want to show our state transitions to HomeKit and end users.
-          accessory
-            .getService(hap.Service.GarageDoorOpener)!
-            .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.OPENING);
 
         } else {
           // HomeKit has told us something that we don't know how to handle.
@@ -290,29 +290,39 @@ class myQPlatform implements DynamicPlatformPlugin {
       // Update the firmware revision for this device.
       // Fun fact: This firmware information is stored on the gateway not the opener.
       const gwParent = this.myQ.Devices.find((x: myQDevice) => x.serial_number === device.parent_device_id);
+      var gwBrand = "Liftmaster";
+      var gwProduct = "myQ";
 
       if(gwParent && gwParent.state && gwParent.state.firmware_version) {
+        var gwInfo = this.myQ.getHwInfo(gwParent.serial_number);
+
         accessory
           .getService(hap.Service.AccessoryInformation)!
           .getCharacteristic(hap.Characteristic.FirmwareRevision).updateValue(gwParent.state.firmware_version);
+
+        // If we're able to lookup hardware information, use it. getHwInfo returns an array containing
+        // device type and brand information.
+        if(gwInfo) {
+          gwProduct = gwInfo.product;
+          gwBrand = gwInfo.brand;
+        }
       }
 
       // Update the manufacturer information for this device.
       accessory
         .getService(hap.Service.AccessoryInformation)!
-        .getCharacteristic(hap.Characteristic.Manufacturer).updateValue("Liftmaster");
+        .getCharacteristic(hap.Characteristic.Manufacturer).updateValue(gwBrand);
 
       // Update the model information for this device.
       accessory
         .getService(hap.Service.AccessoryInformation)!
-        .getCharacteristic(hap.Characteristic.Model).updateValue("myQ");
-          
+        .getCharacteristic(hap.Characteristic.Model).updateValue(gwProduct);
+
       // Update the serial number for this device.
       accessory
         .getService(hap.Service.AccessoryInformation)!
         .getCharacteristic(hap.Characteristic.SerialNumber).updateValue(device.serial_number);
 
-/*
       // Set us up to report battery status, but only if it's supported by the device.
       // This has to go here rather than in configureAccessory since we won't have a connection yet to the myQ API
       // at that point to verify whether or not we have a battery-capable device to status against.
@@ -327,12 +337,11 @@ class myQPlatform implements DynamicPlatformPlugin {
               callback(new Error("Unable to update battery status, accessory unreachable."));
             }
           });
-        
+
         // We only want to configure this once, not on each update.
         // Not the most elegant solution, but it gets the job done.
         this.batteryStatusConfigured[accessory.UUID] = true;
       }
-  */
 
       // Only add this device if we previously haven't added it to HomeKit.
       if(isNew) {
@@ -364,7 +373,7 @@ class myQPlatform implements DynamicPlatformPlugin {
         this.log("Removing myQ %s device: %s (serial number: %s%s from HomeKit.", device.device_family, device.name, device.serial_number,
           device.parent_device_id ? ", gateway: " + device.parent_device_id + ")" : ")");
       }
-      
+
       this.log("Removing myQ device: %s", oldAccessory.displayName);
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [oldAccessory]);
       delete this.accessories[this.accessories.indexOf(oldAccessory)];
@@ -412,14 +421,13 @@ class myQPlatform implements DynamicPlatformPlugin {
       const targetState = this.doorTargetBias(myQState);
 
       accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
-/*
+
       const batteryStatus = this.doorPositionSensorBatteryStatus(accessory);
-      
+
       // Update battery status only if it's supported by the device.
       if(batteryStatus !== -1) {
         accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.StatusLowBattery)?.updateValue(batteryStatus);
       }
-*/
     });
 
     // Check for any new or removed accessories from myQ.
@@ -495,7 +503,7 @@ class myQPlatform implements DynamicPlatformPlugin {
 
   // Open or close the door for an accessory.
   private doorCommand(accessory: PlatformAccessory, command: string) {
-  
+
     // myQ commands and the associated polling intervals to go with them.
     const myQCommandPolling: {[index: string]: number} = {
       open:  this.configPoll.openDuration,
