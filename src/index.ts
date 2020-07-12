@@ -274,7 +274,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       if(!device.device_family || device.device_family.indexOf("garagedoor") === -1) {
 
         // Notify the user we see this device, but we aren't adding it to HomeKit.
-        if(this.unsupportedDevices[device.serial_number]) {
+        if(!this.unsupportedDevices[device.serial_number]) {
 
           this.unsupportedDevices[device.serial_number] = true;
 
