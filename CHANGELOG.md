@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## v2.1.2
+  ## Changes
+  
+  * Bugfix: fix npm install script.
+
 ## v2.1.1
   ## Changes
   
