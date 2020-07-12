@@ -273,15 +273,24 @@ class myQPlatform implements DynamicPlatformPlugin {
       // We are only interested in garage door openers. Perhaps more types in the future.
       if(!device.device_family || device.device_family.indexOf("garagedoor") === -1) {
 
-        // Notify the user we see this device, but we aren't adding it to HomeKit.
-        if(!this.unsupportedDevices[device.serial_number]) {
-
-          this.unsupportedDevices[device.serial_number] = true;
-
-          this.log("myQ device category '%s' is not currently supported, ignoring: %s (serial number: %s%s).",
-            device.device_family, device.name, device.serial_number,
-            device.parent_device_id ? ", gateway: " + device.parent_device_id : "");
+        // Unless we are debugging device discovery, ignore any devices without a parent
+        // device attached to them. These are typically gateways, hubs, etc. that shouldn't
+        // be causing us to alert anyway.
+        if(!debug && !device.parent_device_id) {
+          return;
         }
+
+        // If we've already informed the user about this one, we're done.
+        if(this.unsupportedDevices[device.serial_number]) {
+          return;
+        }
+
+        // Notify the user we see this device, but we aren't adding it to HomeKit.
+        this.unsupportedDevices[device.serial_number] = true;
+
+        this.log("myQ device category '%s' is not currently supported, ignoring: %s (serial number: %s%s).",
+          device.device_family, device.name, device.serial_number,
+          device.parent_device_id ? ", gateway: " + device.parent_device_id : "");
 
         return;
       }
@@ -342,20 +351,26 @@ class myQPlatform implements DynamicPlatformPlugin {
       // This has to go here rather than in configureAccessory since we won't have a connection yet to the myQ API
       // at that point to verify whether or not we have a battery-capable device to status against.
       if(!this.batteryDeviceSupport[accessory.UUID] && (this.doorPositionSensorBatteryStatus(accessory) !== -1)) {
-        accessory
-          .getService(hap.Service.GarageDoorOpener)!
-          .getCharacteristic(hap.Characteristic.StatusLowBattery)!
-          .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
-            if(accessory.reachable) {
-              callback(null, this.doorPositionSensorBatteryStatus(accessory));
-            } else {
-              callback(new Error("Unable to update battery status, accessory unreachable."));
-            }
-          });
+        const gdService = accessory.getService(hap.Service.GarageDoorOpener);
 
-        // We only want to configure this once, not on each update.
-        // Not the most elegant solution, but it gets the job done.
-        this.batteryDeviceSupport[accessory.UUID] = true;
+        // Verify we've already setup the garage door service before trying to configure it.
+        if(gdService) {
+          gdService
+            .getCharacteristic(hap.Characteristic.StatusLowBattery)!
+            .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
+
+              if(accessory.reachable) {
+                callback(null, this.doorPositionSensorBatteryStatus(accessory));
+              } else {
+                callback(new Error("Unable to update battery status, accessory unreachable."));
+              }
+            });
+
+          // We only want to configure this once, not on each update.
+          // Not the most elegant solution, but it gets the job done.
+          this.batteryDeviceSupport[accessory.UUID] = true;
+
+        }
       }
 
       // Only add this device if we previously haven't added it to HomeKit.
@@ -600,7 +615,8 @@ class myQPlatform implements DynamicPlatformPlugin {
       return -1;
     }
 
-    return device.state.dps_low_battery_mode ? hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW : hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
+    return device.state.dps_low_battery_mode ? hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_LOW :
+      hap.Characteristic.StatusLowBattery.BATTERY_LEVEL_NORMAL;
   }
 
   // Utility function to let us know if a my! device should be visible in HomeKit or not.
