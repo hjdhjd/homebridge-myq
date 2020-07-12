@@ -48,6 +48,8 @@ const myqApidev = myqApi + "." + myqVersionMinor;
 const myqAppId = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
 const myqAgent = "okhttp/3.10.0";
 
+const tokenExpirationWindow = 20*60*60*1000; // 20 hours
+
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
  * reverse engineering the official app, myQ website, and trial and error.
@@ -80,10 +82,12 @@ export class myQ {
   private Email: string;
   private Password: string;
   private securityToken: string;
+  private securityTokenTimestamp!: number;
   private accountID: string;
   Devices!: Array<myQDevice>;
   private log: Logging;
-  private lastCall!: number;
+  private lastAuthenticateCall!: number;
+  private lastRefreshDevicesCall!: number;
 
   // Headers that the myQ API expects.
   private myqHeaders = {
@@ -117,6 +121,11 @@ export class myQ {
 
   // Log us into myQ and get a security token.
   private async myqAuthenticate(): Promise<boolean> {
+    const now = Date.now();
+
+    // Reset the API call time.
+    this.lastAuthenticateCall = now;
+
     // Login to the myQ API and get a security token for our session.
     const response = await this.myqFetch(myqApi + "/Login", {
       method: "POST",
@@ -144,6 +153,7 @@ export class myQ {
     }
 
     this.securityToken = data.SecurityToken;
+    this.securityTokenTimestamp = now;
 
     this.log("Successfully connected to the myQ API.");
 
@@ -207,16 +217,16 @@ export class myQ {
     // We want to throttle how often we call this API as a failsafe. If we call it more
     // than once every five seconds or so, bad things can happen on the myQ side leading
     // to potential account lockouts. The author definitely learned this one the hard way.
-    if(this.lastCall && ((now - this.lastCall) < (5*1000))) {
+    if(this.lastRefreshDevicesCall && ((now - this.lastRefreshDevicesCall) < (5*1000))) {
       if(debug) {
-        this.log("Throttling myQ API call. Using cached data from the past five seconds.");
+        this.log("Throttling refreshDevices API call. Using cached data from the past five seconds.");
       }
 
       return this.Devices ? true : false;
     }
 
     // Reset the API call time.
-    this.lastCall = now;
+    this.lastRefreshDevicesCall = now;
 
     // If we don't have our account information yet, acquire it before proceeding.
     if(!this.accountID && !(await this.login())) {
@@ -233,6 +243,20 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to refresh. Will retry later.");
+
+      if((now - this.securityTokenTimestamp) > tokenExpirationWindow) {
+        this.log("myQ security token may be expired. Will attempt to refresh token.");
+
+        // We want to throttle how often we call this API
+        if((now - this.lastAuthenticateCall) < 15*60*1000) {
+          if(debug) {
+            this.log("Throttling myqAuthenticate API call.");
+          }
+        } else {
+          await this.myqAuthenticate();
+        }
+      }
+
       return false;
     }
 
@@ -366,7 +390,7 @@ export class myQ {
 
     // Check to make sure we have fresh information from myQ. If it's less than a minute
     // old, it looks good to us.
-    if(!this.Devices || !this.lastCall || ((now - this.lastCall) > (60 * 1000))) {
+    if(!this.Devices || !this.lastRefreshDevicesCall || ((now - this.lastRefreshDevicesCall) > (60*1000))) {
       return null as unknown as myQDevice;
     }
 

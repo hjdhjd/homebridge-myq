@@ -7,6 +7,7 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "build": "rimraf ./dist && tsc",
+    "install": "npm run build",
     "lint": "eslint src/**.ts",
     "prepublishOnly": "npm run lint && npm run build",
     "postpublish": "npm run clean",
@@ -43,8 +44,8 @@
   "homepage": "https://github.com/hjdhjd/homebridge-myq2#readme",
   "devDependencies": {
     "@types/node": "10.17.25",
-    "@typescript-eslint/eslint-plugin": "^3.5.0",
-    "@typescript-eslint/parser": "^3.5.0",
+    "@typescript-eslint/eslint-plugin": "^3.6.0",
+    "@typescript-eslint/parser": "^3.6.0",
     "eslint": "^7.4.0",
     "homebridge": "^1.1.1",
     "rimraf": "^3.0.2",
