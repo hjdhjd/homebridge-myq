@@ -255,7 +255,7 @@ class myQPlatform implements DynamicPlatformPlugin {
   }
 
   // Sync our devies between HomeKit and what the myQ API is showing us.
-  async myQUpdateDeviceList() {
+  private async myQUpdateDeviceList() {
     // First we check if all the existing accessories we've cached still exist on the myQ API.
     // Login to myQ and refresh the full device list from the myQ API.
     if(!(await this.myQ.refreshDevices())) {
@@ -273,10 +273,9 @@ class myQPlatform implements DynamicPlatformPlugin {
       // We are only interested in garage door openers. Perhaps more types in the future.
       if(!device.device_family || device.device_family.indexOf("garagedoor") === -1) {
 
-        // Unless we are debugging device discovery, ignore any devices without a parent
-        // device attached to them. These are typically gateways, hubs, etc. that shouldn't
-        // be causing us to alert anyway.
-        if(!debug && !device.parent_device_id) {
+        // Unless we are debugging device discovery, ignore any gateway devices.
+        // These are typically gateways, hubs, etc. that shouldn't be causing us to alert anyway.
+        if(!debug && device.device_family === "gateway") {
           return;
         }
 
@@ -561,11 +560,9 @@ class myQPlatform implements DynamicPlatformPlugin {
 
   // Return our bias for what the current door state should be. This is primarily used for our initial bias on startup.
   private doorCurrentBias(myQState: CharacteristicValue): CharacteristicValue {
-    // We need to be careful with respect to the target state and we need to make some
-    // reasonable assumptions about where we intend to end up. If we are opening or closing,
-    // our target state needs to be the completion of those actions. If we're stopped or
-    // obstructed, we're going to assume the desired target state is to be open, since that
-    // is the typical garage door behavior.
+    // Our current state reflects having to take an opinion on what open or closed means to
+    // HomeKit. For the obvious states, this is easy. For some of the edge cases, it can be less so.
+    // Our north star is that if we are in a stopped or obstructed state, we are open.
     switch(myQState) {
       case hap.Characteristic.CurrentDoorState.OPEN:
       case hap.Characteristic.CurrentDoorState.OPENING:
