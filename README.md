@@ -14,7 +14,7 @@
 # Homebridge myQ2
 myQ Liftmaster and Chamberlain Plugin for [Homebridge](https://homebridge.io)
 
-`homebridge-myq2` is a HomeBridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster and Chamberlain.
+`homebridge-myq2` is a Homebridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster and Chamberlain.
 
 There are two ways to be able to control a myQ-compatible garage door opener through HomeKit:
 
@@ -22,7 +22,7 @@ There are two ways to be able to control a myQ-compatible garage door opener thr
 Unfortunately, some of us have encountered issues with the hardware bridge in a real world setting, where it either stops working or hangs for extended periods of time.
 Others have encountered no issues and this solution works well.
 
-2. A plugin for [homebridge](https://homebridge.io) like this one that emulates the capabilities of a myQ bridge.
+2. A plugin for [Homebridge](https://homebridge.io) like this one that emulates the capabilities of a myQ bridge.
 
 Either solution will provide a complete solution to automating your garage door and you'll soon be automating your home with HomeKit like you always dreamed of. :)
 
@@ -32,12 +32,8 @@ Either solution will provide a complete solution to automating your garage door 
 In a nutshell, the aim of this plugin for things to "just work". Without complex configuration options needed for the functionality you would expect from a first-party HomeKit plugin. But of course, those granular options are available as well for the adventurous or those with more esoteric use cases. What does "just work" mean? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener or other myQ device and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
 # Installation
-If you are new to Homebridge, please first read the Homebridge [documentation](https://homebridge.io).
+If you are new to Homebridge, please first read the Homebridge [documentation](https://homebridge.io) and install Homebridge before proceeding.
 
-Install homebridge:
-```sh
-sudo npm install -g --unsafe-perm homebridge
-```
 Install homebridge-myq2:
 ```sh
 sudo npm install -g homebridge-myq2
@@ -47,10 +43,10 @@ sudo npm install -g homebridge-myq2
 Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq2/blob/master/CHANGELOG.md).
 
 # What's new in 2.x
-This plugin has been completely rewritten and updated to work with the modern [homebridge](https://homebridge.io) APIs.
+This plugin has been completely rewritten and updated to work with the modern [Homebridge](https://homebridge.io) APIs.
 
 ## Things to be aware of
-- **This plugin requires homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of homebridge.**
+- **This plugin requires Homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of Homebridge.**
 
 - The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future breaking changes that may come.
 
@@ -58,14 +54,14 @@ This plugin has been completely rewritten and updated to work with the modern [h
 
 - The configuration block for `config.json` has changed to rename the platform (and it is case sensitive as well). **This is a breaking change and you will need to update your `config.json` to reflect the updates**.
 
-- If your myQ device has support for battery status, `homebridge-myq2` will automatically detect this and add support for it to HomeKit. However, you **will** see a warning message in the [homebridge](https://homebridge.io) logs along the lines of:
+- If your myQ device has support for battery status, `homebridge-myq2` will automatically detect this and add support for it to HomeKit. However, you **will** see a warning message in the [Homebridge](https://homebridge.io) logs along the lines of:
     ```
     HAP Warning: Characteristic 00000079-0000-1000-8000-0026BB765291 not in required or optional characteristics for service 00000041-0000-1000-8000-0026BB765291. Adding anyway.
     ```
   This can be safely ignored. It's an error message indicating that, in HomeKit, garage door opener accessory service doesn't normally support battery status. HomeKit will still report it correctly, and alert you accordingly.
 
 # Plugin Configuration
-Add the platform in `config.json` in your home directory inside `.homebridge`.
+If you choose to configure this plugin directly instead of using the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
 
 ```js
 "platforms": [{
@@ -74,6 +70,8 @@ Add the platform in `config.json` in your home directory inside `.homebridge`.
     "password": "password"
 }]
 ```
+
+For most people, the recommendation is to use the Homebridge configuration user interface to configure this plugin rather than doing so directly. It's easier to use and less prone to typos, particularly for newer users.
 
 ### Feature Options
 Feature options allow you to enable or disable certain features in this plugin.
