@@ -80,8 +80,8 @@ const myqTokenExpirationWindow = 20 * 60 * 60 * 1000;
  */
 
 export class myQ {
-  private Email: string;
-  private Password: string;
+  private email: string;
+  private password: string;
   private securityToken: string;
   private securityTokenTimestamp!: number;
   private accountID: string;
@@ -91,14 +91,14 @@ export class myQ {
   private lastRefreshDevicesCall!: number;
 
   // Headers that the myQ API expects.
-  private myqHeaders = {
+  private headers = {
     "Content-Type": "application/json",
     "User-Agent": myqAgent,
-    ApiVersion: myqVersion,
-    BrandId: "2",
-    Culture: "en",
-    MyQApplicationId: myqAppId,
-    SecurityToken: ""
+    "ApiVersion": myqVersion,
+    "BrandId": "2",
+    "Culture": "en",
+    "MyQApplicationId": myqAppId,
+    "SecurityToken": ""
   };
 
   // List all the door types we know about. For future use...
@@ -113,8 +113,8 @@ export class myQ {
   // Initialize this instance with our login information.
   constructor(log: Logging, email: string, password: string, wantDebug: boolean) {
     this.log = log;
-    this.Email = email;
-    this.Password = password;
+    this.email = email;
+    this.password = password;
     this.securityToken = "";
     this.accountID = "";
     debug = wantDebug;
@@ -130,8 +130,8 @@ export class myQ {
     // Login to the myQ API and get a security token for our session.
     const response = await this.fetch(myqApi + "/Login", {
       method: "POST",
-      headers: this.myqHeaders,
-      body: JSON.stringify({ UserName: this.Email, Password: this.Password })
+      headers: this.headers,
+      body: JSON.stringify({ UserName: this.email, Password: this.password })
     });
 
     if(!response) {
@@ -167,7 +167,7 @@ export class myQ {
     }
 
     // Add the token to our headers that we will use for subsequent API calls.
-    this.myqHeaders.SecurityToken = this.securityToken;
+    this.headers.SecurityToken = this.securityToken;
 
     return true;
   }
@@ -215,7 +215,7 @@ export class myQ {
 
     const response = await this.fetch(myqApi + "/My?" + params, {
       method: "GET",
-      headers: this.myqHeaders
+      headers: this.headers
     });
 
     if(!response) {
@@ -270,11 +270,9 @@ export class myQ {
     }
 
     // Get the list of device information.
-    const params = new URLSearchParams({ filterOn: "true" });
-
-    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/Devices?" + params, {
+    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/Devices", {
       method: "GET",
-      headers: this.myqHeaders
+      headers: this.headers
     });
 
     if(!response) {
@@ -354,7 +352,7 @@ export class myQ {
     // Get the list of device information.
     const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
       method: "GET",
-      headers: this.myqHeaders
+      headers: this.headers
     });
 
     if(!response) {
@@ -393,7 +391,7 @@ export class myQ {
 
     const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
       method: "PUT",
-      headers: this.myqHeaders,
+      headers: this.headers,
       body: JSON.stringify({ action_type: command })
     });
 
