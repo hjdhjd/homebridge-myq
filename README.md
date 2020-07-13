@@ -34,7 +34,10 @@ In a nutshell, the aim of this plugin for things to "just work". Without complex
 # Installation
 If you are new to Homebridge, please first read the Homebridge [documentation](https://homebridge.io) and install Homebridge before proceeding.
 
-Install homebridge-myq2:
+If you have installed the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you can intall this plugin by going to the `Plugins` tab and searching for `homebridge-myq2` and installing it.
+
+If you prefer to install `homebridge-myq2` from the command line, you can do so by executing:
+
 ```sh
 sudo npm install -g homebridge-myq2
 ```
