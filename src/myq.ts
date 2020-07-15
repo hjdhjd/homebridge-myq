@@ -186,8 +186,8 @@ export class myQ {
       return true;
     }
 
-    // We want to throttle how often we call this API to no more than once every 15 minutes.
-    if((now - this.lastAuthenticateCall) < (15 * 60 * 1000)) {
+    // We want to throttle how often we call this API to no more than once every 5 minutes.
+    if((now - this.lastAuthenticateCall) < (5 * 60 * 1000)) {
       if(debug) {
         this.log("Throttling acquireSecurityToken API call.");
       }
@@ -220,6 +220,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to login. Will retry later.");
+      await this.acquireSecurityToken();
       return false;
     }
 
@@ -277,6 +278,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to refresh. Will retry later.");
+      await this.acquireSecurityToken();
       return false;
     }
 
@@ -357,6 +359,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to query device. Will retry later.");
+      await this.acquireSecurityToken();
       return false;
     }
 
@@ -397,6 +400,7 @@ export class myQ {
 
     if(!response) {
       this.log("myQ API error: unable to execute command.");
+      await this.acquireSecurityToken();
       return false;
     }
 
