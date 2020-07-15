@@ -121,7 +121,9 @@ class myQPlatform implements DynamicPlatformPlugin {
 
     // This event gets fired after homebridge has restored all cached accessories and called their respective
     // `configureAccessory` function.
-    api.on(APIEvent.DID_FINISH_LAUNCHING, this.myQPolling.bind(this, 0));
+    //
+    // Fire off our polling, with an immediate status refresh to begin with to provide us that responsive feeling.
+    api.on(APIEvent.DID_FINISH_LAUNCHING, this.myQPolling.bind(this, this.configPoll.longPoll * -1));
   }
 
   // This gets called when homebridge restores cached accessories at startup. We
@@ -307,7 +309,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       // See if we already know about this accessory or if it's truly new.
       if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)!) === undefined) {
         isNew = 1;
-        accessory = new Accessory("myQ " + device.name, uuid);
+        accessory = new Accessory(device.name, uuid);
       }
 
       // Update the firmware revision for this device.
