@@ -219,7 +219,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to login. Will retry later.");
+      this.log("myQ API error: unable to login. Will refresh the security token and retry later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -277,7 +277,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to refresh. Will retry later.");
+      this.log("myQ API error: unable to refresh. Will refresh the security token and retry later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -358,7 +358,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to query device. Will retry later.");
+      this.log("myQ API error: unable to query device. Will refresh the security token and retry later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -399,7 +399,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to execute command.");
+      this.log("myQ API error: unable to execute command. Will refresh the security token and retry later.");
       await this.acquireSecurityToken();
       return false;
     }
