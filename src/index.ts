@@ -221,13 +221,7 @@ class myQPlatform implements DynamicPlatformPlugin {
       .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
         const err = null;
 
-        // If the accessory is reachable, report back with status. Otherwise, appear as
-        // unreachable.
-        if(accessory.reachable) {
-          callback(err, this.doorStatus(accessory));
-        } else {
-          callback(new Error("Unable to update door status, accessory unreachable."));
-        }
+        callback(err, this.doorStatus(accessory));
       });
 
     // Make sure we can detect obstructions.
@@ -237,19 +231,13 @@ class myQPlatform implements DynamicPlatformPlugin {
       .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
         const err = null;
 
-        // If the accessory is reachable, report back with status. Otherwise, appear as
-        // unreachable.
-        if(accessory.reachable) {
-          const doorState = this.doorStatus(accessory);
+        const doorState = this.doorStatus(accessory);
 
-          if(doorState === this.myQOBSTRUCTED) {
-            this.log("%s has detected an obstruction.", accessory.displayName);
-          }
-
-          callback(err, doorState === this.myQOBSTRUCTED);
-        } else {
-          callback(new Error("Unable to update obstruction status, accessory unreachable."));
+        if(doorState === this.myQOBSTRUCTED) {
+          this.log("%s has detected an obstruction.", accessory.displayName);
         }
+
+        callback(err, doorState === this.myQOBSTRUCTED);
       });
 
     // Add this to the accessory array so we can track it.
@@ -257,12 +245,12 @@ class myQPlatform implements DynamicPlatformPlugin {
   }
 
   // Sync our devies between HomeKit and what the myQ API is showing us.
-  private async myQUpdateDeviceList() {
+  private async myQUpdateDeviceList(): Promise<boolean> {
     // First we check if all the existing accessories we've cached still exist on the myQ API.
     // Login to myQ and refresh the full device list from the myQ API.
     if(!(await this.myQ.refreshDevices())) {
       this.log("Unable to login to the myQ API. Will continue to retry at regular polling intervals.");
-      return 0;
+      return false;
     }
 
     // Iterate through the list of devices that myQ has returned and sync them with what we show HomeKit.
@@ -360,11 +348,7 @@ class myQPlatform implements DynamicPlatformPlugin {
             .getCharacteristic(hap.Characteristic.StatusLowBattery)!
             .on(CharacteristicEventTypes.GET, (callback: NodeCallback<CharacteristicValue>) => {
 
-              if(accessory.reachable) {
-                callback(null, this.doorPositionSensorBatteryStatus(accessory));
-              } else {
-                callback(new Error("Unable to update battery status, accessory unreachable."));
-              }
+              callback(null, this.doorPositionSensorBatteryStatus(accessory));
             });
 
           // We only want to configure this once, not on each update.
@@ -385,9 +369,6 @@ class myQPlatform implements DynamicPlatformPlugin {
         // Refresh the accessory with these values.
         this.api.updatePlatformAccessories([accessory]);
       }
-
-      // Not strictly needed, but helpful for non-default HomeKit apps.
-      accessory.updateReachability(true);
     });
 
     // Remove myQ devices that are no longer found in the myQ API, but we still have in HomeKit.
@@ -410,19 +391,15 @@ class myQPlatform implements DynamicPlatformPlugin {
       delete this.accessories[this.accessories.indexOf(oldAccessory)];
     });
 
-    return 1;
+    return true;
   }
 
   // Update HomeKit with the latest status from myQ.
-  private async updateAccessories() {
-    // Refresh our state from the myQ API.
-    if(!(await this.myQ.refreshDevices())) {
-      // We can't get a connection to the myQ API. Set all our accessories as unnreachable for now.
-      this.accessories.forEach((accessory: PlatformAccessory) => {
-        accessory.updateReachability(false);
-      });
+  private async updateAccessories(): Promise<boolean> {
 
-      return 0;
+    // Check for any new or removed accessories from myQ.
+    if(!(await this.myQUpdateDeviceList())) {
+      return false;
     }
 
     // Iterate through our accessories and update its status with the corresponding myQ
@@ -436,9 +413,6 @@ class myQPlatform implements DynamicPlatformPlugin {
         this.log("Unable to retrieve status for device: %s", accessory.displayName);
         return;
       }
-
-      // Mark us as reachable.
-      accessory.updateReachability(true);
 
       if(oldState !== myQState) {
         this.log("%s is %s.", accessory.displayName, this.myQStateMap[myQState as number]);
@@ -461,12 +435,11 @@ class myQPlatform implements DynamicPlatformPlugin {
       }
     });
 
-    // Check for any new or removed accessories from myQ.
-    await this.myQUpdateDeviceList();
+    return true;
   }
 
   // Periodically poll the myQ API for status.
-  private myQPolling(delay: number) {
+  private myQPolling(delay: number): void {
     let refresh = this.configPoll.longPoll + delay;
 
     // Clear the last polling interval out.
@@ -533,7 +506,7 @@ class myQPlatform implements DynamicPlatformPlugin {
   }
 
   // Open or close the door for an accessory.
-  private doorCommand(accessory: PlatformAccessory, command: string) {
+  private doorCommand(accessory: PlatformAccessory, command: string): void {
 
     // myQ commands and the associated polling intervals to go with them.
     const myQCommandPolling: {[index: string]: number} = {
