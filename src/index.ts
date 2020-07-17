@@ -249,7 +249,6 @@ class myQPlatform implements DynamicPlatformPlugin {
     // First we check if all the existing accessories we've cached still exist on the myQ API.
     // Login to myQ and refresh the full device list from the myQ API.
     if(!(await this.myQ.refreshDevices())) {
-      this.log("Unable to login to the myQ API. Will continue to retry at regular polling intervals.");
       return false;
     }
 
