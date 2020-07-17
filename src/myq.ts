@@ -135,7 +135,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to authenticate. Will retry later.");
+      this.log("myQ API: unable to authenticate. Will retry later.");
       return false;
     }
 
@@ -219,7 +219,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to login. Will refresh the security token and retry later.");
+      this.log("myQ API: unable to login. Acquiring a new security token and retrying later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -277,7 +277,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to refresh. Will refresh the security token and retry later.");
+      this.log("myQ API: unable to refresh. Acquiring a new security token and retrying later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -358,7 +358,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to query device. Will refresh the security token and retry later.");
+      this.log("myQ API: unable to query device. Acquiring a new security token and retrying later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -399,7 +399,7 @@ export class myQ {
     });
 
     if(!response) {
-      this.log("myQ API error: unable to execute command. Will refresh the security token and retry later.");
+      this.log("myQ API: unable to execute command. Acquiring a new security token and retrying later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -504,7 +504,7 @@ export class myQ {
 
       return response;
     } catch(error) {
-      this.log.error("Fetch error encountered: " + error);
+      this.log.error(error);
       return null as unknown as Promise<Response>;
     }
   }
