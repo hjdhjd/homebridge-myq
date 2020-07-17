@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file. This projec
 ## v2.1.3
 
   * Fix: refresh security tokens more often to address potential myQ API issues.
+  * Get a status update from myQ immediately on startup.
   * Remove reachability support since it's now deprecated in HomeKit and homebridge.
   * Refine logging to clarify messages and streamline in places.
   * Minor updates to the code base.
