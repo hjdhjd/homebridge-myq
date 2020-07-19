@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
+All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
 ## v2.1.3
 
