@@ -1,4 +1,6 @@
-/* Copyright(C) 2020, HJD (https://github.com/hjdhjd). All rights reserved.
+/* Copyright(C) 2017-2020, HJD (https://github.com/hjdhjd). All rights reserved.
+ *
+ * myq.ts: Our myQ API implementation.
  */
 import { HAP, Logging } from "homebridge";
 
@@ -289,11 +291,11 @@ export class myQ {
       this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
     }
 
-    const items: Array<myQDevice> = data.items;
+    const newDeviceList: Array<myQDevice> = data.items;
 
     // Notify the user about any new devices that we've discovered.
-    if(items) {
-      items.forEach((newDevice: myQDevice) => {
+    if(newDeviceList) {
+      newDeviceList.forEach((newDevice: myQDevice) => {
 
         if(this.Devices) {
           // We already know about this device.
@@ -306,7 +308,7 @@ export class myQ {
         const hwInfo = this.getHwInfo(newDevice.serial_number);
 
         // We've discovered a new device.
-        this.log("myQ %s discovered: %s%s (serial number: %s%s).",
+        this.log("myQ %s device discovered: %s%s (serial number: %s%s).",
           newDevice.device_family,
           newDevice.name,
           hwInfo ? " [" + hwInfo.brand + " " + hwInfo.product + "]": "",
@@ -322,9 +324,9 @@ export class myQ {
     // Notify the user about any devices that have disappeared.
     if(this.Devices) {
       this.Devices.forEach((existingDevice: myQDevice) => {
-        if(items) {
+        if(newDeviceList) {
           // This device still is visible.
-          if(items.find((x: myQDevice) => x.serial_number === existingDevice.serial_number) !== undefined) {
+          if(newDeviceList.find((x: myQDevice) => x.serial_number === existingDevice.serial_number) !== undefined) {
             return;
           }
         }
@@ -339,7 +341,7 @@ export class myQ {
     }
 
     // Save the updated list of devices.
-    this.Devices = items;
+    this.Devices = newDeviceList;
 
     return true;
   }
@@ -375,9 +377,7 @@ export class myQ {
       this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
     }
 
-    this.Devices = data.items;
-
-    this.Devices.forEach((device: myQDevice) => {
+    data.items.forEach((device: myQDevice) => {
       this.log("Device:");
       this.log(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
     });
