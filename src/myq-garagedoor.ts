@@ -179,7 +179,7 @@ export class myQGarageDoor extends myQAccessory {
 
         // Execute this command and begin polling myQ for state changes.
         if(this.doorCommand(hap.Characteristic.TargetDoorState.CLOSED)) {
-          this.log("%s: close command has been sent using the myQ API.", accessory.displayName);
+          // this.log("%s: close command has been sent using the myQ API.", accessory.displayName);
         }
       }
 
@@ -195,7 +195,7 @@ export class myQGarageDoor extends myQAccessory {
 
         // Execute this command and begin polling myQ for state changes.
         if(this.doorCommand(hap.Characteristic.TargetDoorState.OPEN)) {
-          this.log("%s: myQ open command has been sent.", accessory.displayName);
+          // this.log("%s: myQ open command has been sent.", accessory.displayName);
         }
       }
 
@@ -232,16 +232,16 @@ export class myQGarageDoor extends myQAccessory {
 
     if(oldState !== myQState) {
       this.log("%s: %s.", accessory.displayName, myQStateMap[myQState as number]);
+
+      // Update the state in HomeKit. Thanks to @dxdc for suggesting looking at using updateValue
+      // here instead of the more intuitive setCharacteristic due to inevitable race conditions and
+      // set loops that can occur in HomeKit if you aren't careful.
+      accessory.context.doorState = myQState;
+      const targetState = this.doorTargetStateBias(myQState);
+
+      accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.CurrentDoorState)?.updateValue(myQState);
+      accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
     }
-
-    // Update the state in HomeKit. Thanks to @dxdc for suggesting looking at using updateValue
-    // here instead of the more intuitive setCharacteristic due to inevitable race conditions and
-    // set loops that can occur in HomeKit if you aren't careful.
-    accessory.context.doorState = myQState;
-    const targetState = this.doorTargetStateBias(myQState);
-
-    accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.CurrentDoorState)?.updateValue(myQState);
-    accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
 
     const batteryStatus = this.doorPositionSensorBatteryStatus();
 
@@ -309,11 +309,12 @@ export class myQGarageDoor extends myQAccessory {
     this.myQ.execute(device.serial_number, commandPolling[command as number].command);
 
     // Increase the frequency of our polling for state updates to catch any updates from myQ.
+    // This will trigger polling at shortPoll intervals until shortPollDuration is hit. If you
+    // query the myQ API too quickly, the API won't have had a chance to begin executing our command.
     this.platform.configPoll.count = 0;
     this.platform.poll(0);
 
     // this.platform.poll(commandPolling[command] - this.platform.configPoll.shortPoll);
-
     return true;
   }
 
