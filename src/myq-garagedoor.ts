@@ -270,7 +270,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device;
 
     if(!device) {
-      this.log("%s: can't find associated myQ device in the myQ API.", this.accessory.displayName);
+      this.log("%s: can't find the associated device in the myQ API.", this.accessory.displayName);
       return -1;
     }
 
@@ -307,7 +307,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device;
 
     if(!device) {
-      this.log("%s: can't find associated myQ device in the myQ API.", this.accessory.displayName);
+      this.log("%s: can't find the associated device in the myQ API.", this.accessory.displayName);
       return false;
     }
 
@@ -368,7 +368,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device;
 
     if(!device) {
-      this.log("%s: can't find associated myQ device in the myQ API.", this.accessory.displayName, this.accessory.UUID);
+      this.log("%s: can't find the associated device in the myQ API.", this.accessory.displayName, this.accessory.UUID);
       return -1;
     }
 
