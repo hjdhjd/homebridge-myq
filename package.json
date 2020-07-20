@@ -31,7 +31,7 @@
   "license": "ISC",
   "files": [
     "CHANGELOG.md",
-    "LICENSE",
+    "LICENSE.md",
     "README.md",
     "config.schema.json",
     "dist"
