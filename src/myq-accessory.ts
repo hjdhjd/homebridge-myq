@@ -20,6 +20,7 @@ export abstract class myQAccessory {
   protected readonly myQ: myQ;
   protected readonly platform: myQPlatform;
 
+  // The constructor initializes key variables and calls configureDevice().
   constructor(platform: myQPlatform, accessory: PlatformAccessory) {
     this.accessory = accessory;
     this.api = platform.api;
@@ -31,7 +32,12 @@ export abstract class myQAccessory {
     this.configureDevice();
   }
 
+  // All accessories require a configureDevice function. This is where all the
+  // accessory-specific configuration and setup happens.
   protected abstract configureDevice(): void;
 
+  // All accessories require an updateState function. This function gets called every
+  // few seconds to refresh the accessory state based on the latest information from the
+  // myQ API.
   abstract async updateState(): Promise<boolean>;
 }
