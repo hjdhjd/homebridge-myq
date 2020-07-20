@@ -287,11 +287,22 @@ export class myQGarageDoor extends myQAccessory {
 
   // Open or close the door for an accessory.
   private doorCommand(command: CharacteristicValue): boolean {
-    // myQ commands and the associated polling intervals to go with them.
-    const commandPolling: { [index: number]: { command: string, duration: number } } = {
-      [this.hap.Characteristic.TargetDoorState.OPEN]:  { command: "open", duration: this.platform.configPoll.openDuration },
-      [this.hap.Characteristic.TargetDoorState.CLOSED]: { command: "close", duration: this.platform.configPoll.closeDuration }
-    };
+    let myQCommand;
+
+    // Translate the command from HomeKit to myQ.
+    switch(command) {
+      case this.hap.Characteristic.TargetDoorState.OPEN:
+        myQCommand = "open";
+        break;
+
+      case this.hap.Characteristic.TargetDoorState.CLOSED:
+        myQCommand = "close";
+        break;
+
+      default:
+        this.log("%s: unknown door command encountered: %s.", this.accessory.displayName, command);
+        return false;
+    }
 
     const device = this.accessory.context.device;
 
@@ -300,13 +311,8 @@ export class myQGarageDoor extends myQAccessory {
       return false;
     }
 
-    if(commandPolling[command as number] === undefined) {
-      this.log("%s: unknown door command encountered: %s.", this.accessory.displayName, command);
-      return false;
-    }
-
     // Execute the command.
-    this.myQ.execute(device.serial_number, commandPolling[command as number].command);
+    this.myQ.execute(device.serial_number, myQCommand);
 
     // Increase the frequency of our polling for state updates to catch any updates from myQ.
     // This will trigger polling at shortPoll intervals until shortPollDuration is hit. If you
@@ -314,7 +320,6 @@ export class myQGarageDoor extends myQAccessory {
     this.platform.configPoll.count = 0;
     this.platform.poll(0);
 
-    // this.platform.poll(commandPolling[command] - this.platform.configPoll.shortPoll);
     return true;
   }
 

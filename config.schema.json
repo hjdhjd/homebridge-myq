@@ -36,20 +36,6 @@
         "description": "Logging verbosity for debugging purporses. Default: false"
       },
 
-      "openDuration": {
-        "title": "Open Duration",
-        "type": "integer",
-        "required": false,
-        "description": "Time in <code>seconds</code> to check that the garage door has finished opening. Default: 15"
-      },
-
-      "closeDuration": {
-        "title": "Close Duration",
-        "type": "integer",
-        "required": false,
-        "description": "Time in <code>seconds</code> to check that the garage door has finished closing. Default: 25"
-      },
-
       "longPoll": {
         "title": "Long Poll Interval",
         "type": "integer",
@@ -106,8 +92,6 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "openDuration",
-        "closeDuration",
         "longPoll",
         "shortPoll",
         "shortPollDuration",

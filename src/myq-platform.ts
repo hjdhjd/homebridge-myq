@@ -32,8 +32,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
   readonly configPoll = {
     longPoll: 15,
     shortPoll: 5,
-    openDuration: 15,
-    closeDuration: 25,
     shortPollDuration: 600,
     maxCount: 0,
     count: 0
@@ -83,24 +81,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
     if(config.shortPoll) {
       this.configPoll.shortPoll = config.shortPoll;
-    }
-
-    if(config.openDuration) {
-      this.configPoll.openDuration = config.openDuration;
-
-      if(this.configPoll.shortPoll > this.configPoll.openDuration) {
-        this.configPoll.openDuration = this.configPoll.shortPoll;
-        this.log("Configuration setting openDuration cannot be less than shortPoll. Setting openDuration to %s seconds.", this.configPoll.openDuration);
-      }
-    }
-
-    if(config.closeDuration) {
-      this.configPoll.closeDuration = config.closeDuration;
-
-      if(this.configPoll.shortPoll > this.configPoll.closeDuration) {
-        this.configPoll.closeDuration = this.configPoll.shortPoll;
-        this.log("Configuration setting closeDuration cannot be less than shortPoll. Setting closeDuration to %s seconds.", this.configPoll.closeDuration);
-      }
     }
 
     if(config.shortPollDuration) {

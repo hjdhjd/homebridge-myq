@@ -108,8 +108,6 @@ This step is not required. The defaults should work well for almost everyone.
     "email": "email@email.com",
     "password": "password",
     "debug": false,
-    "openDuration": 15,
-    "closeDuration": 25,
     "longPoll": 15,
     "shortPoll": 5,
     "shortPollDuration": 600,
@@ -125,8 +123,6 @@ This step is not required. The defaults should work well for almost everyone.
 | email             | Your myQ account email.                                 |         | Yes      |
 | password          | Your myQ account password.                              |         | Yes      |
 | debug             | Logging verbosity for debugging purporses.              | false   | No       |
-| openDuration      | Time in `s` to open garage door completely.             | 15      | No       |
-| closeDuration     | Time in `s` to close garage door completely.            | 25      | No       |
 | longPoll          | Normal polling interval in `s`.                         | 15      | No       |
 | shortPoll         | Polling interval in `s` when door state changes.        | 5       | No       |
 | shortPollDuration | Duration in `s` to use `shortPoll`.                     | 600     | No       |
