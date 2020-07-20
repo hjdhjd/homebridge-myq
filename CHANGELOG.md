@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
-## v2.1.3
+## 2.1.4 (2020-07-20)
+  * Fix: address a race condition in updating device status.
+  * Logging is more standardized and refined across the plugin.
+  * Deprecate and remove `openDuration` and `closeDuration`. The values have been unused internally for some time, and they don't materially impact polling resolution.
+  * Prepare the plumbing for additional myQ devices.
+
+## 2.1.3 (2020-07-17)
 
   * Fix: refresh security tokens more often to address potential myQ API issues.
   * Get a status update from myQ immediately on startup.
@@ -10,11 +16,11 @@ All notable changes to this project will be documented in this file. This projec
   * Refine logging to clarify messages and streamline in places.
   * Minor updates to the code base.
 
-## v2.1.2
+## 2.1.2 (2020-07-12)
 
   * Fix: repair npm install script.
 
-## v2.1.1
+## 2.1.1 (2020-07-12)
 
   * Enhancement: deduce the type of device and brand based on serial number.
   * Enhancement: inform users when we choose not to add a device to HomeKit because we don't support it yet.
@@ -22,26 +28,27 @@ All notable changes to this project will be documented in this file. This projec
   * Fix: acquire a new myQ API security token regularly (thanks @dxdc for helping track this one down).
   * Fix: address a potential race condition when we check for battery information availability (on supported models).
 
-## v2.1.0
+## 2.1.0 (2020-07-12)
 
   * Feature: include battery status information for devices that support it.
   * Code cleanup.
 
-## v2.0.12-13
+## 2.0.13 (2020-07-11)
+## 2.0.12 (2020-07-11)
 
   * Fix: look at the `device_family` attribute to determine whether it's a garage opener or not, rather than the `device_type` attribute.
 
-## v2.0.11
+## 2.0.11
 
   * New feature: feature options. This replaces the previous gateways and openers settings and should be a bit more intuitive to use.
 
-## v2.0.10
+## 2.0.10
 
   * Improved state handling for opening and closing conditions, including dealing with edge cases.
   * Preserve door state information across homebridge instances, so we remember where we left off.
   * myQ API cleanup.
 
-## v2.0.1 - v2.0.9 (2020-07-04)
+## 2.0.1 - 2.0.9 (2020-07-04)
 
   * API fixes to ensure compatibility.
   * Re-include UI-based configuration.
@@ -51,7 +58,7 @@ All notable changes to this project will be documented in this file. This projec
   Thanks to [shamoon](https://github.com/shamoon) and others for debugging and contributing to the API fixes and troubleshooting.
 
 
-## v2.0.0 (2020-07-03)
+## 2.0.0 (2020-07-03)
 
   ### Breaking Changes
 
