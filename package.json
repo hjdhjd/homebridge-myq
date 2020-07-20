@@ -3,7 +3,31 @@
   "version": "2.1.4",
   "displayName": "Homebridge MyQ",
   "description": "HomeKit integration of myQ enabled devices such as those from LiftMaster and Chamberlain.",
-  "main": "dist/index.js",
+  "author": "HJD https://github.com/hjdhjd",
+  "homepage": "https://github.com/hjdhjd/homebridge-myq2#readme",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hjdhjd/homebridge-myq2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hjdhjd/homebridge-myq2/issues"
+  },
+  "keywords": [
+    "chamberlain",
+    "craftsman",
+    "door",
+    "garage",
+    "garage door",
+    "homebridge",
+    "homebridge-plugin",
+    "liftmaster",
+    "myq",
+    "remote"
+  ],
+  "engines": {
+    "homebridge": ">=1.0.0"
+  },
   "scripts": {
     "build": "rimraf ./dist && tsc",
     "clean": "rimraf ./dist",
@@ -13,22 +37,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "npm run build && npm link && nodemon"
   },
-  "keywords": [
-    "chamberlain",
-    "craftsman",
-    "door",
-    "garage",
-    "homebridge",
-    "homebridge-plugin",
-    "liftmaster",
-    "myq",
-    "remote"
-  ],
-  "author": "HJD https://github.com/hjdhjd",
-  "engines": {
-    "homebridge": ">=1.0.0"
-  },
-  "license": "ISC",
   "files": [
     "CHANGELOG.md",
     "LICENSE.md",
@@ -36,14 +44,7 @@
     "config.schema.json",
     "dist"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/hjdhjd/homebridge-myq2.git"
-  },
-  "bugs": {
-    "url": "https://github.com/hjdhjd/homebridge-myq2/issues"
-  },
-  "homepage": "https://github.com/hjdhjd/homebridge-myq2#readme",
+  "main": "dist/index.js",
   "devDependencies": {
     "@types/node": "^10.17.27",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
