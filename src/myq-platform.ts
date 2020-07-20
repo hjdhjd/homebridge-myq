@@ -150,9 +150,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
         // Notify the user we see this device, but we aren't adding it to HomeKit.
         this.unsupportedDevices[device.serial_number] = true;
 
-        this.log("myQ device category '%s' is not currently supported, ignoring: %s (serial number: %s%s).",
-          device.device_family, device.name, device.serial_number,
-          device.parent_device_id ? ", gateway: " + device.parent_device_id : "");
+        this.log("myQ device family '%s' is not currently supported, ignoring: %s.",
+          device.device_family, this.myQ.getDeviceName(device));
 
         return;
       }
@@ -171,14 +170,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
       if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)!) === undefined) {
         accessory = new Accessory(device.name, uuid);
 
-        // Get what type of device we are, if we know it.
-        const hwInfo = this.myQ.getHwInfo(device.serial_number);
-
-        this.log("%s: adding myQ device to HomeKit%s (serial number: %s%s).",
-          device.name,
-          hwInfo ? " [" + hwInfo.brand + " " + hwInfo.product + "]": "",
-          device.serial_number,
-          device.parent_device_id ? ", gateway: " + device.parent_device_id : "");
+        this.log("%s: adding %s device to HomeKit: %s.",
+          device.name, device.device_family, this.myQ.getDeviceName(device));
 
         // Register this accessory with homebridge and add it to the accessory array so we can track it.
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);

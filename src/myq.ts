@@ -304,16 +304,9 @@ export class myQ {
           }
         }
 
-        // Get what type of device we are, if we know it.
-        const hwInfo = this.getHwInfo(newDevice.serial_number);
-
         // We've discovered a new device.
-        this.log("myQ API: %s device discovered: %s%s (serial number: %s%s).",
-          newDevice.device_family,
-          newDevice.name,
-          hwInfo ? " [" + hwInfo.brand + " " + hwInfo.product + "]": "",
-          newDevice.serial_number,
-          newDevice.parent_device_id ? ", gateway: " + newDevice.parent_device_id : "");
+        this.log("myQ API: %s device discovered: %s.",
+          newDevice.device_family, this.getDeviceName(newDevice));
 
         if(debug) {
           this.log(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
@@ -332,7 +325,7 @@ export class myQ {
         }
 
         // We've had a device disappear.
-        this.log("myQ API: %s device removed: %s (serial number: %s).", existingDevice.device_family, existingDevice.name, existingDevice.serial_number);
+        this.log("myQ API: %s device removed: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
 
         if(debug) {
           this.log(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
@@ -432,6 +425,31 @@ export class myQ {
     }
 
     return null as unknown as myQDevice;
+  }
+
+  // Utility to generate a nicely formatted device string.
+  getDeviceName(device: myQDevice): string {
+
+    // A completely enumerated device will appear as:
+    // DeviceName [DeviceBrand] (serial number: Serial, gateway: GatewaySerial).
+    let deviceString = device.name;
+    const hwInfo = this.getHwInfo(device.serial_number);
+
+    if(hwInfo) {
+      deviceString += " [" + hwInfo.brand + " " + hwInfo.product + "]";
+    }
+
+    if(device.serial_number) {
+      deviceString += " (serial number: " + device.serial_number;
+
+      if(device.parent_device_id) {
+        deviceString += ", gateway: " + device.parent_device_id;
+      }
+
+      deviceString += ")";
+    }
+
+    return deviceString;
   }
 
   // Return device manufacturer and model information based on the serial number, if we can.

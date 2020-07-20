@@ -10,7 +10,7 @@ import {
   NodeCallback
 } from "homebridge";
 
-import { myQDevice } from "./myq";
+import { myQDevice, myQHwInfo } from "./myq";
 import { myQAccessory } from "./myq-accessory";
 import { MYQOBSTRUCTED } from "./settings";
 
@@ -72,13 +72,13 @@ export class myQGarageDoor extends myQAccessory {
     let gwProduct = "myQ";
 
     if(gwParent && gwParent.state && gwParent.state.firmware_version) {
-      const gwInfo = this.myQ.getHwInfo(gwParent.serial_number);
+      const gwInfo: myQHwInfo = this.myQ.getHwInfo(gwParent.serial_number);
 
       accessory
         .getService(hap.Service.AccessoryInformation)!
         .getCharacteristic(hap.Characteristic.FirmwareRevision).updateValue(gwParent.state.firmware_version);
 
-      // If we're able to lookup hardware information, use it. getHwInfo returns an array containing
+      // If we're able to lookup hardware information, use it. getHwInfo returns an object containing
       // device type and brand information.
       if(gwInfo) {
         gwProduct = gwInfo.product;
