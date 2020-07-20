@@ -131,14 +131,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
   }
 
-  // myQ device discovery for HomeKit based on what the myQ API is telling us.
-  private async discoverAccessories(): Promise<boolean> {
-    // First we check if all the existing accessories we've cached still exist on the myQ API.
-    // Login to myQ and refresh the full device list from the myQ API.
-    if(!(await this.myQ.refreshDevices())) {
-      return false;
-    }
-
+  // Discover new myQ devices and sync existing ones with the myQ API.
+  private discoverAndSyncAccessories(): boolean {
     // Remove any device objects from now-stale accessories.
     this.accessories.forEach((accessory: PlatformAccessory) => {
       // We only need to do this if the device object is set.
@@ -247,17 +241,25 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
   // Update HomeKit with the latest status from myQ.
   private async updateAccessories(): Promise<boolean> {
+
+    // Refresh the full device list from the myQ API.
+    if(!(await this.myQ.refreshDevices())) {
+      return false;
+    }
+
+    // Sync my! status and check for any new or removed accessories.
+    await this.discoverAndSyncAccessories();
+
     // Iterate through our accessories and update its status with the corresponding myQ status.
     for(const key in this.configuredAccessories) {
       await this.configuredAccessories[key].updateState();
     }
 
-    // Check for any new or removed accessories from myQ.
-    return await this.discoverAccessories();
+    return true;
   }
 
   // Periodically poll the myQ API for status.
-  poll(delay: number) {
+  poll(delay: number): void {
     let refresh = this.configPoll.longPoll + delay;
 
     // Clear the last polling interval out.
@@ -270,13 +272,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // increased polling frequency (shortPollDuration) and the actual frequency of each
     // update (shortPoll).
     if(this.configPoll.count < this.configPoll.maxCount) {
-      // For our first poll we want to immediately trigger.
-      if(!this.configPoll.count) {
-        refresh = 0;
-      } else {
-        refresh = this.configPoll.shortPoll + delay;
-      }
-
+      refresh = this.configPoll.shortPoll + delay;
       this.configPoll.count++;
     }
 
