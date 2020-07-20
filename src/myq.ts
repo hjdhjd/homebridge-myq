@@ -151,14 +151,14 @@ export class myQ {
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
     if(!data || !data.SecurityToken) {
-      this.log("Unable to get a security token from the myQ API.");
+      this.log("myQ API: unable to acquire a security token.");
       return false;
     }
 
     if(this.securityToken) {
-      this.log("Successfully refreshed myQ security token.");
+      this.log("myQ API: successfully acquired a new security token.");
     } else {
-      this.log("Successfully connected to the myQ API.");
+      this.log("myQ API: successfully connected to the myQ API.");
     }
 
     this.securityToken = data.SecurityToken;
@@ -191,14 +191,14 @@ export class myQ {
     // We want to throttle how often we call this API to no more than once every 5 minutes.
     if((now - this.lastAuthenticateCall) < (5 * 60 * 1000)) {
       if(debug) {
-        this.log("Throttling acquireSecurityToken API call.");
+        this.log("myQ API: throttling acquireSecurityToken API call.");
       }
 
       return true;
     }
 
     if(debug) {
-      this.log("Refreshing myQ security token.");
+      this.log("myQ API: acquiring a new security token.");
     }
 
     // Now regenerate our security token.
@@ -235,7 +235,7 @@ export class myQ {
 
     // No account information returned.
     if(!data || !data.Account) {
-      this.log("Unable to retrieve account information from myQ servers.");
+      this.log("myQ API: unable to retrieve account information from myQ servers.");
       return false;
     }
 
@@ -254,11 +254,11 @@ export class myQ {
     const now = Date.now();
 
     // We want to throttle how often we call this API as a failsafe. If we call it more
-    // than once every five seconds or so, bad things can happen on the myQ side leading
+    // than once every two seconds or so, bad things can happen on the myQ side leading
     // to potential account lockouts. The author definitely learned this one the hard way.
-    if(this.lastRefreshDevicesCall && ((now - this.lastRefreshDevicesCall) < (5 * 1000))) {
+    if(this.lastRefreshDevicesCall && ((now - this.lastRefreshDevicesCall) < (2 * 1000))) {
       if(debug) {
-        this.log("Throttling refreshDevices API call. Using cached data from the past five seconds.");
+        this.log("myQ API: throttling refreshDevices API call. Using cached data from the past five seconds.");
       }
 
       return this.Devices ? true : false;
@@ -308,7 +308,7 @@ export class myQ {
         const hwInfo = this.getHwInfo(newDevice.serial_number);
 
         // We've discovered a new device.
-        this.log("myQ %s device discovered: %s%s (serial number: %s%s).",
+        this.log("myQ API: %s device discovered: %s%s (serial number: %s%s).",
           newDevice.device_family,
           newDevice.name,
           hwInfo ? " [" + hwInfo.brand + " " + hwInfo.product + "]": "",
@@ -332,7 +332,7 @@ export class myQ {
         }
 
         // We've had a device disappear.
-        this.log("myQ %s device removed: %s - %s.", existingDevice.device_family, existingDevice.name, existingDevice.serial_number);
+        this.log("myQ API: %s device removed: %s (serial number: %s).", existingDevice.device_family, existingDevice.name, existingDevice.serial_number);
 
         if(debug) {
           this.log(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
@@ -369,7 +369,7 @@ export class myQ {
     const data = await response.json();
 
     if(!data || !data.items) {
-      log("Error querying device '%s'", deviceId);
+      log("myQ API: error querying device: %s.", deviceId);
       return false;
     }
 
@@ -492,13 +492,13 @@ export class myQ {
 
       // Bad username and password.
       if(response.status === 401) {
-        this.log("Invalid username or password given. Check your login and password.");
+        this.log("myQ API: invalid myQ credentials given. Check your login and password.");
         return null as unknown as Promise<Response>;
       }
 
       // Some other unknown error occurred.
       if(!response.ok) {
-        this.log("myQ API error: %s %s", response.status, response.statusText);
+        this.log("myQ API: error: %s %s", response.status, response.statusText);
         return null as unknown as Promise<Response>;
       }
 
