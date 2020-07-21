@@ -11,8 +11,6 @@
 </span>
 
 # myQ (Liftmaster and Chamberlain) garage and myQ devices support for [Homebridge](https://homebridge.io).
-myQ Liftmaster and Chamberlain Plugin for [Homebridge](https://homebridge.io)
-
 `homebridge-myq2` is a Homebridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster and Chamberlain.
 
 There are two ways to be able to control a myQ-compatible garage door opener through HomeKit:
