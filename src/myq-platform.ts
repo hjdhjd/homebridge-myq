@@ -17,10 +17,12 @@ import { myQApi, myQDevice } from "./myq-api";
 import { myQAccessory } from "./myq-accessory";
 import { myQGarageDoor } from "./myq-garagedoor";
 
+import util from "util";
+
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
 
-let debug = false;
+let debugMode = false;
 
 export class myQPlatform implements DynamicPlatformPlugin {
   readonly log: Logging;
@@ -65,10 +67,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
     // Capture configuration parameters.
     if(config.debug) {
-      debug = config.debug === true;
-      if(debug) {
-        this.log("Debug logging on. Expect a lot of data.");
-      }
+      debugMode = config.debug === true;
+      this.debug("Debug logging on. Expect a lot of data.");
     }
 
     if(config.options) {
@@ -91,7 +91,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.configPoll.count = this.configPoll.maxCount;
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQApi(this.log, config.email, config.password, config.debug);
+    this.myQ = new myQApi(this.log, config.email, config.password, debugMode);
 
     // This event gets fired after homebridge has restored all cached accessories and called their respective
     // `configureAccessory` function.
@@ -138,7 +138,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
         // Unless we are debugging device discovery, ignore any gateways.
         // These are typically gateways, hubs, etc. that shouldn't be causing us to alert anyway.
-        if(!debug && device.device_family === "gateway") {
+        if(!debugMode && device.device_family === "gateway") {
           return;
         }
 
@@ -220,7 +220,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       return false;
     }
 
-    // Sync my! status and check for any new or removed accessories.
+    // Sync myQ status and check for any new or removed accessories.
     await this.discoverAndSyncAccessories();
 
     // Iterate through our accessories and update its status with the corresponding myQ status.
@@ -255,7 +255,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.pollingTimer = setTimeout(async () => {
       // Refresh our myQ information and gracefully handle myQ errors.
       if(!(await self.updateAccessories())) {
-        self.log("Polling error: unable to connect to the myQ API.");
         self.configPoll.count = self.configPoll.maxCount - 1;
       }
 
@@ -315,4 +314,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Nothing special to do - make this opener visible.
     return true;
   }
+
+  // Utility for debug logging.
+  private debug(message: string, ...parameters: any[]) {
+    if(debugMode) {
+      this.log(util.format(message, ...parameters));
+    }
+  }
+
 }

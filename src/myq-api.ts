@@ -28,7 +28,7 @@ export interface myQHwInfo {
   readonly brand: string
 }
 
-let debug = false;
+let debugMode = false;
 
 /*
  * myQ API version information. This is more intricate than it seems because the myQ
@@ -130,7 +130,7 @@ export class myQApi {
     this.log = log;
     this.email = email;
     this.password = password;
-    debug = wantDebug;
+    debugMode = wantDebug;
   }
 
   // Log us into myQ and get a security token.
@@ -155,9 +155,7 @@ export class myQApi {
     // Now let's get our security token.
     const data = await response.json();
 
-    if(debug) {
-      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
-    }
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
 
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
@@ -166,18 +164,15 @@ export class myQApi {
       return false;
     }
 
-    if(this.securityToken) {
-      this.log("myQ API: successfully acquired a new security token.");
-    } else {
+    // On initial plugin startup, let the user know we've successfully connected.
+    if(!this.securityToken) {
       this.log("myQ API: successfully connected to the myQ API.");
     }
 
     this.securityToken = data.SecurityToken;
     this.securityTokenTimestamp = now;
 
-    if(debug) {
-      this.log("Token: %s", this.securityToken);
-    }
+    this.debug("Token: %s", this.securityToken);
 
     // Add the token to our headers that we will use for subsequent API calls.
     this.headers.SecurityToken = this.securityToken;
@@ -201,19 +196,20 @@ export class myQApi {
 
     // We want to throttle how often we call this API to no more than once every 5 minutes.
     if((now - this.lastAuthenticateCall) < (5 * 60 * 1000)) {
-      if(debug) {
-        this.log("myQ API: throttling acquireSecurityToken API call.");
-      }
+      this.debug("myQ API: throttling acquireSecurityToken API call.");
 
       return true;
     }
 
-    if(debug) {
-      this.log("myQ API: acquiring a new security token.");
+    this.debug("myQ API: acquiring a new security token.");
+
+    // Now generate a new security token.
+    if(!(await this.acquireSecurityToken())) {
+      return false;
     }
 
-    // Now regenerate our security token.
-    return await this.acquireSecurityToken();
+    this.log("myQ API: successfully acquired a new security token.");
+    return true;
   }
 
   // Get our myQ account information.
@@ -240,9 +236,7 @@ export class myQApi {
     // Now let's get our account information.
     const data = await response.json();
 
-    if(debug) {
-      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
-    }
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
 
     // No account information returned.
     if(!data || !data.Account) {
@@ -253,9 +247,7 @@ export class myQApi {
     // Save the user information.
     this.accountId = data.Account.Id;
 
-    if(debug) {
-      this.log("myQ accountId: " + this.accountId);
-    }
+    this.debug("myQ accountId: " + this.accountId);
 
     return true;
   }
@@ -268,9 +260,7 @@ export class myQApi {
     // than once every two seconds or so, bad things can happen on the myQ side leading
     // to potential account lockouts. The author definitely learned this one the hard way.
     if(this.lastRefreshDevicesCall && ((now - this.lastRefreshDevicesCall) < (2 * 1000))) {
-      if(debug) {
-        this.log("myQ API: throttling refreshDevices API call. Using cached data from the past five seconds.");
-      }
+      this.debug("myQ API: throttling refreshDevices API call. Using cached data from the past five seconds.");
 
       return this.Devices ? true : false;
     }
@@ -291,16 +281,14 @@ export class myQApi {
 
     if(!response) {
       this.log("myQ API: unable to refresh. Acquiring a new security token and retrying later.");
-      await this.acquireSecurityToken();
+      this.securityTokenTimestamp = 0;
       return false;
     }
 
     // Now let's get our account information.
     const data = await response.json();
 
-    if(debug) {
-      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
-    }
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
 
     const newDeviceList: Array<myQDevice> = data.items;
 
@@ -319,9 +307,7 @@ export class myQApi {
         this.log("myQ API: %s device discovered: %s.",
           newDevice.device_family, this.getDeviceName(newDevice));
 
-        if(debug) {
-          this.log(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
-        }
+        this.debug(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
       });
     }
 
@@ -338,9 +324,7 @@ export class myQApi {
         // We've had a device disappear.
         this.log("myQ API: %s device removed: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
 
-        if(debug) {
-          this.log(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
-        }
+        this.debug(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
       });
     }
 
@@ -365,7 +349,7 @@ export class myQApi {
 
     if(!response) {
       this.log("myQ API: unable to query device. Acquiring a new security token and retrying later.");
-      await this.acquireSecurityToken();
+      this.securityTokenTimestamp = 0;
       return false;
     }
 
@@ -377,9 +361,7 @@ export class myQApi {
       return false;
     }
 
-    if(debug) {
-      this.log(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
-    }
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
 
     data.items.forEach((device: myQDevice) => {
       this.log("Device:");
@@ -404,7 +386,7 @@ export class myQApi {
 
     if(!response) {
       this.log("myQ API: unable to execute command. Acquiring a new security token and retrying later.");
-      await this.acquireSecurityToken();
+      this.securityTokenTimestamp = 0;
       return false;
     }
 
@@ -535,6 +517,13 @@ export class myQApi {
     } catch(error) {
       this.log.error(error);
       return null as unknown as Promise<Response>;
+    }
+  }
+
+  // Utility for debug logging.
+  private debug(message: string, ...parameters: any[]) {
+    if(debugMode) {
+      this.log(util.format(message, ...parameters));
     }
   }
 }
