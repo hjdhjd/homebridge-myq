@@ -2,16 +2,15 @@
 
 <a href="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><img alt="homebridge-verified" src="https://github.com/homebridge/branding/blob/master/logos/homebridge-color-round.svg?sanitize=true" width="140px"></a>
 
-# Homebridge myQ Liftmaster and Chamberlain
+# Homebridge myQ 2
 
-<a href="https://www.npmjs.com/package/homebridge-myq2"><img title="npm version" src="https://badgen.net/npm/v/homebridge-myq2" ></a>
-<a href="https://www.npmjs.com/package/homebridge-myq2"><img title="npm downloads" src="https://badgen.net/npm/dt/homebridge-myq2" ></a>
-
-<p>myQ (Liftmaster and Chamberlain) garage and myQ devices plugin for <a href="https://homebridge.io">Homebridge</a>.</p>
+[![Downloads](https://img.shields.io/npm/dt/homebridge-myq2.svg)](https://www.npmjs.com/package/homebridge-myq2)
+[![Version](https://img.shields.io/npm/v/homebridge-myq2.svg)](https://www.npmjs.com/package/homebridge-myq2)
+[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
 </span>
 
-# Homebridge myQ2
+# myQ (Liftmaster and Chamberlain) garage and myQ devices support for [Homebridge](https://homebridge.io).
 myQ Liftmaster and Chamberlain Plugin for [Homebridge](https://homebridge.io)
 
 `homebridge-myq2` is a Homebridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster and Chamberlain.
@@ -26,8 +25,8 @@ Others have encountered no issues and this solution works well.
 
 Either solution will provide a complete solution to automating your garage door and you'll soon be automating your home with HomeKit like you always dreamed of. :)
 
-# What makes this plugin different than the other plugins out there for myQ support?
-[homebridge-chamberlain](https://github.com/caseywebdev/homebridge-chamberlain) exists as another good option, if you prefer. This plugin is based on the now-deprecated and retired `homebridge-liftmaster2` with additional bugfixes and contributions by others. The intent is to keep this plugin up-to-date and incorporate additional capabilities as-needed without overly bloating it.
+## Why use this plugin for HomeKit myQ support?
+[homebridge-chamberlain](https://github.com/caseywebdev/homebridge-chamberlain) exists as another good option, if you prefer. The intent is to keep this plugin up-to-date and incorporate additional capabilities as-needed without overly bloating it.
 
 In a nutshell, the aim of this plugin for things to "just work". Without complex configuration options needed for the functionality you would expect from a first-party HomeKit plugin. But of course, those granular options are available as well for the adventurous or those with more esoteric use cases. What does "just work" mean? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener or other myQ device and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
@@ -42,13 +41,13 @@ If you prefer to install `homebridge-myq2` from the command line, you can do so 
 sudo npm install -g homebridge-myq2
 ```
 
-# Changelog
+## Changelog
 Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq2/blob/master/CHANGELOG.md).
 
-# What's new in 2.x
+### What's new in 2.x
 This plugin has been completely rewritten and updated to work with the modern [Homebridge](https://homebridge.io) APIs.
 
-## Things to be aware of
+### Things to be aware of
 - **This plugin requires Homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of Homebridge.**
 
 - The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future breaking changes that may come.
@@ -63,7 +62,7 @@ This plugin has been completely rewritten and updated to work with the modern [H
     ```
   This can be safely ignored. It's an error message indicating that, in HomeKit, garage door opener accessory service doesn't normally support battery status. HomeKit will still report it correctly, and alert you accordingly.
 
-# Plugin Configuration
+## Plugin Configuration
 If you choose to configure this plugin directly instead of using the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
 
 ```js
