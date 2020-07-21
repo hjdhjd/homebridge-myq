@@ -9,7 +9,7 @@ import {
   PlatformAccessory
 } from "homebridge";
 
-import { myQ } from "./myq";
+import { myQ } from "./myq-api";
 import { myQPlatform } from "./myq-platform";
 
 export abstract class myQAccessory {

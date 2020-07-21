@@ -10,7 +10,7 @@ import {
   NodeCallback
 } from "homebridge";
 
-import { myQDevice, myQHwInfo } from "./myq";
+import { myQDevice, myQHwInfo } from "./myq-api";
 import { myQAccessory } from "./myq-accessory";
 import { MYQOBSTRUCTED } from "./settings";
 

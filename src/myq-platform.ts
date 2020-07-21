@@ -13,7 +13,7 @@ import {
 } from "homebridge";
 
 import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
-import { myQ, myQDevice } from "./myq";
+import { myQ, myQDevice } from "./myq-api";
 import { myQAccessory } from "./myq-accessory";
 import { myQGarageDoor } from "./myq-garagedoor";
 
