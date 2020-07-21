@@ -9,7 +9,7 @@ import {
   PlatformAccessory
 } from "homebridge";
 
-import { myQ } from "./myq-api";
+import { myQApi } from "./myq-api";
 import { myQPlatform } from "./myq-platform";
 
 export abstract class myQAccessory {
@@ -17,7 +17,7 @@ export abstract class myQAccessory {
   protected readonly api: API;
   protected readonly hap: HAP;
   protected readonly log: Logging;
-  protected readonly myQ: myQ;
+  protected readonly myQ: myQApi;
   protected readonly platform: myQPlatform;
 
   // The constructor initializes key variables and calls configureDevice().

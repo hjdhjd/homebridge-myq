@@ -1,6 +1,6 @@
 /* Copyright(C) 2017-2020, HJD (https://github.com/hjdhjd). All rights reserved.
  *
- * myq.ts: Our myQ API implementation.
+ * myq-api.ts: Our myQ API implementation.
  */
 import { HAP, Logging } from "homebridge";
 
@@ -36,22 +36,28 @@ let debug = false;
  * minor version in others. Given the dynamic nature of the myQ API, expect this to
  * continue to evolve.
  */
-const myqVersionMajor = 5;
-const myqVersionMinor = 1;
-const myqVersion = myqVersionMajor + "." + myqVersionMinor;
+const myQApiVersion = {
+  major: 5,
+  minor: 1
+};
 
-// myQ API base URL, currently v5.
-const myqApi = "https://api.myqdevice.com/api/v" + myqVersionMajor;
+const myQApiVersionString = myQApiVersion.major + "." + myQApiVersion.minor;
 
-// myQ API devices URL, currently v5.1
-const myqApidev = myqApi + "." + myqVersionMinor;
+// myQ API base URL.
+const myQApiBaseUrl = "https://api.myqdevice.com/api";
+
+// myQ API, currently v5.
+const myQApiUrl = myQApiBaseUrl + "/v" + myQApiVersion.major;
+
+// myQ API devices URL, currently v5.1.
+const myQApiDeviceUrl = myQApiBaseUrl + "/v" + myQApiVersionString;
 
 // myQ app identifier and user agent used to validate against the myQ API.
-const myqAppId = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
-const myqAgent = "okhttp/3.10.0";
+const myQAppIdHeader = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
+const myQAgentHeader = "okhttp/3.10.0";
 
 // Renew myQ security credentials every 20 hours.
-const myqTokenExpirationWindow = 20 * 60 * 60 * 1000;
+const myQTokenExpirationWindow = 20 * 60 * 60 * 1000;
 
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
@@ -81,7 +87,7 @@ const myqTokenExpirationWindow = 20 * 60 * 60 * 1000;
  * it either doesn't exist or hasn't been discovered yet.
  */
 
-export class myQ {
+export class myQApi {
   private email: string;
   private password: string;
   private securityToken: string;
@@ -95,16 +101,16 @@ export class myQ {
   // Headers that the myQ API expects.
   private headers = {
     "Content-Type": "application/json",
-    "User-Agent": myqAgent,
-    "ApiVersion": myqVersion,
+    "User-Agent": myQAgentHeader,
+    "ApiVersion": myQApiVersionString,
     "BrandId": "2",
     "Culture": "en",
-    "MyQApplicationId": myqAppId,
+    "MyQApplicationId": myQAppIdHeader,
     "SecurityToken": ""
   };
 
   // List all the door types we know about. For future use...
-  private myqDoorTypes = [
+  private myQDoorTypes = [
     "commercialdooropener",
     "garagedooropener",
     "gate",
@@ -130,7 +136,7 @@ export class myQ {
     this.lastAuthenticateCall = now;
 
     // Login to the myQ API and get a security token for our session.
-    const response = await this.fetch(myqApi + "/Login", {
+    const response = await this.fetch(myQApiUrl + "/Login", {
       method: "POST",
       headers: this.headers,
       body: JSON.stringify({ UserName: this.email, Password: this.password })
@@ -184,7 +190,7 @@ export class myQ {
     }
 
     // Is it time to refresh? If not, we're good for now.
-    if((now - this.securityTokenTimestamp) < myqTokenExpirationWindow) {
+    if((now - this.securityTokenTimestamp) < myQTokenExpirationWindow) {
       return true;
     }
 
@@ -215,7 +221,7 @@ export class myQ {
     // Get the account information.
     const params = new URLSearchParams({ expand: "account" });
 
-    const response = await this.fetch(myqApi + "/My?" + params, {
+    const response = await this.fetch(myQApiUrl + "/My?" + params, {
       method: "GET",
       headers: this.headers
     });
@@ -273,7 +279,7 @@ export class myQ {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/Devices", {
+    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountID + "/Devices", {
       method: "GET",
       headers: this.headers
     });
@@ -347,7 +353,7 @@ export class myQ {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
+    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
       method: "GET",
       headers: this.headers
     });
@@ -385,7 +391,7 @@ export class myQ {
       return false;
     }
 
-    const response = await this.fetch(myqApidev + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
+    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
       method: "PUT",
       headers: this.headers,
       body: JSON.stringify({ action_type: command })

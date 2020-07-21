@@ -13,7 +13,7 @@ import {
 } from "homebridge";
 
 import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
-import { myQ, myQDevice } from "./myq-api";
+import { myQApi, myQDevice } from "./myq-api";
 import { myQAccessory } from "./myq-accessory";
 import { myQGarageDoor } from "./myq-garagedoor";
 
@@ -25,7 +25,7 @@ let debug = false;
 export class myQPlatform implements DynamicPlatformPlugin {
   readonly log: Logging;
   readonly api: API;
-  readonly myQ!: myQ;
+  readonly myQ!: myQApi;
 
   readonly configOptions: string[] = [];
 
@@ -91,7 +91,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.configPoll.count = this.configPoll.maxCount;
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQ(this.log, config.email, config.password, config.debug);
+    this.myQ = new myQApi(this.log, config.email, config.password, config.debug);
 
     // This event gets fired after homebridge has restored all cached accessories and called their respective
     // `configureAccessory` function.
