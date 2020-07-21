@@ -36,25 +36,32 @@ let debug = false;
  * minor version in others. Given the dynamic nature of the myQ API, expect this to
  * continue to evolve.
  */
-const myQApiVersion = {
-  major: 5,
-  minor: 1
+const myQApiInfo = {
+  baseUrl: "https://api.myqdevice.com/api",
+
+  // myQ API version, currently 5.1.
+  majorVersion: 5,
+  minorVersion: 1,
+
+  // myQ app identifier and user agent used to validate against the myQ API.
+  appId: "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu",
+  userAgent: "okhttp/3.10.0",
+
+  // Complete version string.
+  version(): string {
+    return this.majorVersion + "." + this.minorVersion;
+  },
+
+  // myQ login and account URL for API calls.
+  url(): string {
+    return this.baseUrl + "/v" + this.majorVersion;
+  },
+
+  // myQ devices URL for API calls.
+  deviceUrl(): string {
+    return this.baseUrl + "/v" + this.version();
+  }
 };
-
-const myQApiVersionString = myQApiVersion.major + "." + myQApiVersion.minor;
-
-// myQ API base URL.
-const myQApiBaseUrl = "https://api.myqdevice.com/api";
-
-// myQ API, currently v5.
-const myQApiUrl = myQApiBaseUrl + "/v" + myQApiVersion.major;
-
-// myQ API devices URL, currently v5.1.
-const myQApiDeviceUrl = myQApiBaseUrl + "/v" + myQApiVersionString;
-
-// myQ app identifier and user agent used to validate against the myQ API.
-const myQAppIdHeader = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
-const myQAgentHeader = "okhttp/3.10.0";
 
 // Renew myQ security credentials every 20 hours.
 const myQTokenExpirationWindow = 20 * 60 * 60 * 1000;
@@ -101,11 +108,11 @@ export class myQApi {
   // Headers that the myQ API expects.
   private headers = {
     "Content-Type": "application/json",
-    "User-Agent": myQAgentHeader,
-    "ApiVersion": myQApiVersionString,
+    "User-Agent": myQApiInfo.userAgent,
+    "ApiVersion": myQApiInfo.version(),
     "BrandId": "2",
     "Culture": "en",
-    "MyQApplicationId": myQAppIdHeader,
+    "MyQApplicationId": myQApiInfo.appId,
     "SecurityToken": ""
   };
 
@@ -134,7 +141,7 @@ export class myQApi {
     this.lastAuthenticateCall = now;
 
     // Login to the myQ API and get a security token for our session.
-    const response = await this.fetch(myQApiUrl + "/Login", {
+    const response = await this.fetch(myQApiInfo.url() + "/Login", {
       method: "POST",
       headers: this.headers,
       body: JSON.stringify({ UserName: this.email, Password: this.password })
@@ -219,7 +226,7 @@ export class myQApi {
     // Get the account information.
     const params = new URLSearchParams({ expand: "account" });
 
-    const response = await this.fetch(myQApiUrl + "/My?" + params, {
+    const response = await this.fetch(myQApiInfo.url() + "/My?" + params, {
       method: "GET",
       headers: this.headers
     });
@@ -277,7 +284,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountId + "/Devices", {
+    const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/Devices", {
       method: "GET",
       headers: this.headers
     });
@@ -351,7 +358,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountId + "/devices/" + deviceId, {
+    const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/devices/" + deviceId, {
       method: "GET",
       headers: this.headers
     });
@@ -389,7 +396,7 @@ export class myQApi {
       return false;
     }
 
-    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountId + "/Devices/" + deviceId + "/actions", {
+    const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/Devices/" + deviceId + "/actions", {
       method: "PUT",
       headers: this.headers,
       body: JSON.stringify({ action_type: command })
