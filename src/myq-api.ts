@@ -7,7 +7,7 @@ import { HAP, Logging } from "homebridge";
 import fetch, { Response, RequestInfo, RequestInit } from "node-fetch";
 import util from "util";
 
-// An incomplete description of the myQ JSON, but enough for our purposes.
+// An incomplete description of the myQ device JSON, but enough for our purposes.
 export interface myQDevice {
   readonly device_family: string,
   readonly device_platform: string,
@@ -88,12 +88,12 @@ const myQTokenExpirationWindow = 20 * 60 * 60 * 1000;
  */
 
 export class myQApi {
+  Devices!: Array<myQDevice>;
   private email: string;
   private password: string;
-  private securityToken: string;
+  private accountId!: string;
+  private securityToken!: string;
   private securityTokenTimestamp!: number;
-  private accountID: string;
-  Devices!: Array<myQDevice>;
   private log: Logging;
   private lastAuthenticateCall!: number;
   private lastRefreshDevicesCall!: number;
@@ -123,8 +123,6 @@ export class myQApi {
     this.log = log;
     this.email = email;
     this.password = password;
-    this.securityToken = "";
-    this.accountID = "";
     debug = wantDebug;
   }
 
@@ -185,7 +183,7 @@ export class myQApi {
     const now = Date.now();
 
     // If we don't have a security token yet, acquire one before proceeding.
-    if(!this.accountID && !(await this.getAccount())) {
+    if(!this.accountId && !(await this.getAccount())) {
       return false;
     }
 
@@ -246,10 +244,10 @@ export class myQApi {
     }
 
     // Save the user information.
-    this.accountID = data.Account.Id;
+    this.accountId = data.Account.Id;
 
     if(debug) {
-      this.log("myQ accountID: " + this.accountID);
+      this.log("myQ accountId: " + this.accountId);
     }
 
     return true;
@@ -279,7 +277,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountID + "/Devices", {
+    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountId + "/Devices", {
       method: "GET",
       headers: this.headers
     });
@@ -353,7 +351,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountID + "/devices/" + deviceId, {
+    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountId + "/devices/" + deviceId, {
       method: "GET",
       headers: this.headers
     });
@@ -391,7 +389,7 @@ export class myQApi {
       return false;
     }
 
-    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountID + "/Devices/" + deviceId + "/actions", {
+    const response = await this.fetch(myQApiDeviceUrl + "/Accounts/" + this.accountId + "/Devices/" + deviceId + "/actions", {
       method: "PUT",
       headers: this.headers,
       body: JSON.stringify({ action_type: command })
