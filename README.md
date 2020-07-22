@@ -11,7 +11,7 @@
 ## myQ garage door and other myQ-enabled device support for [Homebridge](https://homebridge.io).
 </SPAN>
 
-`homebridge-myq2` is a Homebridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
+`homebridge-myq2` is a [Homebridge](https://homebridge.io) plugin to interact with myQ smart garage door openers, made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
 
 There are two ways to be able to control a myQ-compatible garage door opener through HomeKit:
 
@@ -29,7 +29,7 @@ In a nutshell, the aim of this plugin for things to "just work" with minimal req
 What does "just work" mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
 # Installation
-If you are new to Homebridge, please first read the Homebridge [documentation](https://homebridge.io) and install Homebridge before proceeding.
+If you are new to Homebridge, please first read the [Homebridge](https://homebridge.io) [documentation](https://github.com/homebridge/homebridge/wiki) and installation instructions before proceeding.
 
 If you have installed the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you can intall this plugin by going to the `Plugins` tab and searching for `homebridge-myq2` and installing it.
 
