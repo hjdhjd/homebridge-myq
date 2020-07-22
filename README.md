@@ -8,9 +8,9 @@
 [![Version](https://img.shields.io/npm/v/homebridge-myq2.svg)](https://www.npmjs.com/package/homebridge-myq2)
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
+## myQ garage door and other myQ-enabled device support for [Homebridge](https://homebridge.io).
 </SPAN>
 
-## myQ garage door and other myQ-enabled device support for [Homebridge](https://homebridge.io).
 `homebridge-myq2` is a Homebridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
 
 There are two ways to be able to control a myQ-compatible garage door opener through HomeKit:
