@@ -1,5 +1,5 @@
 <SPAN align="center">
-<A HREF="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><IMG ALT="homebridge-verified" src="https://github.com/hjdhjd/homebridge-myq2/blob/master/homebridge-myq.svg" ALIGN="CENTER" WIDTH="400px"></A>
+<A HREF="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><IMG ALT="homebridge-verified" src="https://github.com/hjdhjd/homebridge-myq2/blob/master/homebridge-myq.svg?raw" WIDTH="400px"></A>
 
 # Homebridge myQ<SUP STYLE="font-size: smaller; color: #5EB5E6">2</SUP>
 
