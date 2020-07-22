@@ -1,6 +1,6 @@
 <span align="center">
 
-<A HREF="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><IMG ALT="homebridge-verified" src="https://github.com/hjdhjd/homebridge-myq2/blob/master/homebridge-myq.svg" WIDTH="140px"></A>
+<A HREF="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><IMG ALT="homebridge-verified" src="https://github.com/hjdhjd/homebridge-myq2/blob/master/homebridge-myq.svg" WIDTH="400px"></A>
 
 # Homebridge myQ 2
 
