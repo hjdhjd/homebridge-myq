@@ -1,7 +1,7 @@
 <span align="center">
 <A HREF="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><IMG ALT="homebridge-verified" src="https://github.com/hjdhjd/homebridge-myq2/blob/master/homebridge-myq.svg" WIDTH="400px"></A>
 
-# Homebridge myQ<SUP STYLE="font-size: smaller; color: #5EB5E6">2</SUP>
+Homebridge myQ<SUP STYLE="font-size: smaller; color: #5EB5E6">2</SUP>
 
 [![Downloads](https://img.shields.io/npm/dt/homebridge-myq2.svg)](https://www.npmjs.com/package/homebridge-myq2)
 [![Version](https://img.shields.io/npm/v/homebridge-myq2.svg)](https://www.npmjs.com/package/homebridge-myq2)
