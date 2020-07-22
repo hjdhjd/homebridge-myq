@@ -10,8 +10,8 @@
 
 </span>
 
-# myQ (Liftmaster and Chamberlain) garage and myQ devices support for [Homebridge](https://homebridge.io).
-`homebridge-myq2` is a Homebridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster and Chamberlain.
+# myQ garage door and other myQ-enabled device support for [Homebridge](https://homebridge.io).
+`homebridge-myq2` is a Homebridge plugin to interact with myQ smart garage door openers, made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
 
 There are two ways to be able to control a myQ-compatible garage door opener through HomeKit:
 
@@ -24,9 +24,9 @@ Others have encountered no issues and this solution works well.
 Either solution will provide a complete solution to automating your garage door and you'll soon be automating your home with HomeKit like you always dreamed of. :)
 
 ## Why use this plugin for HomeKit myQ support?
-[homebridge-chamberlain](https://github.com/caseywebdev/homebridge-chamberlain) exists as another good option, if you prefer. The intent is to keep this plugin up-to-date and incorporate additional capabilities as-needed without overly bloating it.
+In a nutshell, the aim of this plugin for things to "just work" with minimal required configuration by you, the end user. The goal is to provide as close to a streamlined experience as you would expect from a first-party or native HomeKit solution. For the adventurous, those granular options are, of course, available as well to support more esoteric use cases or your own unique needs.
 
-In a nutshell, the aim of this plugin for things to "just work". Without complex configuration options needed for the functionality you would expect from a first-party HomeKit plugin. But of course, those granular options are available as well for the adventurous or those with more esoteric use cases. What does "just work" mean? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener or other myQ device and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
+What does "just work" mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
 # Installation
 If you are new to Homebridge, please first read the Homebridge [documentation](https://homebridge.io) and install Homebridge before proceeding.
@@ -42,15 +42,10 @@ sudo npm install -g homebridge-myq2
 ## Changelog
 Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq2/blob/master/CHANGELOG.md).
 
-### What's new in 2.x
-This plugin has been completely rewritten and updated to work with the modern [Homebridge](https://homebridge.io) APIs.
-
 ### Things to be aware of
 - **This plugin requires Homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of Homebridge.**
 
-- The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future breaking changes that may come.
-
-- By default, this plugin is set to silently fail if it can't login to the myQ API, but continue to retry at regular polling intervals.
+- The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future API changes that may come. Unfortunately, it's an ongoing challenge since API changes can be sudden and unpredictable.
 
 - The configuration block for `config.json` has changed to rename the platform (and it is case sensitive as well). **This is a breaking change and you will need to update your `config.json` to reflect the updates**.
 
@@ -78,8 +73,8 @@ Feature options allow you to enable or disable certain features in this plugin.
 
 The `options` setting is an array of strings used to customize feature options. Available options:
 
-* <CODE>Hide.<i>serialnumber</I></CODE> - hide the opener or gateway identified by `serialnumber` from HomeKit.
-* <CODE>Show.<i>serialnumber</I></CODE> - show the opener or gateway identified by `serialnumber` from HomeKit.
+* <CODE>Hide.<I>serialnumber</I></CODE> - hide the opener or gateway identified by `serialnumber` from HomeKit.
+* <CODE>Show.<I>serialnumber</I></CODE> - show the opener or gateway identified by `serialnumber` from HomeKit.
 
 The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
 
@@ -95,7 +90,7 @@ The priority given to these options works in this order, from highest to lowest 
 * Hide any gateway we've explicitly hidden.
 
 ### Advanced Configuration (Optional)
-This step is not required. The defaults should work well for almost everyone.
+This step is not required. The defaults should work well for almost everyone, but for those that prefer to tweak additional settings, this is the complete list of settings available.
 
 ```js
 "platforms": [
