@@ -148,7 +148,7 @@ export class myQApi {
     });
 
     if(!response) {
-      this.log("myQ API: unable to authenticate. Will retry later.");
+      this.log("myQ API: Unable to authenticate. Will retry later.");
       return false;
     }
 
@@ -160,13 +160,13 @@ export class myQApi {
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
     if(!data || !data.SecurityToken) {
-      this.log("myQ API: unable to acquire a security token.");
+      this.log("myQ API: Unable to acquire a security token.");
       return false;
     }
 
     // On initial plugin startup, let the user know we've successfully connected.
     if(!this.securityToken) {
-      this.log("myQ API: successfully connected to the myQ API.");
+      this.log("myQ API: Successfully connected to the myQ API.");
     }
 
     this.securityToken = data.SecurityToken;
@@ -208,7 +208,6 @@ export class myQApi {
       return false;
     }
 
-    this.log("myQ API: successfully acquired a new security token.");
     return true;
   }
 
@@ -228,7 +227,7 @@ export class myQApi {
     });
 
     if(!response) {
-      this.log("myQ API: unable to login. Acquiring a new security token and retrying later.");
+      this.log("myQ API: Unable to login. Acquiring a new security token and retrying later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -240,7 +239,7 @@ export class myQApi {
 
     // No account information returned.
     if(!data || !data.Account) {
-      this.log("myQ API: unable to retrieve account information from myQ servers.");
+      this.log("myQ API: Unable to retrieve account information from myQ servers.");
       return false;
     }
 
@@ -280,7 +279,7 @@ export class myQApi {
     });
 
     if(!response) {
-      this.log("myQ API: unable to refresh. Acquiring a new security token and retrying later.");
+      this.log("myQ API: Unable to update device status from myQ servers. Acquiring a new security token and retrying later.");
       this.securityTokenTimestamp = 0;
       return false;
     }
@@ -304,7 +303,7 @@ export class myQApi {
         }
 
         // We've discovered a new device.
-        this.log("myQ API: %s device discovered: %s.",
+        this.log("myQ API: Discovered device family %s: %s.",
           newDevice.device_family, this.getDeviceName(newDevice));
 
         this.debug(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
@@ -322,7 +321,7 @@ export class myQApi {
         }
 
         // We've had a device disappear.
-        this.log("myQ API: %s device removed: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
+        this.log("myQ API: Removed device family %s: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
 
         this.debug(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
       });
@@ -348,7 +347,7 @@ export class myQApi {
     });
 
     if(!response) {
-      this.log("myQ API: unable to query device. Acquiring a new security token and retrying later.");
+      this.log("myQ API: Unable to query device status from myQ servers. Acquiring a new security token and retrying later.");
       this.securityTokenTimestamp = 0;
       return false;
     }
@@ -364,8 +363,8 @@ export class myQApi {
     this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
 
     data.items.forEach((device: myQDevice) => {
-      this.log("Device:");
-      this.log(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
+      this.debug("Device:");
+      this.debug(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
     });
 
     return true;
@@ -385,7 +384,7 @@ export class myQApi {
     });
 
     if(!response) {
-      this.log("myQ API: unable to execute command. Acquiring a new security token and retrying later.");
+      this.log("myQ API: Unable to send the command to myQ servers. Acquiring a new security token.");
       this.securityTokenTimestamp = 0;
       return false;
     }
@@ -503,13 +502,13 @@ export class myQApi {
 
       // Bad username and password.
       if(response.status === 401) {
-        this.log("myQ API: invalid myQ credentials given. Check your login and password.");
+        this.log("myQ API: Invalid myQ credentials given. Check your login and password.");
         return null as unknown as Promise<Response>;
       }
 
       // Some other unknown error occurred.
       if(!response.ok) {
-        this.log("myQ API: error: %s %s", response.status, response.statusText);
+        this.log("myQ API: Error: %s %s", response.status, response.statusText);
         return null as unknown as Promise<Response>;
       }
 

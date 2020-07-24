@@ -116,7 +116,7 @@ export class myQGarageDoor extends myQAccessory {
         // We only want to configure this once, not on each update.
         // Not the most elegant solution, but it gets the job done.
         this.batteryDeviceSupport = true;
-        this.log("%s: battery status support enabled.", accessory.displayName);
+        this.log("%s: Battery status support enabled.", accessory.displayName);
       }
     }
   }
@@ -126,7 +126,7 @@ export class myQGarageDoor extends myQAccessory {
     const doorState = this.doorStatus();
 
     if(doorState === MYQOBSTRUCTED) {
-      this.log("%s: obstruction detected.", this.accessory.displayName);
+      this.log("%s: Obstruction detected.", this.accessory.displayName);
     }
 
     callback(null, doorState === MYQOBSTRUCTED);
@@ -161,7 +161,7 @@ export class myQGarageDoor extends myQAccessory {
       const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
       const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
 
-      this.log("%s: unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
+      this.log("%s: Unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
         accessory.displayName, actionAttempt, actionExisting);
 
       callback(new Error("Unable to accept a new set event while another is completing."));
@@ -178,9 +178,7 @@ export class myQGarageDoor extends myQAccessory {
           .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.CLOSING);
 
         // Execute this command and begin polling myQ for state changes.
-        if(this.doorCommand(hap.Characteristic.TargetDoorState.CLOSED)) {
-          // this.log("%s: close command has been sent using the myQ API.", accessory.displayName);
-        }
+        this.doorCommand(hap.Characteristic.TargetDoorState.CLOSED);
       }
 
       callback(null);
@@ -194,15 +192,13 @@ export class myQGarageDoor extends myQAccessory {
           .getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.OPENING);
 
         // Execute this command and begin polling myQ for state changes.
-        if(this.doorCommand(hap.Characteristic.TargetDoorState.OPEN)) {
-          // this.log("%s: myQ open command has been sent.", accessory.displayName);
-        }
+        this.doorCommand(hap.Characteristic.TargetDoorState.OPEN);
       }
 
       callback(null);
     } else {
       // HomeKit has told us something that we don't know how to handle.
-      this.log("%s: unknown SET event received: %s.", accessory.displayName, value);
+      this.log("%s: Unknown SET event received: %s.", accessory.displayName, value);
       callback(new Error("Unknown SET event received: " + value));
     }
   }
@@ -216,17 +212,17 @@ export class myQGarageDoor extends myQAccessory {
 
     // HomeKit state decoder ring.
     const myQStateMap: {[index: number]: string} = {
-      [hap.Characteristic.CurrentDoorState.OPEN]: "open",
-      [hap.Characteristic.CurrentDoorState.CLOSED]: "closed",
-      [hap.Characteristic.CurrentDoorState.OPENING]: "opening",
-      [hap.Characteristic.CurrentDoorState.CLOSING]: "closing",
-      [hap.Characteristic.CurrentDoorState.STOPPED]: "stopped",
-      [MYQOBSTRUCTED]: "obstructed"
+      [hap.Characteristic.CurrentDoorState.OPEN]: "Open",
+      [hap.Characteristic.CurrentDoorState.CLOSED]: "Closed",
+      [hap.Characteristic.CurrentDoorState.OPENING]: "Opening",
+      [hap.Characteristic.CurrentDoorState.CLOSING]: "Closing",
+      [hap.Characteristic.CurrentDoorState.STOPPED]: "Stopped",
+      [MYQOBSTRUCTED]: "Obstructed"
     };
 
     // If we can't get our status, we're probably not able to connect to the myQ API.
     if(myQState === -1) {
-      this.log("%s: unable to determine the current door state.", accessory.displayName);
+      this.log("%s: Unable to determine the current door state.", accessory.displayName);
       return false;
     }
 
@@ -270,7 +266,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device;
 
     if(!device) {
-      this.log("%s: can't find the associated device in the myQ API.", this.accessory.displayName);
+      this.log("%s: Can't find the associated device in the myQ API.", this.accessory.displayName);
       return -1;
     }
 
@@ -278,7 +274,7 @@ export class myQGarageDoor extends myQAccessory {
     const myQState = doorStates[device.state.door_state];
 
     if(myQState === undefined) {
-      this.log("%s: unknown door state encountered: %s.", this.accessory.displayName, device.state.door_state);
+      this.log("%s: Unknown door state encountered: %s.", this.accessory.displayName, device.state.door_state);
       return -1;
     }
 
@@ -300,14 +296,14 @@ export class myQGarageDoor extends myQAccessory {
         break;
 
       default:
-        this.log("%s: unknown door command encountered: %s.", this.accessory.displayName, command);
+        this.log("%s: Unknown door command encountered: %s.", this.accessory.displayName, command);
         return false;
     }
 
     const device = this.accessory.context.device;
 
     if(!device) {
-      this.log("%s: can't find the associated device in the myQ API.", this.accessory.displayName);
+      this.log("%s: Can't find the associated device in the myQ API.", this.accessory.displayName);
       return false;
     }
 
@@ -368,7 +364,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device;
 
     if(!device) {
-      this.log("%s: can't find the associated device in the myQ API.", this.accessory.displayName, this.accessory.UUID);
+      this.log("%s: Can't find the associated device in the myQ API.", this.accessory.displayName, this.accessory.UUID);
       return -1;
     }
 

@@ -170,7 +170,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)!) === undefined) {
         accessory = new Accessory(device.name, uuid);
 
-        this.log("%s: adding %s device to HomeKit: %s.",
+        this.log("%s: Adding %s device to HomeKit: %s.",
           device.name, device.device_family, this.myQ.getDeviceName(device));
 
         // Register this accessory with homebridge and add it to the accessory array so we can track it.
@@ -202,7 +202,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
         }
       }
 
-      this.log("%s: removing myQ device from HomeKit.", oldAccessory.displayName);
+      this.log("%s: Removing myQ device from HomeKit.", oldAccessory.displayName);
 
       delete this.configuredAccessories[oldAccessory.UUID];
       delete this.accessories[this.accessories.indexOf(oldAccessory)];
