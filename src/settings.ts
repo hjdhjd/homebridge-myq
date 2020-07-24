@@ -9,4 +9,7 @@ export const PLUGIN_NAME = "homebridge-myq2";
 export const PLATFORM_NAME = "myQ";
 
 // Since HomeKit doesn't give us a value for an obstructed state, we use this instead.
-export const MYQOBSTRUCTED = 8675309;
+export const MYQ_OBSTRUCTED = 8675309;
+
+// How long should we alert a user to an obstruction, in seconds.
+export const MYQ_OBSTRUCTION_ALERT_TIME = 30;
