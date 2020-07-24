@@ -233,10 +233,15 @@ export class myQGarageDoor extends myQAccessory {
       // here instead of the more intuitive setCharacteristic due to inevitable race conditions and
       // set loops that can occur in HomeKit if you aren't careful.
       accessory.context.doorState = myQState;
-      const targetState = this.doorTargetStateBias(myQState);
-
       accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.CurrentDoorState)?.updateValue(myQState);
-      accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
+
+      // We are only going to update the target state if our current state is NOT stopped. If we are stopped,
+      // we are at the target state by definition. Unfortunately, the iOS Home app doesn't seem to correctly
+      // report a stopped state, although you can find it correctly reported in other HomeKit apps like Eve Home.
+      if(myQState !== hap.Characteristic.CurrentDoorState.STOPPED) {
+        const targetState = this.doorTargetStateBias(myQState);
+        accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
+      }
     }
 
     const batteryStatus = this.doorPositionSensorBatteryStatus();
@@ -323,13 +328,15 @@ export class myQGarageDoor extends myQAccessory {
   private doorCurrentStateBias(myQState: CharacteristicValue): CharacteristicValue {
     // Our current state reflects having to take an opinion on what open or closed means to
     // HomeKit. For the obvious states, this is easy. For some of the edge cases, it can be less so.
-    // Our north star is that if we are in a stopped or obstructed state, we are open.
+    // Our north star is that if we are in an obstructed state, we are open.
     switch(myQState) {
       case this.hap.Characteristic.CurrentDoorState.OPEN:
       case this.hap.Characteristic.CurrentDoorState.OPENING:
-      case this.hap.Characteristic.CurrentDoorState.STOPPED:
       case MYQOBSTRUCTED:
         return this.hap.Characteristic.CurrentDoorState.OPEN;
+
+      case this.hap.Characteristic.CurrentDoorState.STOPPED:
+        return this.hap.Characteristic.CurrentDoorState.STOPPED;
 
       case this.hap.Characteristic.CurrentDoorState.CLOSED:
       case this.hap.Characteristic.CurrentDoorState.CLOSING:
@@ -344,7 +351,8 @@ export class myQGarageDoor extends myQAccessory {
     // reasonable assumptions about where we intend to end up. If we are opening or closing,
     // our target state needs to be the completion of those actions. If we're stopped or
     // obstructed, we're going to assume the desired target state is to be open, since that
-    // is the typical garage door behavior.
+    // is the typical garage door behavior, and it's impossible for us to know with reasonable
+    // certainty what the original intention of the action was.
     switch(myQState) {
       case this.hap.Characteristic.CurrentDoorState.OPEN:
       case this.hap.Characteristic.CurrentDoorState.OPENING:
