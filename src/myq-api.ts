@@ -6,7 +6,13 @@ import { HAP, Logging } from "homebridge";
 import fetch, { Response, RequestInfo, RequestInit } from "node-fetch";
 import util from "util";
 
-import { MYQ_API_URL, MYQ_API_VERSION_MAJOR, MYQ_API_VERSION_MINOR, MYQ_API_APPID } from "./settings";
+import {
+  MYQ_API_APPID,
+  MYQ_API_TOKEN_REFRESH_INTERVAL,
+  MYQ_API_URL,
+  MYQ_API_VERSION_MAJOR,
+  MYQ_API_VERSION_MINOR
+} from "./settings";
 
 // An incomplete description of the myQ device JSON, but enough for our purposes.
 export interface myQDevice {
@@ -14,13 +20,14 @@ export interface myQDevice {
   readonly device_platform: string,
   readonly device_type: string,
   readonly name: string,
-  readonly parent_device_id?: string,
+  readonly parent_device_id: string,
   readonly serial_number: string,
   readonly state: {
     readonly door_state: string,
-    readonly dps_low_battery_mode?: boolean,
+    readonly dps_low_battery_mode: boolean,
+    readonly gdo_lock_connected: boolean
     readonly online: boolean,
-    readonly firmware_version?: string
+    readonly firmware_version: string
   }
 }
 
@@ -64,8 +71,8 @@ const myQApiInfo = {
   }
 };
 
-// Renew myQ security credentials every 20 hours.
-const myQTokenExpirationWindow = 20 * 60 * 60 * 1000;
+// Renew myQ security credentials every so often, in hours.
+const myQTokenExpirationWindow = MYQ_API_TOKEN_REFRESH_INTERVAL * 60 * 60 * 1000;
 
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
