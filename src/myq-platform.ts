@@ -12,12 +12,12 @@ import {
   PlatformConfig
 } from "homebridge";
 
-import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
-import { myQApi, myQDevice } from "./myq-api";
-import { myQAccessory } from "./myq-accessory";
-import { myQGarageDoor } from "./myq-garagedoor";
-
 import util from "util";
+
+import { myQAccessory } from "./myq-accessory";
+import { myQApi, myQDevice } from "./myq-api";
+import { myQGarageDoor } from "./myq-garagedoor";
+import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
