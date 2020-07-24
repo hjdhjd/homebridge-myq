@@ -3,9 +3,10 @@
  * myq-api.ts: Our myQ API implementation.
  */
 import { HAP, Logging } from "homebridge";
-
 import fetch, { Response, RequestInfo, RequestInit } from "node-fetch";
 import util from "util";
+
+import { MYQ_API_URL, MYQ_API_VERSION_MAJOR, MYQ_API_VERSION_MINOR, MYQ_API_APPID } from "./settings";
 
 // An incomplete description of the myQ device JSON, but enough for our purposes.
 export interface myQDevice {
@@ -37,14 +38,14 @@ let debugMode = false;
  * continue to evolve.
  */
 const myQApiInfo = {
-  baseUrl: "https://api.myqdevice.com/api",
+  baseUrl: MYQ_API_URL,
 
   // myQ API version, currently 5.1.
-  majorVersion: 5,
-  minorVersion: 1,
+  majorVersion: MYQ_API_VERSION_MAJOR,
+  minorVersion: MYQ_API_VERSION_MINOR,
 
   // myQ app identifier and user agent used to validate against the myQ API.
-  appId: "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu",
+  appId: MYQ_API_APPID,
   userAgent: "okhttp/3.10.0",
 
   // Complete version string.
