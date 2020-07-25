@@ -29,7 +29,7 @@
         "title": "myQ Application Identifier",
         "type": "string",
         "required": false,
-        "description": "Default: none (use the builtin appId)<BR>Override the builtin myQ application identifier when connecting to the myQ API. This setting is only useful when myQ API changes occur and this plugin hasn't been updated.<BR><B><I>Changing this setting without understanding the implications will result in being unable to connect to the myQ API and potentially being denylisted from the myQ API servers. This setting is intended to be used as a last resort when sudden myQ API changes occur. Use with extreme care.</I></B>"
+        "description": "Default: none (use the builtin appId)<BR>Override the builtin myQ application identifier when connecting to the myQ API. This setting is only useful when myQ API changes occur and this plugin hasn't been updated.<BR><BR><B><I>Changing this setting without understanding the implications will result in being unable to connect to the myQ API and potentially being denylisted on the server side. This setting is intended to be used as a last resort when sudden myQ API changes occur. Use with extreme care.</I></B>"
       },
 
       "debug": {
