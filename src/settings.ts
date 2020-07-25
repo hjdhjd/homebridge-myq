@@ -2,11 +2,11 @@
  *
  * settings.ts: Settings and constants for homebridge-myq2.
  */
-// The name of our plugin.
-export const PLUGIN_NAME = "homebridge-myq2";
+// myQ API appId used to validate against the myQ API.
+export const MYQ_API_APPID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
 
-// The platform the plugin creates.
-export const PLATFORM_NAME = "myQ";
+// myQ API security token renewal interval, in hours.
+export const MYQ_API_TOKEN_REFRESH_INTERVAL = 20;
 
 // myQ API URL.
 export const MYQ_API_URL = "https://api.myqdevice.com/api";
@@ -15,11 +15,14 @@ export const MYQ_API_URL = "https://api.myqdevice.com/api";
 export const MYQ_API_VERSION_MAJOR = 5;
 export const MYQ_API_VERSION_MINOR = 1;
 
-// myQ API appId to emulate a valid myQ application.
-export const MYQ_API_APPID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8iHfRHKwTmDzHOu";
-
 // Since HomeKit doesn't give us a value for an obstructed state, we use this instead.
 export const MYQ_OBSTRUCTED = 8675309;
 
 // How long should we alert a user to an obstruction, in seconds.
-export const MYQ_OBSTRUCTION_ALERT_TIME = 30;
+export const MYQ_OBSTRUCTION_ALERT_INTERVAL = 30;
+
+// The platform the plugin creates.
+export const PLATFORM_NAME = "myQ";
+
+// The name of our plugin.
+export const PLUGIN_NAME = "homebridge-myq2";

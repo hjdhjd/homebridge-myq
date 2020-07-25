@@ -10,12 +10,14 @@ import {
   NodeCallback
 } from "homebridge";
 
-import { myQDevice, myQHwInfo } from "./myq-api";
 import { myQAccessory } from "./myq-accessory";
-import { MYQOBSTRUCTED } from "./settings";
+import { myQDevice, myQHwInfo } from "./myq-api";
+import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_INTERVAL } from "./settings";
 
 export class myQGarageDoor extends myQAccessory {
   private batteryDeviceSupport = false;
+  private obstructionDetected = false;
+  private obstructionTimer!: NodeJS.Timeout;
 
   // Configure a garage door accessory for HomeKit.
   protected configureDevice(): void {
@@ -123,13 +125,15 @@ export class myQGarageDoor extends myQAccessory {
 
   // Return whether or not the garage door detects an obstruction.
   private getOnObstructed(callback: CharacteristicGetCallback): void {
-    const doorState = this.doorStatus();
+    // For a refresh of the door status, but we're really unconcerned about what it returns here.
+    this.doorStatus();
 
-    if(doorState === MYQOBSTRUCTED) {
+    // See if we have an obstruction to alert on.
+    if(this.obstructionDetected) {
       this.log("%s: Obstruction detected.", this.accessory.displayName);
     }
 
-    callback(null, doorState === MYQOBSTRUCTED);
+    callback(null, this.obstructionDetected);
   }
 
   // Return garage door status.
@@ -217,7 +221,7 @@ export class myQGarageDoor extends myQAccessory {
       [hap.Characteristic.CurrentDoorState.OPENING]: "Opening",
       [hap.Characteristic.CurrentDoorState.CLOSING]: "Closing",
       [hap.Characteristic.CurrentDoorState.STOPPED]: "Stopped",
-      [MYQOBSTRUCTED]: "Obstructed"
+      [MYQ_OBSTRUCTED]: "Obstructed"
     };
 
     // If we can't get our status, we're probably not able to connect to the myQ API.
@@ -265,7 +269,7 @@ export class myQGarageDoor extends myQAccessory {
       opening: this.hap.Characteristic.CurrentDoorState.OPENING,
       closing: this.hap.Characteristic.CurrentDoorState.CLOSING,
       stopped: this.hap.Characteristic.CurrentDoorState.STOPPED,
-      autoreverse: MYQOBSTRUCTED
+      autoreverse: MYQ_OBSTRUCTED
     };
 
     const device = this.accessory.context.device;
@@ -281,6 +285,36 @@ export class myQGarageDoor extends myQAccessory {
     if(myQState === undefined) {
       this.log("%s: Unknown door state encountered: %s.", this.accessory.displayName, device.state.door_state);
       return -1;
+    }
+
+    // Obstructed states in the myQ API remain active for a very small period of time. Furthermore, the way
+    // HomeKit informs you of an obstructed state is through a status update on the Home app home screen.
+    // This ultimately means that an obstructed state has a very small chance of actually being visible to
+    // a user unless they happen to be looking at the Home app at the exact moment the obstruction is detected.
+    // To ensure the user has a reasonable chance to notice the obstructed state, we will alert a user for up
+    // to MYQ_OBSTRUCTION_ALERT_INTERVAL seconds after the last time we detected an obstruction before clearing
+    // out the alert.
+    if(myQState === MYQ_OBSTRUCTED) {
+      // Clear any other timer that might be out there for obstructions.
+      clearTimeout(this.obstructionTimer);
+
+      // Obstruction detected.
+      this.obstructionDetected = true;
+
+      const accessory = this.accessory;
+      const hap = this.hap;
+      const self = this;
+
+      // Set the timer for clearing out the obstruction state.
+      this.obstructionTimer = setTimeout(() => {
+        self.obstructionDetected = false;
+
+        accessory
+          .getService(hap.Service.GarageDoorOpener)!
+          .getCharacteristic(hap.Characteristic.ObstructionDetected).updateValue(self.obstructionDetected);
+
+        self.log("%s: Obstruction cleared.", self.accessory.displayName);
+      }, MYQ_OBSTRUCTION_ALERT_INTERVAL * 1000);
     }
 
     return myQState;
@@ -332,7 +366,7 @@ export class myQGarageDoor extends myQAccessory {
     switch(myQState) {
       case this.hap.Characteristic.CurrentDoorState.OPEN:
       case this.hap.Characteristic.CurrentDoorState.OPENING:
-      case MYQOBSTRUCTED:
+      case MYQ_OBSTRUCTED:
         return this.hap.Characteristic.CurrentDoorState.OPEN;
 
       case this.hap.Characteristic.CurrentDoorState.STOPPED:
@@ -357,7 +391,7 @@ export class myQGarageDoor extends myQAccessory {
       case this.hap.Characteristic.CurrentDoorState.OPEN:
       case this.hap.Characteristic.CurrentDoorState.OPENING:
       case this.hap.Characteristic.CurrentDoorState.STOPPED:
-      case MYQOBSTRUCTED:
+      case MYQ_OBSTRUCTED:
         return this.hap.Characteristic.TargetDoorState.OPEN;
 
       case this.hap.Characteristic.CurrentDoorState.CLOSED:
