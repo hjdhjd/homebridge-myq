@@ -264,8 +264,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
         self.configPoll.count = self.configPoll.maxCount - 1;
       }
 
-      self.log("Polling...");
-
       // Fire off the next polling interval.
       self.poll(0);
     }, refresh * 1000);
