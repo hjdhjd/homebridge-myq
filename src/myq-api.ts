@@ -144,6 +144,17 @@ type myQAccount = Readonly<myQAccountInterface>;
 export type myQDevice = Readonly<myQDeviceInterface>;
 export type myQHwInfo = Readonly<myQHwInfoInterface>;
 
+/*
+ * // List all the door types we know about. For future use...
+ * const myQDoorTypes = [
+ *   "commercialdooropener",
+ *   "garagedooropener",
+ *   "gate",
+ *   "virtualgaragedooropener",
+ *   "wifigaragedooropener"
+ *  ];
+ */
+
 let debugMode = false;
 
 /*
@@ -232,20 +243,17 @@ export class myQApi {
     "SecurityToken": ""
   };
 
-  // List all the door types we know about. For future use...
-  private myQDoorTypes = [
-    "commercialdooropener",
-    "garagedooropener",
-    "gate",
-    "virtualgaragedooropener",
-    "wifigaragedooropener"
-  ];
-
   // Initialize this instance with our login information.
-  constructor(log: Logging, email: string, password: string, wantDebug: boolean) {
+  constructor(log: Logging, email: string, password: string, appId: string, wantDebug: boolean) {
     this.log = log;
     this.email = email;
     this.password = password;
+
+    if(appId) {
+      this.headers.MyQApplicationId = appId;
+      this.log("myQ API: Overriding builtin myQ application identifier and using: %s", this.headers.MyQApplicationId);
+    }
+
     debugMode = wantDebug;
   }
 

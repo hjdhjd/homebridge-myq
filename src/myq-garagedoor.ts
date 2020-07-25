@@ -12,7 +12,7 @@ import {
 
 import { myQAccessory } from "./myq-accessory";
 import { myQDevice, myQHwInfo } from "./myq-api";
-import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_INTERVAL } from "./settings";
+import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
 
 export class myQGarageDoor extends myQAccessory {
   private batteryDeviceSupport = false;
@@ -246,6 +246,10 @@ export class myQGarageDoor extends myQAccessory {
         const targetState = this.doorTargetStateBias(myQState);
         accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
       }
+
+      // When we detect any state change, we want to increase our polling resolution to provide timely updates.
+      this.platform.configPoll.count = 0;
+      this.platform.poll(0);
     }
 
     const batteryStatus = this.doorPositionSensorBatteryStatus();
@@ -292,7 +296,7 @@ export class myQGarageDoor extends myQAccessory {
     // This ultimately means that an obstructed state has a very small chance of actually being visible to
     // a user unless they happen to be looking at the Home app at the exact moment the obstruction is detected.
     // To ensure the user has a reasonable chance to notice the obstructed state, we will alert a user for up
-    // to MYQ_OBSTRUCTION_ALERT_INTERVAL seconds after the last time we detected an obstruction before clearing
+    // to MYQ_OBSTRUCTION_ALERT_DURATION seconds after the last time we detected an obstruction before clearing
     // out the alert.
     if(myQState === MYQ_OBSTRUCTED) {
       // Clear any other timer that might be out there for obstructions.
@@ -314,7 +318,7 @@ export class myQGarageDoor extends myQAccessory {
           .getCharacteristic(hap.Characteristic.ObstructionDetected).updateValue(self.obstructionDetected);
 
         self.log("%s: Obstruction cleared.", self.accessory.displayName);
-      }, MYQ_OBSTRUCTION_ALERT_INTERVAL * 1000);
+      }, MYQ_OBSTRUCTION_ALERT_DURATION * 1000);
     }
 
     return myQState;
@@ -350,7 +354,7 @@ export class myQGarageDoor extends myQAccessory {
     this.myQ.execute(device.serial_number, myQCommand);
 
     // Increase the frequency of our polling for state updates to catch any updates from myQ.
-    // This will trigger polling at shortPoll intervals until shortPollDuration is hit. If you
+    // This will trigger polling at activeRefreshInterval until activeRefreshDuration is hit. If you
     // query the myQ API too quickly, the API won't have had a chance to begin executing our command.
     this.platform.configPoll.count = 0;
     this.platform.poll(0);

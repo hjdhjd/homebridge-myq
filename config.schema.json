@@ -2,31 +2,32 @@
   "pluginAlias": "myQ",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a Homebridge plugin to interact with MyQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.\n\nSee the [Feature Options](https://github.com/hjdhjd/homebridge-myq2#feature-options) section in the documentation for a complete list of features that can be enabled or disabled.",
+  "headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a Homebridge plugin to interact with myQ Smart Garage door openers, made primarily by LiftMaster and Chamberlain.\n\nSee the [Feature Options](https://github.com/hjdhjd/homebridge-myq2#feature-options) section in the documentation for a complete list of features that can be enabled or disabled.",
   "footerDisplay": "For additional help please see the [homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) Github page.",
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "description": "The name you would like to assign to this MyQ Home Bridge. Default: MyQ2"
+      "activeRefreshDuration": {
+        "title": "Active Refresh Duration",
+        "minimum": 5,
+        "type": "integer",
+        "required": false,
+        "description": "Duration in <code>seconds</code> to use the <code>Active Refresh Interval</code>. Default: 300"
       },
 
-      "email": {
-        "title": "MyQ Username",
-        "type": "string",
-        "required": true,
-        "placeholder": "user@example.com",
-        "description": "Email address used for your MyQ account."
+      "activeRefreshInterval": {
+        "title": "Active Refresh Interval",
+        "type": "integer",
+        "minimum": 1,
+        "required": false,
+        "description": "Refresh interval in <code>seconds</code> to use when the device state changes are detected. Default: 3"
       },
 
-      "password": {
-        "title": "MyQ Password",
+      "appId": {
+        "title": "myQ Application Identifier",
         "type": "string",
-        "required": true,
-        "placeholder": "mypassword",
-        "description": "Password used for your MyQ account."
+        "required": false,
+        "description": "Override the builtin myQ application identifier when connecting to the myQ API. This setting is only useful when myQ API changes occur and this plugin hasn't been updated.<BR><DIV ALIGN=CENTER><B>Changing this setting without understanding the implications will result in being unable to connect to the myQ API and potentially being denylisted from the myQ API servers.Use with extreme care.</B></DIV><BR>Default: none (builtin)"
       },
 
       "debug": {
@@ -36,33 +37,42 @@
         "description": "Logging verbosity for debugging purporses. Default: false"
       },
 
-      "longPoll": {
-        "title": "Long Poll Interval",
-        "type": "integer",
-        "required": false,
-        "description": "Normal polling interval in <code>seconds</code>. Default: 15"
+      "email": {
+        "title": "myQ Username",
+        "type": "string",
+        "required": true,
+        "placeholder": "user@example.com",
+        "description": "Email address used for your myQ account."
       },
 
-      "shortPoll": {
-        "title": "Short Poll Interval",
-        "type": "integer",
-        "required": false,
-        "description": "Polling interval in <code>seconds</code> to use when the door state changes. Default: 5"
-      },
-
-      "shortPollDuration": {
-        "title": "Short Poll Duration",
-        "type": "integer",
-        "required": false,
-        "description": "Duration in <code>seconds</code> to use the <code>Short Poll Interval</code>. Default: 600"
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "description": "The name you would like to assign to this myQ Home Bridge. Default: myQ2"
       },
 
       "options": {
-        "title": "MyQ Gateways",
+        "title": "myQ Gateways",
         "type": "array",
         "items": {
           "type": "string"
         }
+      },
+
+      "password": {
+        "title": "myQ Password",
+        "type": "string",
+        "required": true,
+        "placeholder": "mypassword",
+        "description": "Password used for your myQ account."
+      },
+
+      "refreshInterval": {
+        "title": "Refresh Interval",
+        "type": "integer",
+        "minimum": 5,
+        "required": false,
+        "description": "Normal refresh interval of myQ device status from the myQ API in <code>seconds</code>. Default: 12"
       }
     }
   },
@@ -92,9 +102,9 @@
       "expandable": true,
       "expanded": false,
       "items": [
-        "longPoll",
-        "shortPoll",
-        "shortPollDuration",
+        "refreshInterval",
+        "activeRefreshInterval",
+        "activeRefreshDuration",
         {
           "name": "myQ Options",
           "buttonText": "Add Feature Option",
@@ -109,7 +119,8 @@
             }
           ]
         },
-        "debug"
+        "debug",
+        "appId"
       ]
     }
 

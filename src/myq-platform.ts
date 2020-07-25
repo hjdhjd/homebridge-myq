@@ -17,7 +17,13 @@ import util from "util";
 import { myQAccessory } from "./myq-accessory";
 import { myQApi, myQDevice } from "./myq-api";
 import { myQGarageDoor } from "./myq-garagedoor";
-import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
+import {
+  MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
+  MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
+  MYQ_DEVICE_REFRESH_INTERVAL,
+  PLATFORM_NAME,
+  PLUGIN_NAME
+} from "./settings";
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
@@ -32,9 +38,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
   readonly configOptions: string[] = [];
 
   readonly configPoll = {
-    longPoll: 15,
-    shortPoll: 5,
-    shortPollDuration: 600,
+    refreshInterval: MYQ_DEVICE_REFRESH_INTERVAL,
+    activeRefreshInterval: MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
+    activeRefreshDuration: MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
     maxCount: 0,
     count: 0
   };
@@ -71,33 +77,33 @@ export class myQPlatform implements DynamicPlatformPlugin {
       this.debug("Debug logging on. Expect a lot of data.");
     }
 
+    if(config.activeRefreshDuration) {
+      this.configPoll.activeRefreshDuration = config.activeRefreshDuration;
+    }
+
+    if(config.activeRefreshInterval) {
+      this.configPoll.activeRefreshInterval = config.activeRefreshInterval;
+    }
+
     if(config.options) {
       this.configOptions = config.options;
     }
 
-    if(config.longPoll) {
-      this.configPoll.longPoll = config.longPoll;
+    if(config.refreshInterval) {
+      this.configPoll.refreshInterval = config.refreshInterval;
     }
 
-    if(config.shortPoll) {
-      this.configPoll.shortPoll = config.shortPoll;
-    }
-
-    if(config.shortPollDuration) {
-      this.configPoll.shortPollDuration = config.shortPollDuration;
-    }
-
-    this.configPoll.maxCount = this.configPoll.shortPollDuration / this.configPoll.shortPoll;
+    this.configPoll.maxCount = this.configPoll.activeRefreshDuration / this.configPoll.activeRefreshInterval;
     this.configPoll.count = this.configPoll.maxCount;
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQApi(this.log, config.email, config.password, debugMode);
+    this.myQ = new myQApi(this.log, config.email, config.password, config.appId, debugMode);
 
     // This event gets fired after homebridge has restored all cached accessories and called their respective
     // `configureAccessory` function.
     //
     // Fire off our polling, with an immediate status refresh to begin with to provide us that responsive feeling.
-    api.on(APIEvent.DID_FINISH_LAUNCHING, this.poll.bind(this, this.configPoll.longPoll * -1));
+    api.on(APIEvent.DID_FINISH_LAUNCHING, this.poll.bind(this, this.configPoll.refreshInterval * -1));
   }
 
   // This gets called when homebridge restores cached accessories at startup. We
@@ -233,7 +239,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
   // Periodically poll the myQ API for status.
   poll(delay: number): void {
-    let refresh = this.configPoll.longPoll + delay;
+    let refresh = this.configPoll.refreshInterval + delay;
 
     // Clear the last polling interval out.
     clearTimeout(this.pollingTimer);
@@ -241,11 +247,11 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Normally, count just increments on each call. However, when we want to increase our
     // polling frequency, count is set to 0 (elsewhere in the plugin) to put us in a more
     // frequent polling mode. This is determined by the values configured for
-    // shortPollDuration and shortPoll which specify the maximum length of time for this
-    // increased polling frequency (shortPollDuration) and the actual frequency of each
-    // update (shortPoll).
+    // activeRefreshDuration and activeRefreshInterval which specify the maximum length of time
+    // for this increased polling frequency (activeRefreshDuration) and the actual frequency of
+    // each update (activeRefreshInterval).
     if(this.configPoll.count < this.configPoll.maxCount) {
-      refresh = this.configPoll.shortPoll + delay;
+      refresh = this.configPoll.activeRefreshInterval + delay;
       this.configPoll.count++;
     }
 
@@ -257,6 +263,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
       if(!(await self.updateAccessories())) {
         self.configPoll.count = self.configPoll.maxCount - 1;
       }
+
+      self.log("Polling...");
 
       // Fire off the next polling interval.
       self.poll(0);
