@@ -4,8 +4,8 @@
 
 # Homebridge myQ<SUP STYLE="font-size: smaller; color:#5EB5E6;">2</SUP>
 
-[![Downloads](https://img.shields.io/npm/dt/homebridge-myq2.svg)](https://www.npmjs.com/package/homebridge-myq2)
-[![Version](https://img.shields.io/npm/v/homebridge-myq2.svg)](https://www.npmjs.com/package/homebridge-myq2)
+[![Downloads](https://badgen.net/npm/dt/homebridge-myq2)](https://www.npmjs.com/package/homebridge-myq2)
+[![Version](https://badgen.net/npm/v/homebridge-myq2)](https://www.npmjs.com/package/homebridge-myq2)
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
 ## myQ garage door and other myQ-enabled device support for [Homebridge](https://homebridge.io).
@@ -22,10 +22,33 @@ Unfortunately, some of us have encountered significant issues with the hardware 
 
 Either solution will provide you with robust HomeKit integration, and you'll soon be automating your myQ smart garage with the richness of Apple's HomeKit ecosystem!
 
-## Why use this plugin for HomeKit myQ support?
+## Why use this plugin for myQ support in HomeKit?
 In a nutshell, the aim of this plugin for things to *just work* with minimal required configuration by you, the end user. The goal is to provide as close to a streamlined experience as you would expect from a first-party or native HomeKit solution. For the adventurous, those additional granular options are, of course, available to support more esoteric use cases or other unique needs.
 
 What does *just work* mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
+
+### Features
+- ***Easy* configuration - all you need is your myQ username and password to get started.** The defaults work for the vast majority of users. When you want more, there are [advanced options](#advanced-config) you can play with, if you choose.
+
+- **Automatic detection and configuration of all garage door and gate openers.** By default - all of your supported myQ devices are made available in HomeKit.
+
+- **[Obstruction detection](#obstruction-status) on supported myQ garage door and gate openers.** When a garage door or gate is obstructed, and the myQ API provides that information, you'll see an alert raised in the Home app.
+
+- **[Battery status detection](#battery-status) on supported myQ door position sensor devices.** If you have a myQ supported door position sensor, you'll see an alert raised in the Home app to inform you when the battery is running low.
+
+- **The ability to [selectively hide and show](#feature-options) specific gateways (useful when you have multiple homes) or openers.** For those who only want to show particular devices in HomeKit, or particular homes, a flexible and intuitive way to configure device availability at a granular level is available.
+
+### <A NAME="myq-contribute"></A>How you can contribute and make this plugin even better
+The myQ API is undocumented and implementing a plugin like this one is the result of many hours of reverse engineering, trial and error, and community support. This work stands on the shoulders of other myQ API projects out there and this project attempts to contribute back to that community base of knowledge to further improve myQ support for everyone.
+
+I would love to support more types of myQ devices. I'm actively interested in working with people who have devices beyond garage doors in the myQ ecosystem such as myQ-enabled:
+
+- Lights and lamps
+- Motion sensors
+- Cameras
+- Locks
+
+If you have these devices and would like to contribute, please open an [issue](https://github.com/hjdhjd/homebridge-myq2/issues), label it as a enhancement, and let's figure out how to make this plugin even better! Bonus points if you like puzzles and lots of debugging output. :smile:
 
 ## Installation
 If you are new to Homebridge, please first read the [Homebridge](https://homebridge.io) [documentation](https://github.com/homebridge/homebridge/wiki) and installation instructions before proceeding.
@@ -42,19 +65,22 @@ sudo npm install -g homebridge-myq2
 Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq2/blob/master/CHANGELOG.md).
 
 ### Things to be aware of
-- **This plugin requires Homebridge v1.0 on greater to work. Prior versions will not work. For some, this may be a breaking change if you are running on older versions of Homebridge.**
+- **Beginning with v2.0, this plugin requires Homebridge v1.0 on greater to work. For some, this may be a breaking change if you are running on older versions of Homebridge.**
 
-- The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future API changes that may come. Unfortunately, it's an ongoing challenge since API changes can be sudden and unpredictable.
-- **As a result you will see errors like this on an occasional basis in the Homebridge logs:**
+- Also beginning with v2.0, the `platform` configuration block for this plugin in your Homebridge `config.json` has been renamed (and note that the name is case sensitive as well). See the [plugin configuration section below](#plugin-configuration) for details. **This is a breaking change for those upgrading from v1.x and you will need to update your `config.json` to reflect the updates**.
+
+- <A NAME="myq-errors"></A>The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future API changes that may come. Unfortunately, it's an ongoing challenge since API changes can be sudden and unpredictable.
+
+- **As a result of the above you *will* see errors similar to this on an occasional basis in the Homebridge logs:**
 
     ```
     myQ API: Unable to update device status from myQ servers. Acquiring a new security token and retrying later.
     ```
-  These messages can be safely ignored. myQ API errors *will* inevtiably happen. The myQ servers are not completely reliable and occasionally error out, or are being maintained, or rebooting, etc. The plugin has no control over this, unfortunately, and all we can do is handle those errors gracefully, which is what I've attempted to do. The logging is informative and not a cause for significant concern unless it is constant and ongoing, which would be indicative of the larger API issues referenced above.
+  These messages can be safely ignored. myQ API errors *will* inevtiably happen. The myQ server-side infrastructure from Liftmaster / Chamberlain is not completely reliable and occasionally errors out due to server maintenance, network issues, or other infrastructure hiccups that occur on the myQ end of things. This plugin has no control over this, unfortunately, and all we can do is handle those errors gracefully, which is what I've attempted to do. The logging is informative and not a cause for significant concern unless it is constant and ongoing, which would be indicative of the larger API issues referenced above. When one of these errors is detected, we log back into the myQ infrastructure, obtain new API security credentials, and attempt refresh our status in the next scheduled update, which by is roughly [every 15 seconds by default](#advanced-config).
 
-- The configuration block for `config.json` has changed to rename the platform (and it is case sensitive as well). **This is a breaking change and you will need to update your `config.json` to reflect the updates**.
+- <A NAME="obstruction-status"></A>Obstruction detection in myQ is more nuanced than one might think at first glance. When myQ detects an obstruction, that obstruction is only visible in the API for a *very* small amount of time, typically no more than a few seconds. This presents a user experience problem - if you remain completely faithful to the myQ API and only show the user the obstruction for the very short amount of time that it actually occurs, the user might never notice it because the alert is not visible for more than a few seconds. Instead, the design decision I've chosen to make is to ensure that any detected obstruction is alerted in HomeKit for 30 seconds from the last time myQ detected that obstruction. This ensures that the user has a reasonable chance of noticing there was an obstruction at some point in the very recent past, without having to have the user stare at the Home app constantly to happen to catch an ephemeral state.
 
-- If your myQ device has support for battery status, `homebridge-myq2` will automatically detect and add support for it in HomeKit. However, you **will** see a warning message in the [Homebridge](https://homebridge.io) logs along the lines of:
+- <A NAME="battery-status"></A>If your myQ device has support for battery status, `homebridge-myq2` will automatically detect and add support for it in HomeKit. However, you **will** see a warning message in the [Homebridge](https://homebridge.io) logs along the lines of:
     ```
     HAP Warning: Characteristic 00000079-0000-1000-8000-0026BB765291 not in required or optional characteristics for service 00000041-0000-1000-8000-0026BB765291. Adding anyway.
     ```
@@ -71,7 +97,7 @@ If you choose to configure this plugin directly instead of using the [Homebridge
 }]
 ```
 
-For most people, the recommendation is to use the Homebridge configuration user interface to configure this plugin rather than doing so directly. It's easier to use and less prone to typos, particularly for newer users.
+For most people, the recommendation is to use the [Homebridge web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
 
 ### Feature Options
 Feature options allow you to enable or disable certain features in this plugin.
@@ -94,7 +120,7 @@ The priority given to these options works in this order, from highest to lowest 
 * Hide any opener we've explicitly hidden.
 * Hide any gateway we've explicitly hidden.
 
-### Advanced Configuration (Optional)
+### <A NAME="advanced-config"></A>Advanced Configuration (Optional)
 This step is not required. The defaults should work well for almost everyone, but for those that prefer to tweak additional settings, this is the complete list of settings available.
 
 ```js
@@ -105,22 +131,24 @@ This step is not required. The defaults should work well for almost everyone, bu
     "email": "email@email.com",
     "password": "password",
     "debug": false,
-    "longPoll": 15,
-    "shortPoll": 5,
-    "shortPollDuration": 600,
+    "refreshInterval": 12,
+    "activeRefreshInterval": 3,
+    "activeRefreshDuration": 300,
+    "appId": "abcdefg",
     "options": ["Hide.GW12345", "Show.CG6789"]
   }
 ]
 ```
 
-| Fields            | Description                                             | Default | Required |
-|-------------------|---------------------------------------------------------|---------|----------|
-| platform          | Must always be `myQ`.                                   |         | Yes      |
-| name              | For logging purposes.                                   |         | No       |
-| email             | Your myQ account email.                                 |         | Yes      |
-| password          | Your myQ account password.                              |         | Yes      |
-| debug             | Logging verbosity for debugging purporses.              | false   | No       |
-| longPoll          | Normal polling interval in `s`.                         | 15      | No       |
-| shortPoll         | Polling interval in `s` when door state changes.        | 5       | No       |
-| shortPollDuration | Duration in `s` to use `shortPoll`.                     | 600     | No       |
-| options           | Configure plugin [feature options](#feature-options).   | []      | No       |
+| Fields                | Description                                                                        | Default | Required |
+|-----------------------|------------------------------------------------------------------------------------|---------|----------|
+| platform              | Must always be `myQ`.                                                              |         | Yes      |
+| name                  | For logging purposes.                                                              |         | No       |
+| email                 | Your myQ account email.                                                            |         | Yes      |
+| password              | Your myQ account password.                                                         |         | Yes      |
+| refreshInterval       | Normal myQ device refresh interval in `seconds`.                                   | 12      | No       |
+| activeRefreshInterval | Refresh interval in `seconds` to use when myQ device state changes are detected.   | 3       | No       |
+| activeRefreshDuration | Duration in `seconds` to use `activeRefreshInterval` to refresh myQ device status. | 300     | No       |
+| appId                 | Override the builtin myQ appId to a user supplied one. **Use with extreme care.**  | false   | No       |
+| options               | Configure plugin [feature options](#feature-options).                              | []      | No       |
+| debug                 | Logging verbosity for debugging purporses.                                         | false   | No       |
