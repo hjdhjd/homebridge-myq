@@ -1,6 +1,6 @@
 <SPAN ALIGN="CENTER">
 
-<A HREF="https://github.com/homebridge/verified/blob/master/verified-plugins.json"><IMG ALT="homebridge-verified" src="https://github.com/hjdhjd/homebridge-myq2/blob/master/homebridge-myq.svg" WIDTH="400px"></A>
+[![homebridge-myq2: Native HomeKit support for myQ garage door openers and other devices](https://raw.githubusercontent.com/hjdhjd/homebridge-myq2/master/homebridge-myq.svg)](https://github.com/hjdhjd/homebridge-myq2)
 
 # Homebridge myQ<SUP STYLE="font-size: smaller; color:#5EB5E6;">2</SUP>
 
