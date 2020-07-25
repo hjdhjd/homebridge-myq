@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.1.8 (2020-07-25)
+  * Additional web UI refinements.
+
 ## 2.1.6, v2.1.7 (2020-07-25)
   * Fix: remove spurious and noisy log entry when polling the myQ API.
 
