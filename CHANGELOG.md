@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.1.6 (2020-07-25)
+  * Fix: remove spurious and noisy log entry when polling the myQ API.
+
 ## 2.1.5 (2020-07-25)
   * **Wanted: more myQ device types. If you have a myQ light or other non-door myQ accessory, I'd love to [hear from you](https://github.com/hjdhjd/homebridge-myq2#myq-contribute) and see if we can add support for it in `homebridge-myq2`.**
   * Enhancement: alert on obstructions for a longer window of time (30 seconds), to give users a better chance of noticing them. See [here](https://github.com/hjdhjd/homebridge-myq2#obstruction-status) if you'd like to read more about it.
