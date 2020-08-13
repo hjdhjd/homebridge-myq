@@ -2,8 +2,8 @@
   "pluginAlias": "myQ",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) is a Homebridge plugin to bring HomeKit support to myQ-enabled devices such as smart garage door openers. Compatible brands include Liftmaster, Chamberlain, and Craftsman among others.<P>The [myQ compatibility check tool](https://www.myq.com/myq-compatibility) can be used to check if your device may be compatible.</P><P>See the [Feature Options](https://github.com/hjdhjd/homebridge-myq2#feature-options) section in the documentation for a complete list of features that can be enabled or disabled.</P>",
-  "footerDisplay": "For additional help please see the [homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) project site.",
+  "headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) provides HomeKit support to myQ-enabled smart garage door openers and other devices.",
+  "footerDisplay": "See the [homebridge-myq2 developer page](https://github.com/hjdhjd/homebridge-myq2) for detailed documentation, including [feature options](https://github.com/hjdhjd/homebridge-myq2#feature-options).",
   "schema": {
     "type": "object",
     "properties": {
@@ -13,7 +13,7 @@
         "maximum": 900,
         "type": "integer",
         "required": false,
-        "description": "Default: 300<BR>Duration in <CODE>seconds</CODE> to use the <CODE>Active Refresh Interval</CODE> to query for additional device state changes.<P>&nbsp;"
+        "description": "Duration in seconds to use the Active Refresh Interval to query for additional device state changes. Default: 300."
       },
 
       "activeRefreshInterval": {
@@ -22,21 +22,21 @@
         "minimum": 2,
         "maximum": 10,
         "required": false,
-        "description": "Default: 3<BR>Refresh interval in <CODE>seconds</CODE> to use once device state changes are detected in order to ensure we quickly detect any additional device changes (e.g. a door opening or closing) for <CODE>Active Refresh Duration</CODE> seconds.<P>&nbsp;"
+        "description": "Refresh interval in seconds to use once device state changes are detected. Default: 3."
       },
 
       "appId": {
-        "title": "myQ Application Identifier",
+        "title": "myQ Application Identifier Override",
         "type": "string",
         "required": false,
-        "description": "Default: none (use the builtin appId)<BR>Override the builtin myQ application identifier when connecting to the myQ API. This setting is only useful when myQ API changes occur and this plugin hasn't been updated.<BR><BR><B><I>Changing this setting without understanding the implications will result in being unable to connect to the myQ API and potentially being denylisted on the server side. This setting is intended to be used as a last resort when sudden myQ API changes occur. Use with extreme care.</I></B>"
+        "description": "Override the builtin myQ application identifier when connecting to the myQ API. Use with extreme caution."
       },
 
       "debug": {
         "title": "Debug Logging",
         "type": "boolean",
         "required": false,
-        "description": "Default: false<BR>Logging verbosity for debugging purporses.<P>&nbsp;"
+        "description": "Logging verbosity for debugging. Default: false."
       },
 
       "email": {
@@ -44,17 +44,18 @@
         "type": "string",
         "required": true,
         "placeholder": "user@example.com",
-        "description": "Email address used for your myQ account.<P>&nbsp;"
+        "description": "Email address used for your myQ account."
       },
 
       "name": {
         "title": "Name",
         "type": "string",
-        "description": "Default: myQ<BR>The name you would like to assign to this plugin primarily for logging purposes.<P>&nbsp;"
+        "placeholder": "myQ",
+        "description": "The name to assign this plugin for logging purposes. Default: myQ."
       },
 
       "options": {
-        "title": "myQ Gateways",
+        "title": "Feature Options",
         "type": "array",
         "items": {
           "type": "string"
@@ -66,7 +67,7 @@
         "type": "string",
         "required": true,
         "placeholder": "mypassword",
-        "description": "Password used for your myQ account.<P>&nbsp;"
+        "description": "Password used for your myQ account."
       },
 
       "refreshInterval": {
@@ -75,16 +76,15 @@
         "minimum": 5,
         "maximum": 60,
         "required": false,
-        "description": "Default: 12<BR>Normal refresh interval of myQ device status from the myQ API in <code>seconds</code>.<P>&nbsp;"
+        "description": "Normal myQ status refresh interval, in seconds. Default: 12."
       }
     }
   },
 
   "layout": [
     {
-      "key": "",
+      "key": "general",
       "title": "General Options",
-      "help": "General options for the plugin.",
       "type": "fieldset",
       "orderable": false,
       "expandable": true,
@@ -97,9 +97,32 @@
     },
 
     {
-      "key": "",
+      "key": "options",
+      "title": "Feature Options",
+      "buttonText": "Add Feature Option",
+      "type": "fieldset",
+      "orderable": false,
+      "expandable": true,
+      "expanded": true,
+      "items": [
+        {
+          "type": "string",
+          "description": "Enter only one option per entry. See project page for the complete list of available options.",
+          "placeholder": "e.g. Hide.SerialNumber",
+          "displayFlex": true,
+          "flex-direction": "row",
+          "items": [
+            {
+              "key": "options[]"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "key": "advanced",
       "title": "Advanced Settings (Optional)",
-      "help": "Configure advanced features such as debugging.",
       "type": "fieldset",
       "orderable": false,
       "expandable": true,
@@ -108,20 +131,6 @@
         "refreshInterval",
         "activeRefreshInterval",
         "activeRefreshDuration",
-        {
-          "name": "myQ Options",
-          "buttonText": "Add Feature Option",
-          "type": "array",
-          "orderable": false,
-          "expandable": true,
-          "expanded": true,
-          "items": [
-            {
-              "description": "Available options (one option per entry): <UL><LI><CODE>Hide.<I>serialnumber</I></CODE> to hide the gateway (and all associated openers) or individual opener <I></I> from being shown in HomeKit.</LI><LI><CODE>Show.<I>serialnumber</I></CODE> to force a gateway (and all associated openers) or opener to be shown in HomeKit.</LI></UL><BR><A HREF=\"https://github.com/hjdhjd/homebridge-myq2#feature-options\">Click here for Feature Options documentation</A>",
-              "key": "options[]"
-            }
-          ]
-        },
         "debug",
         "appId"
       ]
