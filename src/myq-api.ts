@@ -3,9 +3,9 @@
  * myq-api.ts: Our myQ API implementation.
  */
 import { HAP, Logging } from "homebridge";
-import fetch, { Response, RequestInfo, RequestInit } from "node-fetch";
-import util from "util";
-
+import { myQPlatform } from "./myq-platform";
+import { myQDevice, myQHwInfo } from "./myq-types";
+import fetch, { Headers, Response, RequestInfo, RequestInit } from "node-fetch";
 import {
   MYQ_API_APPID,
   MYQ_API_TOKEN_REFRESH_INTERVAL,
@@ -13,149 +13,7 @@ import {
   MYQ_API_VERSION_MAJOR,
   MYQ_API_VERSION_MINOR
 } from "./settings";
-
-// A semi-complete description of the myQ account JSON.
-// This is currently unused and documented here primarily for reference.
-interface myQAccountInterface {
-  Admin: boolean,
-  Account: {
-    href: string,
-    AccessGroups: {
-      href: string
-    },
-    AccessSchedules: {
-      href: string
-    },
-    Address: {
-      AddressLine1: string,
-      AddressLine2: string,
-      City: string,
-      PostalCode: string,
-      Country: {
-        href: string,
-        Code: string,
-        IsEEACountry: boolean
-      }
-    },
-    ContactName: string,
-    Devices: {
-      href: string
-    },
-    DirectoryCodeLength: number,
-    Email: string,
-    Id: string,
-    Name: string,
-    Phone: string,
-    Roles: {
-      href: string
-    },
-    TimeZone: string,
-    Users: {
-      href: string
-    },
-    UserAllowance: number,
-    Zones: {
-      href: string
-    }
-  },
-  AnalyticsId: string,
-  CultureCode: string,
-  DiagnosticDataOptIn: boolean,
-  Email: string,
-  FirstName: string,
-  LastName: string,
-  Address: {
-    AddressLine1: string,
-    AddressLine2: string,
-    City: string,
-    PostalCode: string,
-    Country: {
-      href: string,
-      Code: string,
-      IsEEACountry: boolean
-    }
-  },
-  MailingListOptIn: boolean,
-  Phone: string,
-  RequestAccountLinkInfo: boolean,
-  TimeZone: { Id: string, Name: string },
-  Users: { href: string },
-  UserId: string,
-  UserName: string
-}
-
-// A semi-complete description of the myQ device JSON.
-interface myQDeviceInterface {
-  created_date: string,
-  device_family: string,
-  device_platform: string,
-  device_type: string,
-  href: string,
-  name: string,
-  parent_device?: string,
-  parent_device_id?: string,
-  serial_number: string,
-  state: {
-    attached_work_light_error_present: boolean,
-    aux_relay_behavior: string,
-    aux_relay_delay: string,
-    close: string,
-    command_channel_report_status: boolean,
-    control_from_browser: boolean,
-    door_ajar_interval: string,
-    door_state: string,
-    dps_low_battery_mode?: boolean,
-    firmware_version?: string,
-    gdo_lock_connected: boolean,
-    homekit_capable?: boolean,
-    homekit_enabled?: boolean,
-    invalid_credential_window: string,
-    invalid_shutout_period: string,
-    is_unattended_close_allowed: boolean,
-    is_unattended_open_allowed: boolean,
-    last_status: string,
-    last_update: string,
-    learn?: string,
-    learn_mode?: boolean,
-    max_invalid_attempts: number,
-    online: boolean,
-    open: string,
-    passthrough_interval: string,
-    pending_bootload_abandoned?: boolean,
-    physical_devices?: [],
-    report_ajar: boolean,
-    report_forced: boolean,
-    rex_fires_door: boolean,
-    updated_date?: string,
-    use_aux_relay: boolean
-  }
-}
-
-// Hardware device information reference.
-interface myQHwInfoInterface {
-  product: string,
-  brand: string
-}
-
-// We use types instead of interfaces here because we can more easily set the entire thing as readonly.
-// Unfortunately, interfaces can't be quickly set as readonly in Typescript without marking each and
-// every property as readonly along the way.
-type myQAccount = Readonly<myQAccountInterface>;
-export type myQDevice = Readonly<myQDeviceInterface>;
-export type myQHwInfo = Readonly<myQHwInfoInterface>;
-
-/*
- * // List all the door types we know about. For future use...
- * const myQDoorTypes = [
- *   "commercialdooropener",
- *   "garagedooropener",
- *   "gate",
- *   "virtualgaragedooropener",
- *   "wifigaragedooropener"
- *  ];
- */
-
-let debugMode = false;
+import util from "util";
 
 /*
  * myQ API version information. This is more intricate than it seems because the myQ
@@ -222,39 +80,40 @@ const myQTokenExpirationWindow = MYQ_API_TOKEN_REFRESH_INTERVAL * 60 * 60 * 1000
  */
 
 export class myQApi {
-  Devices!: Array<myQDevice>;
+  Devices!: myQDevice[];
+  private debug: (message: string, ...parameters: any[]) => void;
   private email: string;
   private password: string;
   private accountId!: string;
+  private headers: Headers;
+  private platform: myQPlatform;
   private securityToken!: string;
   private securityTokenTimestamp!: number;
   private log: Logging;
   private lastAuthenticateCall!: number;
   private lastRefreshDevicesCall!: number;
 
-  // Headers that the myQ API expects.
-  private headers = {
-    "Content-Type": "application/json",
-    "User-Agent": myQApiInfo.userAgent,
-    "ApiVersion": myQApiInfo.version(),
-    "BrandId": "2",
-    "Culture": "en",
-    "MyQApplicationId": myQApiInfo.appId,
-    "SecurityToken": ""
-  };
-
   // Initialize this instance with our login information.
-  constructor(log: Logging, email: string, password: string, appId: string, wantDebug: boolean) {
-    this.log = log;
+  constructor(platform: myQPlatform, email: string, password: string, appId: string) {
+    this.debug = platform.debug.bind(platform);
     this.email = email;
+    this.headers = new Headers();
+    this.log = platform.log;
     this.password = password;
+    this.platform = platform;
 
+    // Set our myQ headers.
+    this.headers.set("Content-Type", "application/json");
+    this.headers.set("User-Agent", myQApiInfo.userAgent);
+    this.headers.set("ApiVersion", myQApiInfo.version());
+    this.headers.set("BrandId", "2");
+    this.headers.set("Culture", "en");
+    this.headers.set("MyQApplicationId", appId ? appId : myQApiInfo.appId);
+
+    // Allow a user to override the appId if needed. This should, hopefully, be a rare occurance.
     if(appId) {
-      this.headers.MyQApplicationId = appId;
-      this.log("myQ API: Overriding builtin myQ application identifier and using: %s", this.headers.MyQApplicationId);
+      this.log("myQ API: Overriding builtin myQ application identifier and using: %s", appId);
     }
-
-    debugMode = wantDebug;
   }
 
   // Log us into myQ and get a security token.
@@ -267,7 +126,6 @@ export class myQApi {
     // Login to the myQ API and get a security token for our session.
     const response = await this.fetch(myQApiInfo.url() + "/Login", {
       method: "POST",
-      headers: this.headers,
       body: JSON.stringify({ UserName: this.email, Password: this.password })
     });
 
@@ -299,7 +157,7 @@ export class myQApi {
     this.debug("Token: %s", this.securityToken);
 
     // Add the token to our headers that we will use for subsequent API calls.
-    this.headers.SecurityToken = this.securityToken;
+    this.headers.set("SecurityToken", this.securityToken);
 
     return true;
   }
@@ -345,10 +203,7 @@ export class myQApi {
     // Get the account information.
     const params = new URLSearchParams({ expand: "account" });
 
-    const response = await this.fetch(myQApiInfo.url() + "/My?" + params, {
-      method: "GET",
-      headers: this.headers
-    });
+    const response = await this.fetch(myQApiInfo.url() + "/My?" + params, { method: "GET" });
 
     if(!response) {
       this.log("myQ API: Unable to login. Acquiring a new security token and retrying later.");
@@ -397,10 +252,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/Devices", {
-      method: "GET",
-      headers: this.headers
-    });
+    const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/Devices", { method: "GET" });
 
     if(!response) {
       this.log("myQ API: Unable to update device status from myQ servers. Acquiring a new security token and retrying later.");
@@ -413,42 +265,38 @@ export class myQApi {
 
     this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
 
-    const newDeviceList: Array<myQDevice> = data.items;
+    const newDeviceList: myQDevice[] = data.items;
 
     // Notify the user about any new devices that we've discovered.
     if(newDeviceList) {
-      newDeviceList.forEach((newDevice: myQDevice) => {
+      for(const newDevice of newDeviceList) {
 
-        if(this.Devices) {
-          // We already know about this device.
-          if(this.Devices.find((x: myQDevice) => x.serial_number === newDevice.serial_number) !== undefined) {
-            return;
-          }
+        // We already know about this device.
+        if(this.Devices && this.Devices.some((x: myQDevice) => x.serial_number === newDevice.serial_number)) {
+          continue;
         }
 
         // We've discovered a new device.
-        this.log("myQ API: Discovered device family %s: %s.",
-          newDevice.device_family, this.getDeviceName(newDevice));
+        this.log("myQ API: Discovered device family %s: %s.", newDevice.device_family, this.getDeviceName(newDevice));
 
         this.debug(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
-      });
+      }
     }
 
     // Notify the user about any devices that have disappeared.
     if(this.Devices) {
-      this.Devices.forEach((existingDevice: myQDevice) => {
-        if(newDeviceList) {
-          // This device still is visible.
-          if(newDeviceList.find((x: myQDevice) => x.serial_number === existingDevice.serial_number) !== undefined) {
-            return;
-          }
+      for(const existingDevice of this.Devices) {
+
+        // This device still is visible.
+        if(newDeviceList && newDeviceList.some((x: myQDevice) => x.serial_number === existingDevice.serial_number)) {
+          continue;
         }
 
         // We've had a device disappear.
         this.log("myQ API: Removed device family %s: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
 
         this.debug(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
-      });
+      }
     }
 
     // Save the updated list of devices.
@@ -465,10 +313,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/devices/" + deviceId, {
-      method: "GET",
-      headers: this.headers
-    });
+    const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/devices/" + deviceId, { method: "GET" });
 
     if(!response) {
       this.log("myQ API: Unable to query device status from myQ servers. Acquiring a new security token and retrying later.");
@@ -484,12 +329,14 @@ export class myQApi {
       return false;
     }
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
+    if(this.platform.debugMode) {
+      this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
 
-    data.items.forEach((device: myQDevice) => {
-      this.debug("Device:");
-      this.debug(util.inspect(device, { colors: true, sorted: true, depth: 2 }));
-    });
+      for(const device of data.items) {
+        this.debug("Device:");
+        this.debug(util.inspect(device, { colors: true, sorted: true, depth: 10 }));
+      }
+    }
 
     return true;
   }
@@ -503,7 +350,6 @@ export class myQApi {
 
     const response = await this.fetch(myQApiInfo.deviceUrl() + "/Accounts/" + this.accountId + "/Devices/" + deviceId + "/actions", {
       method: "PUT",
-      headers: this.headers,
       body: JSON.stringify({ action_type: command })
     });
 
@@ -621,6 +467,9 @@ export class myQApi {
   private async fetch(url: RequestInfo, options: RequestInit): Promise<Response> {
     let response: Response;
 
+    // Set our headers.
+    options.headers = this.headers;
+
     try {
       response = await fetch(url, options);
 
@@ -638,15 +487,28 @@ export class myQApi {
 
       return response;
     } catch(error) {
-      this.log.error(error);
-      return null as unknown as Promise<Response>;
-    }
-  }
+      switch(error.code) {
+        case "ECONNREFUSED":
+          this.log("myQ API: Connection refused.");
+          break;
 
-  // Utility for debug logging.
-  private debug(message: string, ...parameters: any[]) {
-    if(debugMode) {
-      this.log(util.format(message, ...parameters));
+        case "ECONNRESET":
+          this.log("myQ API: Connection has been reset.");
+          break;
+
+        case "ENOTFOUND":
+          this.log("myQ API: Hostname or IP address not found.");
+          break;
+
+        case "UNABLE_TO_VERIFY_LEAF_SIGNATURE":
+          this.log("myQ API: Unable to verify TLS security certificate.");
+          break;
+
+        default:
+          this.log(error);
+      }
+
+      return null as unknown as Promise<Response>;
     }
   }
 }

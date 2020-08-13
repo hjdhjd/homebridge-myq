@@ -9,9 +9,8 @@ import {
   CharacteristicValue,
   NodeCallback
 } from "homebridge";
-
 import { myQAccessory } from "./myq-accessory";
-import { myQDevice, myQHwInfo } from "./myq-api";
+import { myQDevice, myQHwInfo } from "./myq-types";
 import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
 
 export class myQGarageDoor extends myQAccessory {
@@ -53,19 +52,19 @@ export class myQGarageDoor extends myQAccessory {
       .setCharacteristic(hap.Characteristic.CurrentDoorState, doorCurrentState)
       .setCharacteristic(hap.Characteristic.TargetDoorState, doorTargetState)
       .getCharacteristic(hap.Characteristic.TargetDoorState)!
-      .on(CharacteristicEventTypes.SET, this.setOn.bind(this));
+      .on(CharacteristicEventTypes.SET, this.setDoorState.bind(this));
 
     // Add all the events to our accessory so we can tell HomeKit our state.
     accessory
       .getService(hap.Service.GarageDoorOpener)!
       .getCharacteristic(hap.Characteristic.CurrentDoorState)!
-      .on(CharacteristicEventTypes.GET, this.getOn.bind(this));
+      .on(CharacteristicEventTypes.GET, this.getDoorState.bind(this));
 
     // Make sure we can detect obstructions.
     accessory
       .getService(hap.Service.GarageDoorOpener)!
       .getCharacteristic(hap.Characteristic.ObstructionDetected)!
-      .on(CharacteristicEventTypes.GET, this.getOnObstructed.bind(this));
+      .on(CharacteristicEventTypes.GET, this.getObstructed.bind(this));
 
     // Update the firmware revision for this device.
     // Fun fact: This firmware information is stored on the gateway not the opener.
@@ -124,7 +123,7 @@ export class myQGarageDoor extends myQAccessory {
   }
 
   // Return whether or not the garage door detects an obstruction.
-  private getOnObstructed(callback: CharacteristicGetCallback): void {
+  private getObstructed(callback: CharacteristicGetCallback): void {
     // For a refresh of the door status, but we're really unconcerned about what it returns here.
     this.doorStatus();
 
@@ -137,7 +136,7 @@ export class myQGarageDoor extends myQAccessory {
   }
 
   // Return garage door status.
-  private getOn(callback: CharacteristicGetCallback): void {
+  private getDoorState(callback: CharacteristicGetCallback): void {
     const doorState = this.doorStatus();
 
     if(doorState === -1) {
@@ -148,7 +147,7 @@ export class myQGarageDoor extends myQAccessory {
   }
 
   // Open or close the garage door.
-  private setOn(value: CharacteristicValue, callback: CharacteristicSetCallback): void {
+  private setDoorState(value: CharacteristicValue, callback: CharacteristicSetCallback): void {
     const myQState = this.doorStatus();
     const accessory = this.accessory;
     const hap = this.hap;

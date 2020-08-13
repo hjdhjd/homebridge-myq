@@ -12,11 +12,10 @@ import {
   PlatformConfig
 } from "homebridge";
 
-import util from "util";
-
 import { myQAccessory } from "./myq-accessory";
-import { myQApi, myQDevice } from "./myq-api";
+import { myQApi } from "./myq-api";
 import { myQGarageDoor } from "./myq-garagedoor";
+import { myQDevice } from "./myq-types";
 import {
   MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
   MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
@@ -24,19 +23,23 @@ import {
   PLATFORM_NAME,
   PLUGIN_NAME
 } from "./settings";
+import util from "util";
 
 let hap: HAP;
 let Accessory: typeof PlatformAccessory;
 
-let debugMode = false;
-
 export class myQPlatform implements DynamicPlatformPlugin {
-  readonly log: Logging;
+  private readonly accessories: PlatformAccessory[] = [];
   readonly api: API;
+  private batteryDeviceSupport: { [index: string]: boolean } = {};
+  private readonly configuredAccessories: { [index: string]: myQAccessory } = {};
+  readonly debugMode!: boolean;
+  readonly log: Logging;
   readonly myQ!: myQApi;
+  private pollingTimer!: NodeJS.Timeout;
+  private unsupportedDevices: { [index: string]: boolean } = {};
 
   readonly configOptions: string[] = [];
-
   readonly configPoll = {
     refreshInterval: MYQ_DEVICE_REFRESH_INTERVAL,
     activeRefreshInterval: MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
@@ -44,14 +47,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
     maxCount: 0,
     count: 0
   };
-
-  private pollingTimer!: NodeJS.Timeout;
-
-  private batteryDeviceSupport: { [index: string]: boolean } = {};
-  private unsupportedDevices: { [index: string]: boolean } = {};
-
-  private readonly accessories: PlatformAccessory[] = [];
-  private readonly configuredAccessories: { [index: string]: myQAccessory } = {};
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
     this.api = api;
@@ -71,11 +66,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    // Capture configuration parameters.
-    if(config.debug) {
-      debugMode = config.debug === true;
-      this.debug("Debug logging on. Expect a lot of data.");
-    }
+    // Check configuration parameters.
+    this.debugMode = config.debug === true;
+    this.debug("Debug logging on. Expect a lot of data.");
 
     if(config.activeRefreshDuration) {
       this.configPoll.activeRefreshDuration = config.activeRefreshDuration;
@@ -97,7 +90,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.configPoll.count = this.configPoll.maxCount;
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQApi(this.log, config.email, config.password, config.appId, debugMode);
+    this.myQ = new myQApi(this, config.email, config.password, config.appId);
 
     // This event gets fired after homebridge has restored all cached accessories and called their respective
     // `configureAccessory` function.
@@ -120,23 +113,25 @@ export class myQPlatform implements DynamicPlatformPlugin {
   // Discover new myQ devices and sync existing ones with the myQ API.
   private discoverAndSyncAccessories(): boolean {
     // Remove any device objects from now-stale accessories.
-    this.accessories.forEach((accessory: PlatformAccessory) => {
+    for(const accessory of this.accessories) {
+
       // We only need to do this if the device object is set.
       if(!accessory.context.device) {
-        return;
+        continue;
       }
 
       // Check to see if this accessory's device object is still in myQ or not.
-      if((this.myQ.Devices.find((x: myQDevice) => x.serial_number === accessory.context.device.serial_number)!) === undefined) {
+      if(!this.myQ.Devices.some((x: myQDevice) => x.serial_number === accessory.context.device.serial_number)) {
         accessory.context.device = null;
       }
-    });
+    }
 
     // Iterate through the list of devices that myQ has returned and sync them with what we show HomeKit.
-    this.myQ.Devices.forEach((device: myQDevice) => {
+    for(const device of this.myQ.Devices) {
+
       // If we have no serial number or device family, something is wrong.
       if(!device.serial_number || !device.device_family) {
-        return;
+        continue;
       }
 
       // We are only interested in garage door openers. Perhaps more types in the future.
@@ -144,13 +139,13 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
         // Unless we are debugging device discovery, ignore any gateways.
         // These are typically gateways, hubs, etc. that shouldn't be causing us to alert anyway.
-        if(!debugMode && device.device_family === "gateway") {
-          return;
+        if(!this.debugMode && device.device_family === "gateway") {
+          continue;
         }
 
         // If we've already informed the user about this one, we're done.
         if(this.unsupportedDevices[device.serial_number]) {
-          return;
+          continue;
         }
 
         // Notify the user we see this device, but we aren't adding it to HomeKit.
@@ -159,12 +154,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
         this.log("myQ device family '%s' is not currently supported, ignoring: %s.",
           device.device_family, this.myQ.getDeviceName(device));
 
-        return;
+        continue;
       }
 
       // Exclude or include certain openers based on configuration parameters.
       if(!this.deviceVisible(device)) {
-        return;
+        continue;
       }
 
       // Generate this device's unique identifier.
@@ -195,25 +190,24 @@ export class myQPlatform implements DynamicPlatformPlugin {
         // Refresh the accessory cache with these values.
         this.api.updatePlatformAccessories([accessory]);
       }
-    });
+    }
 
     // Remove myQ devices that are no longer found in the myQ API, but we still have in HomeKit.
-    this.accessories.forEach((oldAccessory: PlatformAccessory) => {
+    for(const oldAccessory of this.accessories) {
+
       const device = oldAccessory.context.device;
 
       // We found this accessory in myQ. Figure out if we really want to see it in HomeKit.
-      if(device) {
-        if(this.deviceVisible(device)) {
-          return;
-        }
+      if(device && this.deviceVisible(device)) {
+        continue;
       }
 
       this.log("%s: Removing myQ device from HomeKit.", oldAccessory.displayName);
 
       delete this.configuredAccessories[oldAccessory.UUID];
-      delete this.accessories[this.accessories.indexOf(oldAccessory)];
+      this.accessories.splice(this.accessories.indexOf(oldAccessory), 1);
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [oldAccessory]);
-    });
+    }
 
     return true;
   }
@@ -322,8 +316,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
   }
 
   // Utility for debug logging.
-  private debug(message: string, ...parameters: any[]) {
-    if(debugMode) {
+  debug(message: string, ...parameters: any[]) {
+    if(this.debugMode) {
       this.log(util.format(message, ...parameters));
     }
   }
