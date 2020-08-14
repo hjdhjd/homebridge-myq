@@ -109,8 +109,9 @@ export class myQApi {
     this.headers.set("BrandId", "2");
     this.headers.set("Culture", "en");
     this.headers.set("MyQApplicationId", appId ? appId : myQApiInfo.appId);
+    this.headers.set("SecurityToken", "");
 
-    // Allow a user to override the appId if needed. This should, hopefully, be a rare occurance.
+    // Allow a user to override the appId if needed. This should, hopefully, be a rare occurrence.
     if(appId) {
       this.log("myQ API: Overriding builtin myQ application identifier and using: %s", appId);
     }
@@ -141,7 +142,7 @@ export class myQApi {
 
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
-    if(!data || !data.SecurityToken) {
+    if(!data?.SecurityToken) {
       this.log("myQ API: Unable to acquire a security token.");
       return false;
     }
@@ -217,7 +218,7 @@ export class myQApi {
     this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
 
     // No account information returned.
-    if(!data || !data.Account) {
+    if(!data?.Account) {
       this.log("myQ API: Unable to retrieve account information from myQ servers.");
       return false;
     }
@@ -272,7 +273,7 @@ export class myQApi {
       for(const newDevice of newDeviceList) {
 
         // We already know about this device.
-        if(this.Devices && this.Devices.some((x: myQDevice) => x.serial_number === newDevice.serial_number)) {
+        if(this.Devices?.some((x: myQDevice) => x.serial_number === newDevice.serial_number)) {
           continue;
         }
 
@@ -288,7 +289,7 @@ export class myQApi {
       for(const existingDevice of this.Devices) {
 
         // This device still is visible.
-        if(newDeviceList && newDeviceList.some((x: myQDevice) => x.serial_number === existingDevice.serial_number)) {
+        if(newDeviceList?.some((x: myQDevice) => x.serial_number === existingDevice.serial_number)) {
           continue;
         }
 
@@ -324,7 +325,7 @@ export class myQApi {
     // Now let's get our account information.
     const data = await response.json();
 
-    if(!data || !data.items) {
+    if(!data?.items) {
       log("myQ API: error querying device: %s.", deviceId);
       return false;
     }
@@ -376,13 +377,8 @@ export class myQApi {
     // Iterate through the list and find the device that matches the UUID we seek.
     // This works because homebridge always generates the same UUID for a given input -
     // in this case the device serial number.
-    if((device = this.Devices.find(
-      (x: myQDevice) =>
-        x.device_family &&
-        (x.device_family.indexOf("garagedoor") !== -1) &&
-        x.serial_number &&
-        (hap.uuid.generate(x.serial_number) === uuid)
-    )!) !== undefined) {
+    if((device = this.Devices.find((x: myQDevice) => (x.device_family?.indexOf("garagedoor") !== -1) &&
+      x.serial_number && (hap.uuid.generate(x.serial_number) === uuid))!) !== undefined) {
       return device;
     }
 
@@ -453,7 +449,7 @@ export class myQApi {
       "81": { product: "Ethernet Gateway",          brand: "Chamberlain EU" }
     };
 
-    if(!serial || (serial.length < 4)) {
+    if(serial?.length < 4) {
       return undefined as unknown as myQHwInfo;
     }
 
