@@ -72,7 +72,7 @@ export class myQGarageDoor extends myQAccessory {
     let gwBrand = "Liftmaster";
     let gwProduct = "myQ";
 
-    if(gwParent && gwParent.state && gwParent.state.firmware_version) {
+    if(gwParent?.state?.firmware_version) {
       const gwInfo: myQHwInfo = this.myQ.getHwInfo(gwParent.serial_number);
 
       accessory
@@ -81,10 +81,8 @@ export class myQGarageDoor extends myQAccessory {
 
       // If we're able to lookup hardware information, use it. getHwInfo returns an object containing
       // device type and brand information.
-      if(gwInfo) {
-        gwProduct = gwInfo.product;
-        gwBrand = gwInfo.brand;
-      }
+      gwProduct = gwInfo?.product;
+      gwBrand = gwInfo?.brand;
     }
 
     // Update the manufacturer information for this device.
