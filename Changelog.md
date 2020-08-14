@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.1.10 (2020-08-14)
+  * Fix: regression introduced in 2.1.9 for myQ API connectivity.
+
 ## 2.1.9 (2020-08-12)
   * Enhancement: summarize some of the more common myQ API errors so they're less intimidating in the logs.
   * Simplify the plugin webUI configuration page.
