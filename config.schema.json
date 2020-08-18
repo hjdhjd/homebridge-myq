@@ -7,37 +7,6 @@
   "schema": {
     "type": "object",
     "properties": {
-      "activeRefreshDuration": {
-        "title": "Active Refresh Duration",
-        "minimum": 5,
-        "maximum": 900,
-        "type": "integer",
-        "required": false,
-        "description": "Duration in seconds to use the Active Refresh Interval to query for additional device state changes. Default: 300."
-      },
-
-      "activeRefreshInterval": {
-        "title": "Active Refresh Interval",
-        "type": "integer",
-        "minimum": 2,
-        "maximum": 10,
-        "required": false,
-        "description": "Refresh interval in seconds to use once device state changes are detected. Default: 3."
-      },
-
-      "appId": {
-        "title": "myQ Application Identifier Override",
-        "type": "string",
-        "required": false,
-        "description": "Override the builtin myQ application identifier when connecting to the myQ API. Use with extreme caution."
-      },
-
-      "debug": {
-        "title": "Debug Logging",
-        "type": "boolean",
-        "required": false,
-        "description": "Logging verbosity for debugging. Default: false."
-      },
 
       "email": {
         "title": "myQ Username",
@@ -45,6 +14,14 @@
         "required": true,
         "placeholder": "user@example.com",
         "description": "Email address used for your myQ account."
+      },
+
+      "password": {
+        "title": "myQ Password",
+        "type": "string",
+        "required": true,
+        "placeholder": "mypassword",
+        "description": "Password used for your myQ account."
       },
 
       "name": {
@@ -61,15 +38,6 @@
           "type": "string"
         }
       },
-
-      "password": {
-        "title": "myQ Password",
-        "type": "string",
-        "required": true,
-        "placeholder": "mypassword",
-        "description": "Password used for your myQ account."
-      },
-
       "refreshInterval": {
         "title": "Refresh Interval",
         "type": "integer",
@@ -77,7 +45,40 @@
         "maximum": 60,
         "required": false,
         "description": "Normal myQ status refresh interval, in seconds. Default: 12."
+      },
+
+      "activeRefreshInterval": {
+        "title": "Active Refresh Interval",
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 10,
+        "required": false,
+        "description": "Refresh interval in seconds to use once device state changes are detected. Default: 3."
+      },
+
+      "activeRefreshDuration": {
+        "title": "Active Refresh Duration",
+        "minimum": 5,
+        "maximum": 900,
+        "type": "integer",
+        "required": false,
+        "description": "Duration in seconds to use the Active Refresh Interval to query for additional device state changes. Default: 300."
+      },
+
+      "debug": {
+        "title": "Debug Logging",
+        "type": "boolean",
+        "required": false,
+        "description": "Logging verbosity for debugging. Default: false."
+      },
+
+      "appId": {
+        "title": "myQ Application Identifier Override",
+        "type": "string",
+        "required": false,
+        "description": "Override the builtin myQ application identifier when connecting to the myQ API. Use with extreme caution."
       }
+
     }
   },
 

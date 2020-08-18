@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.1.11 (2020-08-18)
+  * Enhancement: webUI updates to better support HOOBS and similar solutions.
+
 ## 2.1.10 (2020-08-14)
   * Fix: regression introduced in 2.1.9 for myQ API connectivity.
 
