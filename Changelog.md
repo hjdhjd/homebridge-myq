@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.1.12 (2020-09-08)
+  * **IMPORTANT: NAME CHANGE.** Starting with this release, this plugin is now renamed to `homebridge-myq`. My thanks to the previous owner of the NPM name for `homebridge-myq` for graciously transitioning it to me. What does this mean for you?
+    * You should uninstall this package and reinstall it under it's new name, `homebridge-myq`. That should do the trick. Your configuration won't be impacted. Apologies for any extra gymnastics this might cause some people, but it will help future users and make this plugin more discoverable.
+    * `homebridge-myq2` will soon be deprecated. You'll receive a warning message that the package has been deprecated and to install `homebridge-myq` instead.
+    * Again my apologies for any extra work this causes people, but I hope it will be a mostly painless transition.
+    * For those using the Homebridge webUI, it's as simple as uninstalling `homebridge-myq2` and then installing `homebridge-myq`.
+    * Quick steps for those using the command line:
+      ```sh
+      npm -g uninstall homebridge-myq2
+      npm -g install homebridge-myq
+      ```
+      Restart homebridge and you're all set.
+
+  * Minor housekeeping around the name change and to prepare for the future.
+
 ## 2.1.11 (2020-08-18)
   * Enhancement: webUI updates to better support HOOBS and similar solutions.
 
