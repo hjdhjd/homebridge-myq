@@ -92,8 +92,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Initialize our connection to the myQ API.
     this.myQ = new myQApi(this, config.email, config.password, config.appId);
 
-    // This event gets fired after homebridge has restored all cached accessories and called their respective
-    // `configureAccessory` function.
+    // Avoid a prospective race condition by waiting to begin our polling until Homebridge is done
+    // loading all the cached accessories it knows about, and calling configureAccessory() on each.
     //
     // Fire off our polling, with an immediate status refresh to begin with to provide us that responsive feeling.
     api.on(APIEvent.DID_FINISH_LAUNCHING, this.poll.bind(this, this.configPoll.refreshInterval * -1));
