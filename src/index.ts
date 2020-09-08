@@ -1,6 +1,6 @@
 /* Copyright(C) 2017-2020, HJD (https://github.com/hjdhjd). All rights reserved.
  *
- * index.ts: homebridge-myq2 plugin registration.
+ * index.ts: homebridge-myq plugin registration.
  */
 import { API } from "homebridge";
 

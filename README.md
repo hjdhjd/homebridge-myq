@@ -1,17 +1,17 @@
 <SPAN ALIGN="CENTER">
 
-[![homebridge-myq2: Native HomeKit support for myQ garage door openers and other devices](https://raw.githubusercontent.com/hjdhjd/homebridge-myq2/master/homebridge-myq.svg)](https://github.com/hjdhjd/homebridge-myq2)
+[![homebridge-myq: Native HomeKit support for myQ garage door openers and other devices](https://raw.githubusercontent.com/hjdhjd/homebridge-myq/master/homebridge-myq.svg)](https://github.com/hjdhjd/homebridge-myq)
 
-# Homebridge myQ<SUP STYLE="font-size: smaller; color:#5EB5E6;">2</SUP>
+# Homebridge myQ
 
-[![Downloads](https://badgen.net/npm/dt/homebridge-myq2)](https://www.npmjs.com/package/homebridge-myq2)
-[![Version](https://badgen.net/npm/v/homebridge-myq2)](https://www.npmjs.com/package/homebridge-myq2)
-[![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+[![Downloads](https://img.shields.io/npm/dt/homebridge-myq2?color=%235EB5E5&logo=icloud&logoColor=%23FFFFFF&style=for-the-badge)](https://www.npmjs.com/package/homebridge-myq)
+[![Version](https://img.shields.io/npm/v/homebridge-myq?color=%235EB5E5&label=myQ&logo=nextdoor&logoColor=%235EB5E5&style=for-the-badge)](https://www.npmjs.com/package/homebridge-myq)
+[![verified-by-homebridge](https://img.shields.io/badge/homebridge-verified-blueviolet?color=%2357277C&style=for-the-badge)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
 ## myQ garage door and other myQ-enabled device support for [Homebridge](https://homebridge.io).
 </SPAN>
 
-`homebridge-myq2` is a [Homebridge](https://homebridge.io) plugin that makes myQ-enabled devices available to [Apple's](https://www.apple.com) [HomeKit](https://www.apple.com/ios/home) smart home platform. myQ-enabled devices include many smart garage door openers made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door or other device is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
+`homebridge-myq` is a [Homebridge](https://homebridge.io) plugin that makes myQ-enabled devices available to [Apple's](https://www.apple.com) [HomeKit](https://www.apple.com/ios/home) smart home platform. myQ-enabled devices include many smart garage door openers made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door or other device is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
 
 There are two ways to control a myQ-compatible garage door opener through [HomeKit](https://www.apple.com/ios/home):
 
@@ -48,21 +48,21 @@ I would love to support more types of myQ devices. I'm actively interested in wo
 - Cameras
 - Locks
 
-If you have these devices and would like to contribute, please open an [issue](https://github.com/hjdhjd/homebridge-myq2/issues), label it as a enhancement, and let's figure out how to make this plugin even better! Bonus points if you like puzzles and lots of debugging output. :smile:
+If you have these devices and would like to contribute, please open an [issue](https://github.com/hjdhjd/homebridge-myq/issues), label it as a enhancement, and let's figure out how to make this plugin even better! Bonus points if you like puzzles and lots of debugging output. :smile:
 
 ## Installation
 If you are new to Homebridge, please first read the [Homebridge](https://homebridge.io) [documentation](https://github.com/homebridge/homebridge/wiki) and installation instructions before proceeding.
 
-If you have installed the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you can intall this plugin by going to the `Plugins` tab and searching for `homebridge-myq2` and installing it.
+If you have installed the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you can intall this plugin by going to the `Plugins` tab and searching for `homebridge-myq` and installing it.
 
-If you prefer to install `homebridge-myq2` from the command line, you can do so by executing:
+If you prefer to install `homebridge-myq` from the command line, you can do so by executing:
 
 ```sh
-sudo npm install -g homebridge-myq2
+sudo npm install -g homebridge-myq
 ```
 
 ### Changelog
-Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq2/blob/master/Changelog.md).
+Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq/blob/master/Changelog.md).
 
 ### Things to be aware of
 - **Beginning with v2.0, this plugin requires Homebridge v1.0 on greater to work. For some, this may be a breaking change if you are running on older versions of Homebridge.**
@@ -80,7 +80,7 @@ Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homeb
 
 - <A NAME="obstruction-status"></A>Obstruction detection in myQ is more nuanced than one might think at first glance. When myQ detects an obstruction, that obstruction is only visible in the API for a *very* small amount of time, typically no more than a few seconds. This presents a user experience problem - if you remain completely faithful to the myQ API and only show the user the obstruction for the very short amount of time that it actually occurs, the user might never notice it because the alert is not visible for more than a few seconds. Instead, the design decision I've chosen to make is to ensure that any detected obstruction is alerted in HomeKit for 30 seconds from the last time myQ detected that obstruction. This ensures that the user has a reasonable chance of noticing there was an obstruction at some point in the very recent past, without having to have the user stare at the Home app constantly to happen to catch an ephemeral state.
 
-- <A NAME="battery-status"></A>If your myQ device has support for battery status, `homebridge-myq2` will automatically detect and add support for it in HomeKit. However, you **will** see a warning message in the [Homebridge](https://homebridge.io) logs along the lines of:
+- <A NAME="battery-status"></A>If your myQ device has support for battery status, `homebridge-myq` will automatically detect and add support for it in HomeKit. However, you **will** see a warning message in the [Homebridge](https://homebridge.io) logs along the lines of:
     ```
     HAP Warning: Characteristic 00000079-0000-1000-8000-0026BB765291 not in required or optional characteristics for service 00000041-0000-1000-8000-0026BB765291. Adding anyway.
     ```

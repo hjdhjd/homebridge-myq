@@ -21,12 +21,12 @@ All notable changes to this project will be documented in this file. This projec
   * Fix: remove spurious and noisy log entry when polling the myQ API.
 
 ## 2.1.5 (2020-07-25)
-  * **Wanted: more myQ device types. If you have a myQ light or other non-door myQ accessory, I'd love to [hear from you](https://github.com/hjdhjd/homebridge-myq2#myq-contribute) and see if we can add support for it in `homebridge-myq2`.**
-  * Enhancement: alert on obstructions for a longer window of time (30 seconds), to give users a better chance of noticing them. See [here](https://github.com/hjdhjd/homebridge-myq2#obstruction-status) if you'd like to read more about it.
+  * **Wanted: more myQ device types. If you have a myQ light or other non-door myQ accessory, I'd love to [hear from you](https://github.com/hjdhjd/homebridge-myq#myq-contribute) and see if we can add support for it in `homebridge-myq`.**
+  * Enhancement: alert on obstructions for a longer window of time (30 seconds), to give users a better chance of noticing them. See [here](https://github.com/hjdhjd/homebridge-myq#obstruction-status) if you'd like to read more about it.
   * Enhancement: refine stopped state to better inform users when the state occurs.<BR>*Note: the default iOS Home app doesn't seem to correctly show a garage door in a stopped state, however other HomeKit apps such as Eve Home will correctly show this state when it occurs.*
   * Enhancement: increase our update resolution when we detect any state change, not just when we initiate one.
   * Enhancement: tweaked default myQ API refresh intervals to provide more frequent state updates, within reason.
-  * Change: [some options have been renamed](https://github.com/hjdhjd/homebridge-myq2#advanced-config), and one new option has been added - the ability to override the builtin myQ application identifier. **Use with extreme caution and only if you know what you are doing.**
+  * Change: [some options have been renamed](https://github.com/hjdhjd/homebridge-myq#advanced-config), and one new option has been added - the ability to override the builtin myQ application identifier. **Use with extreme caution and only if you know what you are doing.**
   * Update debug logging approach across the codebase.
   * Miscellaneous housekeeping edits and code maintenance.
   * Updated documentation and logo.

@@ -1,6 +1,6 @@
 /* Copyright(C) 2017-2020, HJD (https://github.com/hjdhjd). All rights reserved.
  *
- * myq-platform.ts: homebridge-myq2 platform class.
+ * myq-platform.ts: homebridge-myq platform class.
  */
 import {
   API,

@@ -1,6 +1,6 @@
 /* Copyright(C) 2017-2020, HJD (https://github.com/hjdhjd). All rights reserved.
  *
- * settings.ts: Settings and constants for homebridge-myq2.
+ * settings.ts: Settings and constants for homebridge-myq.
  */
 // How often, in seconds, should we poll the myQ API for updates about myQ devices and their states.
 export const MYQ_DEVICE_REFRESH_INTERVAL = 12;
@@ -34,4 +34,4 @@ export const MYQ_OBSTRUCTED = 8675309;
 export const PLATFORM_NAME = "myQ";
 
 // The name of our plugin.
-export const PLUGIN_NAME = "homebridge-myq2";
+export const PLUGIN_NAME = "homebridge-myq";

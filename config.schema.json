@@ -2,8 +2,8 @@
   "pluginAlias": "myQ",
   "pluginType": "platform",
   "singular": true,
-  "headerDisplay": "[homebridge-myq2](https://github.com/hjdhjd/homebridge-myq2) provides HomeKit support to myQ-enabled smart garage door openers and other devices.",
-  "footerDisplay": "See the [homebridge-myq2 developer page](https://github.com/hjdhjd/homebridge-myq2) for detailed documentation, including [feature options](https://github.com/hjdhjd/homebridge-myq2#feature-options).",
+  "headerDisplay": "[homebridge-myq](https://github.com/hjdhjd/homebridge-myq) provides HomeKit support to myQ-enabled smart garage door openers and other devices.",
+  "footerDisplay": "See the [homebridge-myq developer page](https://github.com/hjdhjd/homebridge-myq) for detailed documentation, including [feature options](https://github.com/hjdhjd/homebridge-myq#feature-options).",
   "schema": {
     "type": "object",
     "properties": {
