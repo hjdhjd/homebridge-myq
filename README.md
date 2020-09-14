@@ -57,7 +57,7 @@ If you have these devices and would like to contribute, please open an [issue](h
 * Getting going
   * [Installation](#installation): installing this plugin, including system requirements.
   * [Plugin Configuration](#plugin-configuration): how to quickly get up and running.
-  * [Things To Be Aware Of](#aware): some things you should be aware of, including myQ-specific quirks.
+  * [Additional Notes](#notes): some things you should be aware of, including myQ-specific quirks.
 
 * Advanced Topics
   * [Feature Options](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/FeatureOptions.md): granular options to allow you to show or hide specific garage door openers, gateways, and more.
@@ -89,7 +89,7 @@ If you choose to configure this plugin directly instead of using the [Homebridge
 
 For most people, I recommend using [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
 
-## <A NAME="aware"></A>Things to be aware of
+## <A NAME="notes"></A>Additional Notes
 - <A NAME="myq-errors"></A>The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future API changes that may come. Unfortunately, it's an ongoing challenge since API changes can be sudden and unpredictable.
 
 - **As a result of the above you *will* see errors similar to this on an occasional basis in the Homebridge logs:**
