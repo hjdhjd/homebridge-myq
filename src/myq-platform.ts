@@ -38,7 +38,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
   public readonly api: API;
   public config!: myQOptionsInterface;
   private readonly configuredAccessories: { [index: string]: myQAccessory };
-  public readonly debugMode!: boolean;
   public readonly hap: HAP;
   public readonly log: Logging;
   public readonly mqtt!: myQMqtt;
@@ -176,7 +175,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
         // Unless we are debugging device discovery, ignore any gateways.
         // These are typically gateways, hubs, etc. that shouldn't be causing us to alert anyway.
-        if(!this.debugMode && device.device_family === "gateway") {
+        if(!this.config.debug && device.device_family === "gateway") {
           continue;
         }
 
@@ -357,7 +356,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
   // Utility for debug logging.
   public debug(message: string, ...parameters: unknown[]): void {
-    if(this.debugMode) {
+    if(this.config.debug) {
       this.log(util.format(message, ...parameters));
     }
   }
