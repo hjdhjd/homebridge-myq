@@ -16,9 +16,6 @@ import {
 } from "./settings";
 import util from "util";
 
-// Renew myQ security credentials every so often, in hours.
-const myQTokenExpirationWindow = MYQ_API_TOKEN_REFRESH_INTERVAL * 60 * 60 * 1000;
-
 /*
  * The myQ API is undocumented, non-public, and has been derived largely through
  * reverse engineering the official app, myQ website, and trial and error.
@@ -106,7 +103,7 @@ export class myQApi {
     // Now let's get our security token.
     const data = await response.json() as myQToken;
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
 
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
@@ -122,8 +119,6 @@ export class myQApi {
 
     this.securityToken = data.SecurityToken;
     this.securityTokenTimestamp = now;
-
-    this.debug("Token: %s", this.securityToken);
 
     // Add the token to our headers that we will use for subsequent API calls.
     this.headers.set("SecurityToken", this.securityToken);
@@ -141,7 +136,7 @@ export class myQApi {
     }
 
     // Is it time to refresh? If not, we're good for now.
-    if((now - this.securityTokenTimestamp) < myQTokenExpirationWindow) {
+    if((now - this.securityTokenTimestamp) < (MYQ_API_TOKEN_REFRESH_INTERVAL * 60 * 60 * 1000)) {
       return true;
     }
 
@@ -151,8 +146,6 @@ export class myQApi {
 
       return true;
     }
-
-    this.debug("myQ API: acquiring a new security token.");
 
     // Now generate a new security token.
     if(!(await this.acquireSecurityToken())) {
@@ -183,7 +176,7 @@ export class myQApi {
     // Now let's get our account information.
     const data = await response.json() as myQAccount;
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
 
     // No account information returned.
     if(!data?.Account) {
@@ -193,8 +186,6 @@ export class myQApi {
 
     // Save the user information.
     this.accountId = data.Account.Id;
-
-    this.debug("myQ accountId: " + this.accountId);
 
     return true;
   }
@@ -207,7 +198,7 @@ export class myQApi {
     // than once every two seconds or so, bad things can happen on the myQ side leading
     // to potential account lockouts. The author definitely learned this one the hard way.
     if(this.lastRefreshDevicesCall && ((now - this.lastRefreshDevicesCall) < (2 * 1000))) {
-      this.debug("myQ API: throttling refreshDevices API call. Using cached data from the past five seconds.");
+      this.debug("myQ API: throttling refreshDevices API call. Using cached data from the past two seconds.");
 
       return this.Devices ? true : false;
     }
@@ -232,7 +223,7 @@ export class myQApi {
     // Now let's get our account information.
     const data = await response.json() as myQDeviceList;
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 3 }));
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
 
     const newDeviceList = data.items;
 
@@ -248,12 +239,12 @@ export class myQApi {
         // We've discovered a new device.
         this.log("myQ API: Discovered device family %s: %s.", newDevice.device_family, this.getDeviceName(newDevice));
 
-        this.debug(util.inspect(newDevice, { colors: true, sorted: true, depth: 3 }));
       }
     }
 
     // Notify the user about any devices that have disappeared.
     if(this.Devices) {
+
       for(const existingDevice of this.Devices) {
 
         // This device still is visible.
@@ -264,8 +255,8 @@ export class myQApi {
         // We've had a device disappear.
         this.log("myQ API: Removed device family %s: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
 
-        this.debug(util.inspect(existingDevice, { colors: true, sorted: true, depth: 3 }));
       }
+
     }
 
     // Save the updated list of devices.
@@ -298,9 +289,7 @@ export class myQApi {
       return false;
     }
 
-    if(this.platform.debugMode) {
-      this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
-    }
+    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
 
     return true;
   }
