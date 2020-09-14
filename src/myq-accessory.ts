@@ -6,10 +6,12 @@ import { API, HAP, Logging, PlatformAccessory } from "homebridge";
 
 import { myQApi } from "./myq-api";
 import { myQPlatform } from "./myq-platform";
+import { myQOptions } from "./myq-types";
 
 export abstract class myQAccessory {
   protected readonly accessory: PlatformAccessory;
   protected readonly api: API;
+  protected readonly config: myQOptions;
   protected readonly hap: HAP;
   protected readonly log: Logging;
   protected readonly myQ: myQApi;
@@ -19,6 +21,7 @@ export abstract class myQAccessory {
   constructor(platform: myQPlatform, accessory: PlatformAccessory) {
     this.accessory = accessory;
     this.api = platform.api;
+    this.config = platform.config;
     this.hap = this.api.hap;
     this.log = platform.log;
     this.myQ = platform.myQ;
@@ -34,5 +37,5 @@ export abstract class myQAccessory {
   // All accessories require an updateState function. This function gets called every
   // few seconds to refresh the accessory state based on the latest information from the
   // myQ API.
-  abstract async updateState(): Promise<boolean>;
+  abstract updateState(): boolean;
 }
