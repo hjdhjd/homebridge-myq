@@ -23,9 +23,18 @@ export const MYQ_API_APPID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8
 // myQ API URL endpoint.
 export const MYQ_API_URL = "https://api.myqdevice.com/api";
 
+// myQ API user agent.
+export const MYQ_API_USER_AGENT = "okhttp/3.10.0";
+
 // myQ API version.
 export const MYQ_API_VERSION_MAJOR = 5;
 export const MYQ_API_VERSION_MINOR = 1;
+
+// How often, in seconds, should we try to reconnect with an MQTT broker, if we have one configured.
+export const MYQ_MQTT_RECONNECT_INTERVAL = 60;
+
+// Default MQTT topic to use when publishing events. This is in the form of: myq/serial/event
+export const MYQ_MQTT_TOPIC = "myq";
 
 // Since HomeKit doesn't give us a value for an obstructed state, we use this instead.
 export const MYQ_OBSTRUCTED = 8675309;
