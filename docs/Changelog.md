@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
-## 2.2.0 (2020-09-14)
+## 2.2.1 (2020-09-14)
   * Feature: MQTT support. Read the [MQTT documentation](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md) for more information.
   * Improved responsiveness when we know certain events are happening.
   * Housekeeping and general improvements.
