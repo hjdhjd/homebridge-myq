@@ -3,6 +3,11 @@
  * myq-types.ts: Type definitions for myQ.
  */
 
+// A complete description of the myQ authentication JSON.
+export interface myQTokenInterface {
+  SecurityToken: string
+}
+
 // A semi-complete description of the myQ account JSON.
 // This is currently unused and documented here primarily for reference.
 export interface myQAccountInterface {
@@ -73,6 +78,13 @@ export interface myQAccountInterface {
   UserName: string
 }
 
+// A complete description of the myQ device list JSON.
+export interface myQDeviceListInterface {
+  count: number,
+  href: string,
+  items: myQDevice[]
+}
+
 // A semi-complete description of the myQ device JSON.
 export interface myQDeviceInterface {
   created_date: string,
@@ -81,8 +93,8 @@ export interface myQDeviceInterface {
   device_type: string,
   href: string,
   name: string,
-  parent_device?: string,
-  parent_device_id?: string,
+  parent_device: string,
+  parent_device_id: string,
   serial_number: string,
   state: {
     attached_work_light_error_present: boolean,
@@ -93,29 +105,30 @@ export interface myQDeviceInterface {
     control_from_browser: boolean,
     door_ajar_interval: string,
     door_state: string,
-    dps_low_battery_mode?: boolean,
-    firmware_version?: string,
+    dps_low_battery_mode: boolean,
+    firmware_version: string,
     gdo_lock_connected: boolean,
-    homekit_capable?: boolean,
-    homekit_enabled?: boolean,
+    homekit_capable: boolean,
+    homekit_enabled: boolean,
     invalid_credential_window: string,
     invalid_shutout_period: string,
     is_unattended_close_allowed: boolean,
     is_unattended_open_allowed: boolean,
     last_status: string,
     last_update: string,
-    learn?: string,
-    learn_mode?: boolean,
+    learn: string,
+    learn_mode: boolean,
+    light_state: string,
     max_invalid_attempts: number,
     online: boolean,
     open: string,
     passthrough_interval: string,
-    pending_bootload_abandoned?: boolean,
-    physical_devices?: [],
+    pending_bootload_abandoned: boolean,
+    physical_devices: [],
     report_ajar: boolean,
     report_forced: boolean,
     rex_fires_door: boolean,
-    updated_date?: string,
+    updated_date: string,
     use_aux_relay: boolean
   }
 }
@@ -126,12 +139,30 @@ export interface myQHwInfoInterface {
   brand: string
 }
 
+// Plugin configuration options.
+export interface myQOptionsInterface {
+  activeRefreshDuration: number,
+  activeRefreshInterval: number,
+  appId: string,
+  debug: boolean,
+  email: string,
+  mqttTopic: string,
+  mqttUrl: string,
+  name: string,
+  options: string[],
+  password: string,
+  refreshInterval: number
+}
+
 // We use types instead of interfaces here because we can more easily set the entire thing as readonly.
 // Unfortunately, interfaces can't be quickly set as readonly in TypeScript without marking each and
 // every property as readonly along the way.
 export type myQAccount = Readonly<myQAccountInterface>;
+export type myQDeviceList = Readonly<myQDeviceListInterface>;
+export type myQToken = Readonly<myQTokenInterface>;
 export type myQDevice = Readonly<myQDeviceInterface>;
 export type myQHwInfo = Readonly<myQHwInfoInterface>;
+export type myQOptions = Readonly<myQOptionsInterface>;
 
 /*
  * // List all the door types we know about. For future use...
