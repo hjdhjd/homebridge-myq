@@ -60,8 +60,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
     }
 
     this.config = {
-      activeRefreshDuration: "activeRefreshDuration" in config ? parseInt(config.activeRefreshDuration) : MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
-      activeRefreshInterval: "activeRefreshInterval" in config ? parseInt(config.activeRefreshInterval) : MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
+      activeRefreshDuration: "activeRefreshDuration" in config ? parseInt(config.activeRefreshDuration as string) : MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
+      activeRefreshInterval: "activeRefreshInterval" in config ? parseInt(config.activeRefreshInterval as string) : MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
       appId: "appId" in config ? config.appId as string : MYQ_API_APPID,
       debug: config.debug === true,
       email: config.email as string,
@@ -70,7 +70,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       name: config.name as string,
       options: config.options as string[],
       password: config.password as string,
-      refreshInterval: "refreshInterval" in config ? parseInt(config.refreshInterval) : MYQ_DEVICE_REFRESH_INTERVAL
+      refreshInterval: "refreshInterval" in config ? parseInt(config.refreshInterval as string) : MYQ_DEVICE_REFRESH_INTERVAL
     };
 
     // We need login credentials or we're not starting.

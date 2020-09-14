@@ -99,7 +99,7 @@ export class myQGarageDoor extends myQAccessory {
 
     // The initial door state when we first startup. The bias functions will help us
     // figure out what to do if we're caught in a tweener state.
-    const doorCurrentState = this.doorCurrentStateBias(this.accessory.context.doorState);
+    const doorCurrentState = this.doorCurrentStateBias(this.accessory.context.doorState as CharacteristicValue);
     const doorTargetState = this.doorTargetStateBias(doorCurrentState);
 
     // Add all the events to our accessory so we can act on HomeKit actions. We also set the current and target door states
