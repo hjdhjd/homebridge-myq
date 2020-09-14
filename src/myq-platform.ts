@@ -15,94 +15,130 @@ import {
 import { myQAccessory } from "./myq-accessory";
 import { myQApi } from "./myq-api";
 import { myQGarageDoor } from "./myq-garagedoor";
-import { myQDevice } from "./myq-types";
+import { myQMqtt } from "./myq-mqtt";
+import { myQDevice, myQOptionsInterface } from "./myq-types";
 import {
   MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
   MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
+  MYQ_API_APPID,
   MYQ_DEVICE_REFRESH_INTERVAL,
+  MYQ_MQTT_TOPIC,
   PLATFORM_NAME,
   PLUGIN_NAME
 } from "./settings";
 import util from "util";
 
-let hap: HAP;
-let Accessory: typeof PlatformAccessory;
+interface myQPollInterface {
+  count: number,
+  maxCount: number,
+}
 
 export class myQPlatform implements DynamicPlatformPlugin {
-  private readonly accessories: PlatformAccessory[] = [];
-  readonly api: API;
-  private batteryDeviceSupport: { [index: string]: boolean } = {};
-  private readonly configuredAccessories: { [index: string]: myQAccessory } = {};
-  readonly debugMode!: boolean;
-  readonly log: Logging;
-  readonly myQ!: myQApi;
+  private readonly accessories: PlatformAccessory[];
+  public readonly api: API;
+  public config!: myQOptionsInterface;
+  private readonly configuredAccessories: { [index: string]: myQAccessory };
+  public readonly debugMode!: boolean;
+  public readonly hap: HAP;
+  public readonly log: Logging;
+  public readonly mqtt!: myQMqtt;
+  public readonly myQ!: myQApi;
   private pollingTimer!: NodeJS.Timeout;
-  private unsupportedDevices: { [index: string]: boolean } = {};
-
-  readonly configOptions: string[] = [];
-  readonly configPoll = {
-    refreshInterval: MYQ_DEVICE_REFRESH_INTERVAL,
-    activeRefreshInterval: MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
-    activeRefreshDuration: MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
-    maxCount: 0,
-    count: 0
-  };
+  public readonly pollOptions!: myQPollInterface;
+  private unsupportedDevices: { [index: string]: boolean };
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
+    this.accessories = [];
     this.api = api;
+    this.configuredAccessories = {};
+    this.hap = api.hap;
     this.log = log;
-
-    Accessory = api.platformAccessory;
-    hap = api.hap;
+    this.unsupportedDevices = {};
 
     // We can't start without being configured.
     if(!config) {
       return;
     }
 
+    this.config = {
+      activeRefreshDuration: "activeRefreshDuration" in config ? parseInt(config.activeRefreshDuration) : MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
+      activeRefreshInterval: "activeRefreshInterval" in config ? parseInt(config.activeRefreshInterval) : MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
+      appId: "appId" in config ? config.appId as string : MYQ_API_APPID,
+      debug: config.debug === true,
+      email: config.email as string,
+      mqttTopic: "mqttTopic" in config ? config.mqttTopic as string : MYQ_MQTT_TOPIC,
+      mqttUrl: config.mqttUrl as string,
+      name: config.name as string,
+      options: config.options as string[],
+      password: config.password as string,
+      refreshInterval: "refreshInterval" in config ? parseInt(config.refreshInterval) : MYQ_DEVICE_REFRESH_INTERVAL
+    };
+
     // We need login credentials or we're not starting.
-    if(!config.email || !config.password) {
+    if(!this.config.email || !this.config.password) {
       this.log("No myQ login credentials configured.");
       return;
     }
 
-    // Check configuration parameters.
-    this.debugMode = config.debug === true;
+    // Make sure the active refresh duration is reasonable.
+    if((this.config.activeRefreshDuration > 300) || (this.config.activeRefreshDuration !== this.config.activeRefreshDuration)) {
+
+      this.log("Adjusting myQ API normal refresh duration from %s to %s." +
+        " Setting too high of a normal refresh duration is strongly discouraged due to myQ occasionally blocking accounts who overtax the myQ API.",
+      this.config.activeRefreshDuration, MYQ_ACTIVE_DEVICE_REFRESH_DURATION);
+
+      this.config.activeRefreshDuration = MYQ_ACTIVE_DEVICE_REFRESH_DURATION;
+
+    }
+
+    // Make sure the active refresh interval is reasonable.
+    if((this.config.activeRefreshInterval < 2) || (this.config.activeRefreshInterval !== this.config.activeRefreshInterval)) {
+
+      this.log("Adjusting myQ API active refresh interval from %s to %s." +
+        " Setting too short of an active refresh interval is strongly discouraged due to myQ occasionally blocking accounts who overtax the myQ API.",
+      this.config.activeRefreshInterval, MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL);
+
+      this.config.activeRefreshInterval = MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL;
+
+    }
+
+    // Make sure the refresh interval is reasonable.
+    if((this.config.refreshInterval < 5) || (this.config.refreshInterval !== this.config.refreshInterval)) {
+
+      this.log("Adjusting myQ API refresh interval from %s to %s seconds." +
+        " Even at this value, you are strongly encouraged to increase this to at least 10 seconds due to myQ occasionally blocking accounts who overtax the myQ API.",
+      this.config.refreshInterval, MYQ_DEVICE_REFRESH_INTERVAL);
+
+      this.config.refreshInterval = MYQ_DEVICE_REFRESH_INTERVAL;
+
+    }
+
     this.debug("Debug logging on. Expect a lot of data.");
 
-    if(config.activeRefreshDuration) {
-      this.configPoll.activeRefreshDuration = config.activeRefreshDuration;
-    }
-
-    if(config.activeRefreshInterval) {
-      this.configPoll.activeRefreshInterval = config.activeRefreshInterval;
-    }
-
-    if(config.options) {
-      this.configOptions = config.options;
-    }
-
-    if(config.refreshInterval) {
-      this.configPoll.refreshInterval = config.refreshInterval;
-    }
-
-    this.configPoll.maxCount = this.configPoll.activeRefreshDuration / this.configPoll.activeRefreshInterval;
-    this.configPoll.count = this.configPoll.maxCount;
+    this.pollOptions = {
+      count: this.config.activeRefreshDuration / this.config.activeRefreshInterval,
+      maxCount: this.config.activeRefreshDuration / this.config.activeRefreshInterval
+    };
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQApi(this, config.email, config.password, config.appId);
+    this.myQ = new myQApi(this);
+
+    // Create an MQTT connection, if needed.
+    if(!this.mqtt && this.config.mqttUrl) {
+      this.mqtt = new myQMqtt(this);
+    }
 
     // Avoid a prospective race condition by waiting to begin our polling until Homebridge is done
     // loading all the cached accessories it knows about, and calling configureAccessory() on each.
     //
     // Fire off our polling, with an immediate status refresh to begin with to provide us that responsive feeling.
-    api.on(APIEvent.DID_FINISH_LAUNCHING, this.poll.bind(this, this.configPoll.refreshInterval * -1));
+    api.on(APIEvent.DID_FINISH_LAUNCHING, this.poll.bind(this, this.config.refreshInterval * -1));
   }
 
   // This gets called when homebridge restores cached accessories at startup. We
   // intentionally avoid doing anything significant here, and save all that logic
   // for device discovery.
-  configureAccessory(accessory: PlatformAccessory): void {
+  public configureAccessory(accessory: PlatformAccessory): void {
     // Zero out the myQ device pointer on startup. This will be set by device discovery.
     accessory.context.device = null;
 
@@ -112,6 +148,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
   // Discover new myQ devices and sync existing ones with the myQ API.
   private discoverAndSyncAccessories(): boolean {
+
     // Remove any device objects from now-stale accessories.
     for(const accessory of this.accessories) {
 
@@ -121,7 +158,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // Check to see if this accessory's device object is still in myQ or not.
-      if(!this.myQ.Devices.some((x: myQDevice) => x.serial_number === accessory.context.device.serial_number)) {
+      if(!this.myQ.Devices.some(x => x.serial_number === (accessory.context.device as myQDevice).serial_number)) {
         accessory.context.device = null;
       }
     }
@@ -151,9 +188,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
         // Notify the user we see this device, but we aren't adding it to HomeKit.
         this.unsupportedDevices[device.serial_number] = true;
 
-        this.log("myQ device family '%s' is not currently supported, ignoring: %s.",
-          device.device_family, this.myQ.getDeviceName(device));
-
+        this.log("myQ device family '%s' is not currently supported, ignoring: %s.", device.device_family, this.myQ.getDeviceName(device));
         continue;
       }
 
@@ -163,20 +198,21 @@ export class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // Generate this device's unique identifier.
-      const uuid = hap.uuid.generate(device.serial_number);
-
-      let accessory: PlatformAccessory;
+      const uuid = this.hap.uuid.generate(device.serial_number);
 
       // See if we already know about this accessory or if it's truly new. If it is new, add it to HomeKit.
-      if((accessory = this.accessories.find((x: PlatformAccessory) => x.UUID === uuid)!) === undefined) {
-        accessory = new Accessory(device.name, uuid);
+      let accessory = this.accessories.find(x => x.UUID === uuid);
 
-        this.log("%s: Adding %s device to HomeKit: %s.",
-          device.name, device.device_family, this.myQ.getDeviceName(device));
+      if(!accessory) {
+
+        accessory = new this.api.platformAccessory(device.name, uuid);
+
+        this.log("%s: Adding %s device to HomeKit: %s.", device.name, device.device_family, this.myQ.getDeviceName(device));
 
         // Register this accessory with homebridge and add it to the accessory array so we can track it.
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.accessories.push(accessory);
+
       }
 
       // Link the accessory to it's device object.
@@ -195,7 +231,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Remove myQ devices that are no longer found in the myQ API, but we still have in HomeKit.
     for(const oldAccessory of this.accessories) {
 
-      const device = oldAccessory.context.device;
+      const device = oldAccessory.context.device as myQDevice;
 
       // We found this accessory in myQ. Figure out if we really want to see it in HomeKit.
       if(device && this.deviceVisible(device)) {
@@ -221,19 +257,19 @@ export class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // Sync myQ status and check for any new or removed accessories.
-    await this.discoverAndSyncAccessories();
+    this.discoverAndSyncAccessories();
 
     // Iterate through our accessories and update its status with the corresponding myQ status.
     for(const key in this.configuredAccessories) {
-      await this.configuredAccessories[key].updateState();
+      this.configuredAccessories[key].updateState();
     }
 
     return true;
   }
 
   // Periodically poll the myQ API for status.
-  poll(delay: number): void {
-    let refresh = this.configPoll.refreshInterval + delay;
+  public poll(delay = 0): void {
+    let refresh = this.config.refreshInterval + delay;
 
     // Clear the last polling interval out.
     clearTimeout(this.pollingTimer);
@@ -244,22 +280,26 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // activeRefreshDuration and activeRefreshInterval which specify the maximum length of time
     // for this increased polling frequency (activeRefreshDuration) and the actual frequency of
     // each update (activeRefreshInterval).
-    if(this.configPoll.count < this.configPoll.maxCount) {
-      refresh = this.configPoll.activeRefreshInterval + delay;
-      this.configPoll.count++;
+    if(this.pollOptions.count < this.pollOptions.maxCount) {
+      refresh = this.config.activeRefreshInterval + delay;
+      this.pollOptions.count++;
     }
 
     // Setup periodic update with our polling interval.
-    const self = this;
+    this.pollingTimer = setTimeout(() => {
 
-    this.pollingTimer = setTimeout(async () => {
-      // Refresh our myQ information and gracefully handle myQ errors.
-      if(!(await self.updateAccessories())) {
-        self.configPoll.count = self.configPoll.maxCount - 1;
-      }
+      void (async (): Promise<void> => {
 
-      // Fire off the next polling interval.
-      self.poll(0);
+        // Refresh our myQ information and gracefully handle myQ errors.
+        if(!(await this.updateAccessories())) {
+          this.pollOptions.count = this.pollOptions.maxCount - 1;
+        }
+
+        // Fire off the next polling interval.
+        this.poll();
+
+      })();
+
     }, refresh * 1000);
   }
 
@@ -277,7 +317,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     //
 
     // Nothing configured - we show all myQ devices to HomeKit.
-    if(!this.configOptions) {
+    if(!this.config.options) {
       return true;
     }
 
@@ -287,12 +327,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // We've explicitly enabled this opener.
-    if(this.configOptions.indexOf("Show." + (device.serial_number)) !== -1) {
+    if(this.config.options.indexOf("Show." + (device.serial_number)) !== -1) {
       return true;
     }
 
     // We've explicitly hidden this opener.
-    if(this.configOptions.indexOf("Hide." + device.serial_number) !== -1) {
+    if(this.config.options.indexOf("Hide." + device.serial_number) !== -1) {
       return false;
     }
 
@@ -302,12 +342,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // We've explicitly shown the gateway this opener is attached to.
-    if(this.configOptions.indexOf("Show." + device.parent_device_id) !== -1) {
+    if(this.config.options.indexOf("Show." + device.parent_device_id) !== -1) {
       return true;
     }
 
     // We've explicitly hidden the gateway this opener is attached to.
-    if(this.configOptions.indexOf("Hide." + device.parent_device_id) !== -1) {
+    if(this.config.options.indexOf("Hide." + device.parent_device_id) !== -1) {
       return false;
     }
 
@@ -316,10 +356,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
   }
 
   // Utility for debug logging.
-  debug(message: string, ...parameters: any[]) {
+  public debug(message: string, ...parameters: unknown[]): void {
     if(this.debugMode) {
       this.log(util.format(message, ...parameters));
     }
   }
-
 }
