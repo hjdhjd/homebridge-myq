@@ -1,4 +1,5 @@
-<SPAN ALIGN="CENTER">
+<SPAN ALIGN="CENTER" STYLE="text-align:center">
+<DIV ALIGN="CENTER" STYLE="text-align:center">
 
 [![homebridge-myq: Native HomeKit support for myQ garage door openers and other devices](https://raw.githubusercontent.com/hjdhjd/homebridge-myq/master/homebridge-myq.svg)](https://github.com/hjdhjd/homebridge-myq)
 
@@ -9,6 +10,7 @@
 [![verified-by-homebridge](https://img.shields.io/badge/homebridge-verified-blueviolet?color=%23491F59&style=for-the-badge)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
 ## myQ garage door and other myQ-enabled device support for [Homebridge](https://homebridge.io).
+</DIV>
 </SPAN>
 
 `homebridge-myq` is a [Homebridge](https://homebridge.io) plugin that makes myQ-enabled devices available to [Apple's](https://www.apple.com) [HomeKit](https://www.apple.com/ios/home) smart home platform. myQ-enabled devices include many smart garage door openers made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door or other device is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
@@ -50,6 +52,18 @@ I would love to support more types of myQ devices. I'm actively interested in wo
 
 If you have these devices and would like to contribute, please open an [issue](https://github.com/hjdhjd/homebridge-myq/issues), label it as a enhancement, and let's figure out how to make this plugin even better! Bonus points if you like puzzles and lots of debugging output. :smile:
 
+## Documentation
+* Getting going
+  * [Installation](#installation): installing this plugin, including system requirements.
+  * [Plugin Configuration](#plugin-configuration): how to quickly get up and running.
+  * [Things To Be Aware Of](#aware): some things you should be aware of, including myQ-specific quirks.
+
+* Advanced Topics
+  * [Feature Options](https://github.com/hjdhjd/homebridge-unifi-protect/blob/master/docs/FeatureOptions.md): granular options to allow you to set the camera quality individually, show or hide specific cameras, controllers, and more.
+  * [MQTT](https://github.com/hjdhjd/homebridge-unifi-protect/blob/master/docs/MQTT.md): how to configure MQTT support.
+  * [Advanced Configuration](https://github.com/hjdhjd/homebridge-unifi-protect/blob/master/docs/AdvancedOptions.md): complete list of configuration options available in this plugin.
+  * [Changelog](https://github.com/hjdhjd/homebridge-unifi-protect/blob/master/docs/Changelog.md): changes and release history of this plugin, starting with v2.0.
+
 ## Installation
 If you are new to Homebridge, please first read the [Homebridge](https://homebridge.io) [documentation](https://github.com/homebridge/homebridge/wiki) and installation instructions before proceeding.
 
@@ -61,14 +75,20 @@ If you prefer to install `homebridge-myq` from the command line, you can do so b
 sudo npm install -g homebridge-myq
 ```
 
-### Changelog
-Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homebridge-myq/blob/master/Changelog.md).
+## Plugin Configuration
+If you choose to configure this plugin directly instead of using the [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
 
-### Things to be aware of
-- **Beginning with v2.0, this plugin requires Homebridge v1.0 on greater to work. For some, this may be a breaking change if you are running on older versions of Homebridge.**
+```js
+"platforms": [{
+    "platform": "myQ",
+    "email": "email@email.com",
+    "password": "password"
+}]
+```
 
-- Also beginning with v2.0, the `platform` configuration block for this plugin in your Homebridge `config.json` has been renamed (and note that the name is case sensitive as well). See the [plugin configuration section below](#plugin-configuration) for details. **This is a breaking change for those upgrading from v1.x and you will need to update your `config.json` to reflect the updates**.
+For most people, I recommend using [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
 
+## <A NAME="aware"></A>Things to be aware of
 - <A NAME="myq-errors"></A>The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future API changes that may come. Unfortunately, it's an ongoing challenge since API changes can be sudden and unpredictable.
 
 - **As a result of the above you *will* see errors similar to this on an occasional basis in the Homebridge logs:**
@@ -86,69 +106,3 @@ Changelog starting with v2.0 is available [here](https://github.com/hjdhjd/homeb
     ```
   This can be safely ignored. It's an error message indicating that, in HomeKit, the garage door opener accessory service doesn't normally support battery status. HomeKit will still report it correctly, and alert you accordingly.
 
-## Plugin Configuration
-If you choose to configure this plugin directly instead of using the [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
-
-```js
-"platforms": [{
-    "platform": "myQ",
-    "email": "email@email.com",
-    "password": "password"
-}]
-```
-
-For most people, I recommend using [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
-
-### Feature Options
-Feature options allow you to enable or disable certain features in this plugin.
-
-The `options` setting is an array of strings used to customize feature options. Available options:
-
-* <CODE>Hide.<I>serialnumber</I></CODE> - hide the opener or gateway identified by `serialnumber` from HomeKit.
-* <CODE>Show.<I>serialnumber</I></CODE> - show the opener or gateway identified by `serialnumber` from HomeKit.
-
-The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
-
-Before using this feature, you should understand how gateways and openers work in myQ. Gateways are the devices in your home that actually communicate your status to myQ. Openers are attached to gateways. A typical home will have a single gateway and one, or more, openers. If you choose to hide a gateway, you will also hide all the openers associated with that gateway.
-
-If you've hidden a gateway, and all it's openers with it, you can selectively enable a single opener associated with that gateway by explicitly setting a `Show.` feature option. This should give you a lot of richness in how you enable or disable devices for HomeKit use.
-
-The priority given to these options works in this order, from highest to lowest priority where settings that are higher in priority can override lower ones:
-
-* Show any opener we've explicitly said to show.
-* Show any gateway we've explicitly said to show.
-* Hide any opener we've explicitly hidden.
-* Hide any gateway we've explicitly hidden.
-
-### <A NAME="advanced-config"></A>Advanced Configuration (Optional)
-This step is not required. The defaults should work well for almost everyone, but for those that prefer to tweak additional settings, this is the complete list of settings available.
-
-```js
-"platforms": [
-  {
-    "platform": "myQ",
-    "name": "myQ",
-    "email": "email@email.com",
-    "password": "password",
-    "debug": false,
-    "refreshInterval": 12,
-    "activeRefreshInterval": 3,
-    "activeRefreshDuration": 300,
-    "appId": "abcdefg",
-    "options": ["Hide.GW12345", "Show.CG6789"]
-  }
-]
-```
-
-| Fields                | Description                                                                        | Default | Required |
-|-----------------------|------------------------------------------------------------------------------------|---------|----------|
-| platform              | Must always be `myQ`.                                                              |         | Yes      |
-| name                  | For logging purposes.                                                              |         | No       |
-| email                 | Your myQ account email.                                                            |         | Yes      |
-| password              | Your myQ account password.                                                         |         | Yes      |
-| refreshInterval       | Normal myQ device refresh interval in `seconds`.                                   | 12      | No       |
-| activeRefreshInterval | Refresh interval in `seconds` to use when myQ device state changes are detected.   | 3       | No       |
-| activeRefreshDuration | Duration in `seconds` to use `activeRefreshInterval` to refresh myQ device status. | 300     | No       |
-| appId                 | Override the builtin myQ appId to a user supplied one. **Use with extreme care.**  | false   | No       |
-| options               | Configure plugin [feature options](#feature-options).                              | []      | No       |
-| debug                 | Logging verbosity for debugging purporses.                                         | false   | No       |
