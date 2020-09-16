@@ -39,7 +39,7 @@ export class myQMqtt {
     // Try to connect to the MQTT broker and make sure we catch any URL errors.
     try {
 
-      this.mqtt = mqtt.connect(this.config.mqttUrl, { reconnectPeriod: MYQ_MQTT_RECONNECT_INTERVAL * 1000});
+      this.mqtt = mqtt.connect(this.config.mqttUrl, { reconnectPeriod: MYQ_MQTT_RECONNECT_INTERVAL * 1000, rejectUnauthorized: false });
 
     } catch(error) {
 
