@@ -15,6 +15,7 @@ import {
 import { myQAccessory } from "./myq-accessory";
 import { myQApi } from "./myq-api";
 import { myQGarageDoor } from "./myq-garagedoor";
+import { myQLamp } from "./myq-lamp";
 import { myQMqtt } from "./myq-mqtt";
 import { myQDevice, myQOptionsInterface } from "./myq-types";
 import {
@@ -171,24 +172,36 @@ export class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // We are only interested in garage door openers. Perhaps more types in the future.
-      if(device.device_family.indexOf("garagedoor") === -1) {
+      switch(true) {
 
-        // Unless we are debugging device discovery, ignore any gateways.
-        // These are typically gateways, hubs, etc. that shouldn't be causing us to alert anyway.
-        if(!this.config.debug && device.device_family === "gateway") {
+        case (device.device_family.indexOf("garagedoor") !== -1):
+        case (device.device_family === "lamp"):
+
+          // We have a known device type. One of:
+          //   - garage door.
+          //   - lamp.
+          break;
+
+        default:
+
+          // Unless we are debugging device discovery, ignore any gateways.
+          // These are typically gateways, hubs, etc. that shouldn't be causing us to alert anyway.
+          if(!this.config.debug && device.device_family === "gateway") {
+            continue;
+          }
+
+          // If we've already informed the user about this one, we're done.
+          if(this.unsupportedDevices[device.serial_number]) {
+            continue;
+          }
+
+          // Notify the user we see this device, but we aren't adding it to HomeKit.
+          this.unsupportedDevices[device.serial_number] = true;
+
+          this.log("myQ device family '%s' is not currently supported, ignoring: %s.", device.device_family, this.myQ.getDeviceName(device));
           continue;
-        }
 
-        // If we've already informed the user about this one, we're done.
-        if(this.unsupportedDevices[device.serial_number]) {
-          continue;
-        }
-
-        // Notify the user we see this device, but we aren't adding it to HomeKit.
-        this.unsupportedDevices[device.serial_number] = true;
-
-        this.log("myQ device family '%s' is not currently supported, ignoring: %s.", device.device_family, this.myQ.getDeviceName(device));
-        continue;
+          break;
       }
 
       // Exclude or include certain openers based on configuration parameters.
@@ -203,7 +216,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
       let accessory = this.accessories.find(x => x.UUID === uuid);
 
       if(!accessory) {
-
         accessory = new this.api.platformAccessory(device.name, uuid);
 
         this.log("%s: Adding %s device to HomeKit: %s.", device.name, device.device_family, this.myQ.getDeviceName(device));
@@ -211,20 +223,40 @@ export class myQPlatform implements DynamicPlatformPlugin {
         // Register this accessory with homebridge and add it to the accessory array so we can track it.
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.accessories.push(accessory);
-
       }
 
       // Link the accessory to it's device object.
       accessory.context.device = device;
 
-      // Setup the myQ device if it hasn't been configured yet.
-      if(!this.configuredAccessories[accessory.UUID]) {
-        // Eventually switch on multiple types of myQ devices. For now, it's garage doors only...
-        this.configuredAccessories[accessory.UUID] = new myQGarageDoor(this, accessory);
-
-        // Refresh the accessory cache with these values.
-        this.api.updatePlatformAccessories([accessory]);
+      // If we've already configured this accessory, we're done here.
+      if(this.configuredAccessories[accessory.UUID]) {
+        continue;
       }
+
+      // Eventually switch on multiple types of myQ devices. For now, it's garage doors only...
+      switch(true) {
+
+        case (device.device_family.indexOf("garagedoor") !== -1):
+
+          // We have a garage door.
+          this.configuredAccessories[accessory.UUID] = new myQGarageDoor(this, accessory);
+          break;
+
+        case (device.device_family === "lamp"):
+
+          // We have a lamp.
+          this.configuredAccessories[accessory.UUID] = new myQLamp(this, accessory);
+          break;
+
+        default:
+
+          // We should never get here.
+          this.log.error("Unknown device type detected: %s.", device.device_family);
+          break;
+      }
+
+      // Refresh the accessory cache with these values.
+      this.api.updatePlatformAccessories([accessory]);
     }
 
     // Remove myQ devices that are no longer found in the myQ API, but we still have in HomeKit.
@@ -264,10 +296,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
     }
 
     return true;
+
   }
 
   // Periodically poll the myQ API for status.
   public poll(delay = 0): void {
+
     let refresh = this.config.refreshInterval + delay;
 
     // Clear the last polling interval out.
@@ -300,10 +334,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
       })();
 
     }, refresh * 1000);
+
   }
 
   // Utility function to let us know if a myQ device should be visible in HomeKit or not.
   private deviceVisible(device: myQDevice): boolean {
+
     // There are a couple of ways to hide and show devices that we support. The rules of the road are:
     //
     // 1. Explicitly hiding, or showing a gateway device propogates to all the devices that are plugged
