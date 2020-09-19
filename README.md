@@ -28,12 +28,12 @@ Either solution will provide you with robust HomeKit integration, and you'll soo
 ## Why use this plugin for myQ support in HomeKit?
 In a nutshell, the aim of this plugin for things to *just work* with minimal required configuration by you, the end user. The goal is to provide as close to a streamlined experience as you would expect from a first-party or native HomeKit solution. For the adventurous, those additional granular options are, of course, available to support more esoteric use cases or other unique needs.
 
-What does *just work* mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
+What does *just work* mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener, lamp, or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
 ### Features
 - ***Easy* configuration - all you need is your myQ username and password to get started.** The defaults work for the vast majority of users. When you want more, there are [advanced options](#advanced-config) you can play with, if you choose.
 
-- **Automatic detection and configuration of all garage door and gate openers.** By default - all of your supported myQ devices are made available in HomeKit.
+- **Automatic detection and configuration of all lamps, garage door and gate openers.** By default - all of your supported myQ devices are made available in HomeKit.
 
 - **[Obstruction detection](#obstruction-status) on supported myQ garage door and gate openers.** When a garage door or gate is obstructed, and the myQ API provides that information, you'll see an alert raised in the Home app.
 
@@ -44,9 +44,13 @@ What does *just work* mean in practice? It means that this plugin will discover 
 ### <A NAME="myq-contribute"></A>How you can contribute and make this plugin even better
 The myQ API is undocumented and implementing a plugin like this one is the result of many hours of reverse engineering, trial and error, and community support. This work stands on the shoulders of other myQ API projects out there and this project attempts to contribute back to that community base of knowledge to further improve myQ support for everyone.
 
-I would love to support more types of myQ devices. I'm actively interested in working with people who have devices beyond garage doors in the myQ ecosystem such as myQ-enabled:
+I would love to support more types of myQ devices. Currently `homebridge-myq` supports the following device types:
 
-- Lights and lamps
+- Garage door openers
+- Lamps and myQ switches
+
+I'm actively interested in adding support for additional device types, and would like to work with people who have myQ-enabled:
+
 - Motion sensors
 - Cameras
 - Locks
