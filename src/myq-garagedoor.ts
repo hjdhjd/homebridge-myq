@@ -9,7 +9,7 @@ import {
   CharacteristicValue
 } from "homebridge";
 import { myQAccessory } from "./myq-accessory";
-import { myQDevice, myQHwInfo } from "./myq-types";
+import { myQDevice } from "./myq-types";
 import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
 
 export class myQGarageDoor extends myQAccessory {
@@ -41,61 +41,20 @@ export class myQGarageDoor extends myQAccessory {
 
   }
 
-  // Configure the garage door device information for HomeKit.
-  private configureInfo(): boolean {
-
-    const device = this.accessory.context.device as myQDevice;
-
-    // Set the firmware revision for this device.
-    // Fun fact: This firmware information is stored on the gateway not the opener.
-    const gwParent = this.myQ.Devices.find(x => x.serial_number === device.parent_device_id);
-    let gwBrand = "Liftmaster";
-    let gwProduct = "myQ";
-
-    if(gwParent?.state?.firmware_version) {
-      const gwInfo: myQHwInfo = this.myQ.getHwInfo(gwParent.serial_number);
-
-      this.accessory
-        .getService(this.hap.Service.AccessoryInformation)
-        ?.getCharacteristic(this.hap.Characteristic.FirmwareRevision).updateValue(gwParent.state.firmware_version);
-
-      // If we're able to lookup hardware information, use it. getHwInfo returns an object containing
-      // device type and brand information.
-      gwProduct = gwInfo?.product;
-      gwBrand = gwInfo?.brand;
-    }
-
-    // Update the manufacturer information for this device.
-    this.accessory
-      .getService(this.hap.Service.AccessoryInformation)
-      ?.getCharacteristic(this.hap.Characteristic.Manufacturer).updateValue(gwBrand);
-
-    // Update the model information for this device.
-    this.accessory
-      .getService(this.hap.Service.AccessoryInformation)
-      ?.getCharacteristic(this.hap.Characteristic.Model).updateValue(gwProduct);
-
-    // Update the serial number for this device.
-    this.accessory
-      .getService(this.hap.Service.AccessoryInformation)
-      ?.getCharacteristic(this.hap.Characteristic.SerialNumber).updateValue(device.serial_number);
-
-    return true;
-
-  }
-
   // Configure the garage door service for HomeKit.
   private configureGarageDoor(): boolean {
 
-    const gdOpener = this.accessory.getService(this.hap.Service.GarageDoorOpener);
+    const device = this.accessory.context.device as myQDevice;
+
+    let garagedoorService = this.accessory.getService(this.hap.Service.GarageDoorOpener);
 
     // Clear out stale services.
-    if(gdOpener) {
-      this.accessory.removeService(gdOpener);
+    if(garagedoorService) {
+      this.accessory.removeService(garagedoorService);
     }
 
     // Add the garage door opener service to the accessory.
-    const gdService = new this.hap.Service.GarageDoorOpener(this.accessory.displayName);
+    garagedoorService = new this.hap.Service.GarageDoorOpener(this.accessory.displayName ?? device.name);
 
     // The initial door state when we first startup. The bias functions will help us
     // figure out what to do if we're caught in a tweener state.
@@ -105,23 +64,23 @@ export class myQGarageDoor extends myQAccessory {
     // Add all the events to our accessory so we can act on HomeKit actions. We also set the current and target door states
     // based on our saved state from previous sessions.
     this.accessory
-      .addService(gdService)
+      .addService(garagedoorService)
       .setCharacteristic(this.hap.Characteristic.CurrentDoorState, doorCurrentState)
       .setCharacteristic(this.hap.Characteristic.TargetDoorState, doorTargetState)
       .getCharacteristic(this.hap.Characteristic.TargetDoorState)
       .on(CharacteristicEventTypes.SET, this.setDoorState.bind(this));
 
     // Add all the events to our accessory so we can tell HomeKit our state.
-    gdService
+    garagedoorService
       .getCharacteristic(this.hap.Characteristic.CurrentDoorState)
       .on(CharacteristicEventTypes.GET, this.getDoorState.bind(this));
 
     // Make sure we can detect obstructions.
-    gdService
+    garagedoorService
       .getCharacteristic(this.hap.Characteristic.ObstructionDetected)
       .on(CharacteristicEventTypes.GET, this.getObstructed.bind(this));
 
-    gdService.setPrimaryService(true);
+    garagedoorService.setPrimaryService(true);
 
     return true;
 
@@ -452,13 +411,14 @@ export class myQGarageDoor extends myQAccessory {
 
   }
 
-  // Open or close the door for an accessory.
+  // Execute garage door commands.
   private async doorCommand(command: CharacteristicValue): Promise<boolean> {
 
     let myQCommand;
 
     // Translate the command from HomeKit to myQ.
     switch(command) {
+
       case this.hap.Characteristic.TargetDoorState.OPEN:
         myQCommand = "open";
         break;
@@ -470,26 +430,11 @@ export class myQGarageDoor extends myQAccessory {
       default:
         this.log("%s: Unknown door command encountered: %s.", this.accessory.displayName, command);
         return false;
+        break;
+
     }
 
-    const device = this.accessory.context.device as myQDevice;
-
-    if(!device) {
-      this.log("%s: Can't find the associated device in the myQ API.", this.accessory.displayName);
-      return false;
-    }
-
-    // Execute the command.
-    await this.myQ.execute(device.serial_number, myQCommand);
-
-    // Increase the frequency of our polling for state updates to catch any updates from myQ.
-    // This will trigger polling at activeRefreshInterval until activeRefreshDuration is hit. If you
-    // query the myQ API too quickly, the API won't have had a chance to begin executing our command.
-    this.platform.pollOptions.count = 0;
-    this.platform.poll(this.config.refreshInterval * -1);
-
-    return true;
-
+    return super.command(myQCommand);
   }
 
   // Decode HomeKit door state in user-friendly terms.
