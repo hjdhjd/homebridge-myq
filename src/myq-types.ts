@@ -114,13 +114,21 @@ export interface myQDeviceInterface {
     invalid_shutout_period: string,
     is_unattended_close_allowed: boolean,
     is_unattended_open_allowed: boolean,
+    lamp_state: string,
+    lamp_subtype: string,
+    last_event: string,
     last_status: string,
     last_update: string,
     learn: string,
     learn_mode: boolean,
     light_state: string,
+    links: {
+      events: string,
+      stream: string
+    }
     max_invalid_attempts: number,
     online: boolean,
+    online_change_time: string,
     open: string,
     passthrough_interval: string,
     pending_bootload_abandoned: boolean,
@@ -128,6 +136,7 @@ export interface myQDeviceInterface {
     report_ajar: boolean,
     report_forced: boolean,
     rex_fires_door: boolean,
+    servers: string,
     updated_date: string,
     use_aux_relay: boolean
   }
