@@ -78,7 +78,7 @@ export class myQApi {
 
     // Allow a user to override the appId if needed. This should, hopefully, be a rare occurrence.
     if(this.platform.config.appId !== MYQ_API_APPID) {
-      this.log("myQ API: Overriding builtin myQ application identifier and using: %s", this.platform.config.appId);
+      this.log.info("myQ API: Overriding builtin myQ application identifier and using: %s", this.platform.config.appId);
     }
   }
 
@@ -96,7 +96,7 @@ export class myQApi {
     });
 
     if(!response) {
-      this.log("myQ API: Unable to authenticate. Will retry later.");
+      this.log.error("myQ API: Unable to authenticate. Will retry later.");
       return false;
     }
 
@@ -108,13 +108,13 @@ export class myQApi {
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
     if(!data?.SecurityToken) {
-      this.log("myQ API: Unable to acquire a security token.");
+      this.log.error("myQ API: Unable to acquire a security token.");
       return false;
     }
 
     // On initial plugin startup, let the user know we've successfully connected.
     if(!this.securityToken) {
-      this.log("myQ API: Successfully connected to the myQ API.");
+      this.log.info("myQ API: Successfully connected to the myQ API.");
     }
 
     this.securityToken = data.SecurityToken;
@@ -168,7 +168,7 @@ export class myQApi {
     const response = await this.fetch(this.ApiUrl() + "/My?" + params.toString(), { method: "GET" });
 
     if(!response) {
-      this.log("myQ API: Unable to login. Acquiring a new security token and retrying later.");
+      this.log.error("myQ API: Unable to login. Acquiring a new security token and retrying later.");
       await this.acquireSecurityToken();
       return false;
     }
@@ -180,7 +180,7 @@ export class myQApi {
 
     // No account information returned.
     if(!data?.Account) {
-      this.log("myQ API: Unable to retrieve account information from myQ servers.");
+      this.log.error("myQ API: Unable to retrieve account information from myQ servers.");
       return false;
     }
 
@@ -215,7 +215,7 @@ export class myQApi {
     const response = await this.fetch(this.deviceUrl() + "/Accounts/" + this.accountId + "/Devices", { method: "GET" });
 
     if(!response) {
-      this.log("myQ API: Unable to update device status from myQ servers. Acquiring a new security token and retrying later.");
+      this.log.error("myQ API: Unable to update device status from myQ servers. Acquiring a new security token and retrying later.");
       this.securityTokenTimestamp = 0;
       return false;
     }
@@ -237,7 +237,7 @@ export class myQApi {
         }
 
         // We've discovered a new device.
-        this.log("myQ API: Discovered device family %s: %s.", newDevice.device_family, this.getDeviceName(newDevice));
+        this.log.info("myQ API: Discovered device family %s: %s.", newDevice.device_family, this.getDeviceName(newDevice));
 
       }
     }
@@ -253,7 +253,7 @@ export class myQApi {
         }
 
         // We've had a device disappear.
-        this.log("myQ API: Removed device family %s: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
+        this.log.info("myQ API: Removed device family %s: %s.", existingDevice.device_family, this.getDeviceName(existingDevice));
 
       }
 
@@ -276,7 +276,7 @@ export class myQApi {
     const response = await this.fetch(this.deviceUrl() + "/Accounts/" + this.accountId + "/devices/" + deviceId, { method: "GET" });
 
     if(!response) {
-      this.log("myQ API: Unable to query device status from myQ servers. Acquiring a new security token and retrying later.");
+      this.log.error("myQ API: Unable to query device status from myQ servers. Acquiring a new security token and retrying later.");
       this.securityTokenTimestamp = 0;
       return false;
     }
@@ -307,7 +307,7 @@ export class myQApi {
     });
 
     if(!response) {
-      this.log("myQ API: Unable to send the command to myQ servers. Acquiring a new security token.");
+      this.log.error("myQ API: Unable to send the command to myQ servers. Acquiring a new security token.");
       this.securityTokenTimestamp = 0;
       return false;
     }
@@ -438,13 +438,13 @@ export class myQApi {
 
       // Bad username and password.
       if(response.status === 401) {
-        this.log("myQ API: Invalid myQ credentials given. Check your login and password.");
+        this.log.error("myQ API: Invalid myQ credentials given. Check your login and password.");
         return null;
       }
 
       // Some other unknown error occurred.
       if(!response.ok) {
-        this.log("myQ API: Error: %s %s", response.status, response.statusText);
+        this.log.error("myQ API: Error: %s %s", response.status, response.statusText);
         return null;
       }
 
@@ -455,28 +455,28 @@ export class myQApi {
 
         switch(error.code) {
           case "ECONNREFUSED":
-            this.log("myQ API: Connection refused.");
+            this.log.error("myQ API: Connection refused.");
             break;
 
           case "ECONNRESET":
-            this.log("myQ API: Connection has been reset.");
+            this.log.error("myQ API: Connection has been reset.");
             break;
 
           case "ENOTFOUND":
-            this.log("myQ API: Hostname or IP address not found.");
+            this.log.error("myQ API: Hostname or IP address not found.");
             break;
 
           case "UNABLE_TO_VERIFY_LEAF_SIGNATURE":
-            this.log("myQ API: Unable to verify TLS security certificate.");
+            this.log.error("myQ API: Unable to verify myQ TLS security certificate.");
             break;
 
           default:
-            this.log(error.message);
+            this.log.error(error.message);
         }
 
       } else {
 
-        this.log("Unknown fetch error: %s", error);
+        this.log.error("Unknown fetch error: %s", error);
 
       }
 

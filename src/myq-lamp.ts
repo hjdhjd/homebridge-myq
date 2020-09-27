@@ -114,7 +114,7 @@ export class myQLamp extends myQAccessory {
           break;
 
         default:
-          this.log("%s: Unknown lamp command received via MQTT: %s.", this.name(), message.toString());
+          this.log.error("%s: Unknown lamp command received via MQTT: %s.", this.name(), message.toString());
           return;
           break;
 
@@ -122,11 +122,11 @@ export class myQLamp extends myQAccessory {
 
       // Move the lamp to the desired position.
       if(this.setLampState(targetState)) {
-        this.log("%s: %s command received via MQTT.", this.name(), targetName);
+        this.log.info("%s: %s command received via MQTT.", this.name(), targetName);
         return;
       }
 
-      this.log("%s: Error executing lamp command via MQTT: %s.", this.name(), targetName);
+      this.log.error("%s: Error executing lamp command via MQTT: %s.", this.name(), targetName);
     });
 
   }
@@ -167,7 +167,7 @@ export class myQLamp extends myQAccessory {
 
     // If we can't get our status, we're probably not able to connect to the myQ API.
     if(myQState === -1) {
-      this.log("%s: Unable to determine the current lamp state.", this.name());
+      this.log.error("%s: Unable to determine the current lamp state.", this.name());
       return false;
     }
 
@@ -195,7 +195,7 @@ export class myQLamp extends myQAccessory {
       this.platform.pollOptions.count = 0;
       this.platform.poll(this.config.refreshInterval * -1);
 
-      this.log("%s: %s.", this.name(), myQState ? "On" : "Off");
+      this.log.info("%s: %s.", this.name(), myQState ? "On" : "Off");
 
       // Publish to MQTT, if the user has configured it.
       this.platform.mqtt?.publish(this.accessory, "lamp", myQState ? "On" : "Off");
@@ -218,7 +218,7 @@ export class myQLamp extends myQAccessory {
     const device = this.accessory.context.device as myQDevice;
 
     if(!device) {
-      this.log("%s: Can't find the associated device in the myQ API.", this.name());
+      this.log.error("%s: Can't find the associated device in the myQ API.", this.name());
       return -1;
     }
 
@@ -226,7 +226,7 @@ export class myQLamp extends myQAccessory {
     const myQState = lampStates[device.state.lamp_state];
 
     if(myQState === undefined) {
-      this.log("%s: Unknown lamp state encountered: %s.", this.name(), device.state.lamp_state);
+      this.log.error("%s: Unknown lamp state encountered: %s.", this.name(), device.state.lamp_state);
       return -1;
     }
 
@@ -251,7 +251,7 @@ export class myQLamp extends myQAccessory {
         break;
 
       default:
-        this.log("%s: Unknown lamp command encountered: %s.", this.name(), command);
+        this.log.error("%s: Unknown lamp command encountered: %s.", this.name(), command);
         return false;
         break;
     }

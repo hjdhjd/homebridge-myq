@@ -76,14 +76,14 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
     // We need login credentials or we're not starting.
     if(!this.config.email || !this.config.password) {
-      this.log("No myQ login credentials configured.");
+      this.log.error("No myQ login credentials configured.");
       return;
     }
 
     // Make sure the active refresh duration is reasonable.
     if((this.config.activeRefreshDuration > 300) || (this.config.activeRefreshDuration !== this.config.activeRefreshDuration)) {
 
-      this.log("Adjusting myQ API normal refresh duration from %s to %s." +
+      this.log.info("Adjusting myQ API normal refresh duration from %s to %s." +
         " Setting too high of a normal refresh duration is strongly discouraged due to myQ occasionally blocking accounts who overtax the myQ API.",
       this.config.activeRefreshDuration, MYQ_ACTIVE_DEVICE_REFRESH_DURATION);
 
@@ -94,7 +94,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Make sure the active refresh interval is reasonable.
     if((this.config.activeRefreshInterval < 2) || (this.config.activeRefreshInterval !== this.config.activeRefreshInterval)) {
 
-      this.log("Adjusting myQ API active refresh interval from %s to %s." +
+      this.log.info("Adjusting myQ API active refresh interval from %s to %s." +
         " Setting too short of an active refresh interval is strongly discouraged due to myQ occasionally blocking accounts who overtax the myQ API.",
       this.config.activeRefreshInterval, MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL);
 
@@ -105,7 +105,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Make sure the refresh interval is reasonable.
     if((this.config.refreshInterval < 5) || (this.config.refreshInterval !== this.config.refreshInterval)) {
 
-      this.log("Adjusting myQ API refresh interval from %s to %s seconds." +
+      this.log.info("Adjusting myQ API refresh interval from %s to %s seconds." +
         " Even at this value, you are strongly encouraged to increase this to at least 10 seconds due to myQ occasionally blocking accounts who overtax the myQ API.",
       this.config.refreshInterval, MYQ_DEVICE_REFRESH_INTERVAL);
 
@@ -198,7 +198,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
           // Notify the user we see this device, but we aren't adding it to HomeKit.
           this.unsupportedDevices[device.serial_number] = true;
 
-          this.log("myQ device family '%s' is not currently supported, ignoring: %s.", device.device_family, this.myQ.getDeviceName(device));
+          this.log.info("myQ device family '%s' is not currently supported, ignoring: %s.", device.device_family, this.myQ.getDeviceName(device));
           continue;
 
           break;
@@ -218,7 +218,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       if(!accessory) {
         accessory = new this.api.platformAccessory(device.name, uuid);
 
-        this.log("%s: Adding %s device to HomeKit: %s.", device.name, device.device_family, this.myQ.getDeviceName(device));
+        this.log.info("%s: Adding %s device to HomeKit: %s.", device.name, device.device_family, this.myQ.getDeviceName(device));
 
         // Register this accessory with homebridge and add it to the accessory array so we can track it.
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -269,7 +269,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
         continue;
       }
 
-      this.log("%s: Removing myQ device from HomeKit.", oldAccessory.displayName);
+      this.log.info("%s: Removing myQ device from HomeKit.", oldAccessory.displayName);
 
       delete this.configuredAccessories[oldAccessory.UUID];
       this.accessories.splice(this.accessories.indexOf(oldAccessory), 1);
@@ -393,7 +393,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
   // Utility for debug logging.
   public debug(message: string, ...parameters: unknown[]): void {
     if(this.config.debug) {
-      this.log(util.format(message, ...parameters));
+      this.log.info(util.format(message, ...parameters));
     }
   }
 }

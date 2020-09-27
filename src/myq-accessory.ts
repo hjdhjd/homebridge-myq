@@ -45,7 +45,7 @@ export abstract class myQAccessory {
     const device = this.accessory.context.device as myQDevice;
 
     if(!device) {
-      this.log("%s: Can't find the associated device in the myQ API.", this.name());
+      this.log.error("%s: Can't find the associated device in the myQ API.", this.name());
       return false;
     }
 

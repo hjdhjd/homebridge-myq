@@ -47,11 +47,11 @@ export class myQMqtt {
 
         switch(error.message) {
           case "Missing protocol":
-            this.log("MQTT Broker: Invalid URL provided: %s.", this.config.mqttUrl);
+            this.log.error("MQTT Broker: Invalid URL provided: %s.", this.config.mqttUrl);
             break;
 
           default:
-            this.log("MQTT Broker: Error: %s.", error.message);
+            this.log.error("MQTT Broker: Error: %s.", error.message);
             break;
 
         }
@@ -68,7 +68,12 @@ export class myQMqtt {
     this.mqtt.on("connect", () => {
 
       this.isConnected = true;
-      this.log("Connected to MQTT broker: %s (topic: %s)", this.config.mqttUrl, this.config.mqttTopic);
+
+      // Magic incantation to redact passwords.
+      const redact = /^(?<pre>.*:\/{0,2}.*:)(?<pass>.*)(?<post>@.*)/;
+
+      this.log.info("Connected to MQTT broker: %s (topic: %s).",
+        this.config.mqttUrl.replace(redact, "$<pre>REDACTED$<post>"), this.config.mqttTopic);
 
     });
 
@@ -78,7 +83,7 @@ export class myQMqtt {
       if(this.isConnected) {
 
         this.isConnected = false;
-        this.log("Disconnected from MQTT broker: %s", this.config.mqttUrl);
+        this.log.info("Disconnected from MQTT broker: %s", this.config.mqttUrl);
 
       }
 
@@ -99,24 +104,24 @@ export class myQMqtt {
 
       switch(error.code) {
         case "ECONNREFUSED":
-          this.log("MQTT Broker: Connection refused (url: %s). Will retry again in %s minute%s.",
+          this.log.error("MQTT Broker: Connection refused (url: %s). Will retry again in %s minute%s.",
             this.config.mqttUrl,
             MYQ_MQTT_RECONNECT_INTERVAL / 60, MYQ_MQTT_RECONNECT_INTERVAL / 60 > 1 ? "s": "");
           break;
 
         case "ECONNRESET":
-          this.log("MQTT Broker: Connection reset (url: %s). Will retry again in %s minute%s.",
+          this.log.error("MQTT Broker: Connection reset (url: %s). Will retry again in %s minute%s.",
             this.config.mqttUrl,
             MYQ_MQTT_RECONNECT_INTERVAL / 60, MYQ_MQTT_RECONNECT_INTERVAL / 60 > 1 ? "s": "");
           break;
 
         case "ENOTFOUND":
           this.mqtt?.end(true);
-          this.log("MQTT Broker: Hostname or IP address not found. (url: %s).", this.config.mqttUrl);
+          this.log.error("MQTT Broker: Hostname or IP address not found. (url: %s).", this.config.mqttUrl);
           break;
 
         default:
-          this.log("MQTT Broker: %s (url: %s). Will retry again in %s minute%s.",
+          this.log.error("MQTT Broker: %s (url: %s). Will retry again in %s minute%s.",
             error, this.config.mqttUrl,
             MYQ_MQTT_RECONNECT_INTERVAL / 60, MYQ_MQTT_RECONNECT_INTERVAL / 60 > 1 ? "s": "");
           break;

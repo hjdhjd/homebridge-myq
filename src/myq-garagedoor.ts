@@ -110,7 +110,7 @@ export class myQGarageDoor extends myQAccessory {
     // We only want to configure this once, not on each update.
     // Not the most elegant solution, but it gets the job done.
     this.batteryDeviceSupport = true;
-    this.log("%s: Door position sensor detected. Enabling battery status support.", this.accessory.displayName);
+    this.log.info("%s: Door position sensor detected. Enabling battery status support.", this.accessory.displayName);
 
     return true;
 
@@ -131,7 +131,7 @@ export class myQGarageDoor extends myQAccessory {
 
       // Publish the state of the garage door.
       this.platform.mqtt?.publish(this.accessory, "garagedoor", this.translateDoorState(this.doorStatus()));
-      this.log("%s: Garage door status published via MQTT.", this.accessory.displayName);
+      this.log.info("%s: Garage door status published via MQTT.", this.accessory.displayName);
     });
 
     // Return the current status of the garage door.
@@ -155,18 +155,18 @@ export class myQGarageDoor extends myQAccessory {
           break;
 
         default:
-          this.log("%s: Unknown door command received via MQTT: %s.", this.accessory.displayName, value);
+          this.log.error("%s: Unknown door command received via MQTT: %s.", this.accessory.displayName, value);
           return;
 
       }
 
       // Move the door to the desired position.
       if(this.setDoorState(targetState)) {
-        this.log("%s: %s command received via MQTT.", this.accessory.displayName, targetName);
+        this.log.info("%s: %s command received via MQTT.", this.accessory.displayName, targetName);
         return;
       }
 
-      this.log("%s: Error executing door command via MQTT: %s.", this.accessory.displayName, value);
+      this.log.error("%s: Error executing door command via MQTT: %s.", this.accessory.displayName, value);
     });
 
   }
@@ -179,7 +179,7 @@ export class myQGarageDoor extends myQAccessory {
 
     // See if we have an obstruction to alert on.
     if(this.obstructionDetected) {
-      this.log("%s: Obstruction detected.", this.accessory.displayName);
+      this.log.info("%s: Obstruction detected.", this.accessory.displayName);
     }
 
     callback(null, this.obstructionDetected);
@@ -224,7 +224,7 @@ export class myQGarageDoor extends myQAccessory {
       const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
       const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
 
-      this.log("%s: Unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
+      this.log.error("%s: Unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
         accessory.displayName, actionAttempt, actionExisting);
 
       if(callback) {
@@ -283,7 +283,7 @@ export class myQGarageDoor extends myQAccessory {
     }
 
     // HomeKit has told us something that we don't know how to handle.
-    this.log("%s: Unknown SET event received: %s.", accessory.displayName, value);
+    this.log.error("%s: Unknown SET event received: %s.", accessory.displayName, value);
 
     if(callback) {
       callback(new Error("Unknown SET event received: " + value.toString()));
@@ -303,7 +303,7 @@ export class myQGarageDoor extends myQAccessory {
 
     // If we can't get our status, we're probably not able to connect to the myQ API.
     if(myQState === -1) {
-      this.log("%s: Unable to determine the current door state.", accessory.displayName);
+      this.log.error("%s: Unable to determine the current door state.", accessory.displayName);
       return false;
     }
 
@@ -327,7 +327,7 @@ export class myQGarageDoor extends myQAccessory {
       this.platform.pollOptions.count = 0;
       this.platform.poll(this.config.refreshInterval * -1);
 
-      this.log("%s: %s.", accessory.displayName, this.translateDoorState(myQState));
+      this.log.info("%s: %s.", accessory.displayName, this.translateDoorState(myQState));
 
       // Publish to MQTT, if the user has configured it.
       this.platform.mqtt?.publish(accessory, "garagedoor", this.translateDoorState(myQState).toLowerCase());
@@ -366,7 +366,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device as myQDevice;
 
     if(!device) {
-      this.log("%s: Can't find the associated device in the myQ API.", this.accessory.displayName);
+      this.log.error("%s: Can't find the associated device in the myQ API.", this.accessory.displayName);
       return -1;
     }
 
@@ -374,7 +374,7 @@ export class myQGarageDoor extends myQAccessory {
     const myQState = doorStates[device.state.door_state];
 
     if(myQState === undefined) {
-      this.log("%s: Unknown door state encountered: %s.", this.accessory.displayName, device.state.door_state);
+      this.log.error("%s: Unknown door state encountered: %s.", this.accessory.displayName, device.state.door_state);
       return -1;
     }
 
@@ -403,7 +403,7 @@ export class myQGarageDoor extends myQAccessory {
           .getService(hap.Service.GarageDoorOpener)
           ?.getCharacteristic(hap.Characteristic.ObstructionDetected).updateValue(this.obstructionDetected);
 
-        this.log("%s: Obstruction cleared.", this.accessory.displayName);
+        this.log.info("%s: Obstruction cleared.", this.accessory.displayName);
       }, MYQ_OBSTRUCTION_ALERT_DURATION * 1000);
     }
 
@@ -428,7 +428,7 @@ export class myQGarageDoor extends myQAccessory {
         break;
 
       default:
-        this.log("%s: Unknown door command encountered: %s.", this.accessory.displayName, command);
+        this.log.error("%s: Unknown door command encountered: %s.", this.accessory.displayName, command);
         return false;
         break;
 
@@ -521,7 +521,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device as myQDevice;
 
     if(!device) {
-      this.log("%s: Can't find the associated device in the myQ API.", this.accessory.displayName, this.accessory.UUID);
+      this.log.error("%s: Can't find the associated device in the myQ API.", this.accessory.displayName, this.accessory.UUID);
       return -1;
     }
 
