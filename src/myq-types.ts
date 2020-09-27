@@ -86,6 +86,7 @@ export interface myQDeviceListInterface {
 }
 
 // A semi-complete description of the myQ device JSON.
+/* eslint-disable camelcase */
 export interface myQDeviceInterface {
   created_date: string,
   device_family: string,
@@ -141,11 +142,12 @@ export interface myQDeviceInterface {
     use_aux_relay: boolean
   }
 }
+/* eslint-enable camelcase */
 
 // Hardware device information reference.
 export interface myQHwInfoInterface {
-  product: string,
-  brand: string
+  brand: string,
+  product: string
 }
 
 // Plugin configuration options.

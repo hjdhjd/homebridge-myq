@@ -2,9 +2,8 @@
  *
  * index.ts: homebridge-myq plugin registration.
  */
+import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
 import { API } from "homebridge";
-
-import { PLUGIN_NAME, PLATFORM_NAME } from "./settings";
 import { myQPlatform } from "./myq-platform";
 
 // Register our platform with homebridge.

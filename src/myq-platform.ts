@@ -11,13 +11,6 @@ import {
   PlatformAccessory,
   PlatformConfig
 } from "homebridge";
-
-import { myQAccessory } from "./myq-accessory";
-import { myQApi } from "./myq-api";
-import { myQGarageDoor } from "./myq-garagedoor";
-import { myQLamp } from "./myq-lamp";
-import { myQMqtt } from "./myq-mqtt";
-import { myQDevice, myQOptionsInterface } from "./myq-types";
 import {
   MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
   MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
@@ -27,6 +20,12 @@ import {
   PLATFORM_NAME,
   PLUGIN_NAME
 } from "./settings";
+import { myQDevice, myQOptionsInterface } from "./myq-types";
+import { myQAccessory } from "./myq-accessory";
+import { myQApi } from "./myq-api";
+import { myQGarageDoor } from "./myq-garagedoor";
+import { myQLamp } from "./myq-lamp";
+import { myQMqtt } from "./myq-mqtt";
 import util from "util";
 
 interface myQPollInterface {

@@ -8,9 +8,9 @@ import {
   CharacteristicSetCallback,
   CharacteristicValue
 } from "homebridge";
+import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
 import { myQAccessory } from "./myq-accessory";
 import { myQDevice } from "./myq-types";
-import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
 
 export class myQGarageDoor extends myQAccessory {
 
@@ -355,12 +355,12 @@ export class myQGarageDoor extends myQAccessory {
     // autoreverse is how the myQ API communicated an obstruction...go figure. Unfortunately, it
     // only seems to last the duration of the door reopening (reversal).
     const doorStates: {[index: string]: CharacteristicValue} = {
-      open:    this.hap.Characteristic.CurrentDoorState.OPEN,
+      autoreverse: MYQ_OBSTRUCTED,
       closed:  this.hap.Characteristic.CurrentDoorState.CLOSED,
-      opening: this.hap.Characteristic.CurrentDoorState.OPENING,
       closing: this.hap.Characteristic.CurrentDoorState.CLOSING,
-      stopped: this.hap.Characteristic.CurrentDoorState.STOPPED,
-      autoreverse: MYQ_OBSTRUCTED
+      open:    this.hap.Characteristic.CurrentDoorState.OPEN,
+      opening: this.hap.Characteristic.CurrentDoorState.OPENING,
+      stopped: this.hap.Characteristic.CurrentDoorState.STOPPED
     };
 
     const device = this.accessory.context.device as myQDevice;

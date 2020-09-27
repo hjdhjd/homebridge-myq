@@ -3,9 +3,6 @@
  * myq-api.ts: Our myQ API implementation.
  */
 import { HAP, Logging } from "homebridge";
-import { myQPlatform } from "./myq-platform";
-import { myQAccount, myQDevice, myQDeviceList, myQHwInfo, myQToken } from "./myq-types";
-import fetch, { FetchError, Headers, Response, RequestInfo, RequestInit } from "node-fetch";
 import {
   MYQ_API_APPID,
   MYQ_API_TOKEN_REFRESH_INTERVAL,
@@ -14,6 +11,9 @@ import {
   MYQ_API_VERSION_MAJOR,
   MYQ_API_VERSION_MINOR
 } from "./settings";
+import fetch, { FetchError, Headers, RequestInfo, RequestInit, Response } from "node-fetch";
+import { myQAccount, myQDevice, myQDeviceList, myQHwInfo, myQToken } from "./myq-types";
+import { myQPlatform } from "./myq-platform";
 import util from "util";
 
 /*
@@ -91,8 +91,8 @@ export class myQApi {
 
     // Login to the myQ API and get a security token for our session.
     const response = await this.fetch(this.ApiUrl() + "/Login", {
-      method: "POST",
-      body: JSON.stringify({ UserName: this.email, Password: this.password })
+      body: JSON.stringify({ Password: this.password, UserName: this.email }),
+      method: "POST"
     });
 
     if(!response) {
@@ -103,7 +103,7 @@ export class myQApi {
     // Now let's get our security token.
     const data = await response.json() as myQToken;
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
+    this.debug(util.inspect(data, { colors: true, depth: 10, sorted: true }));
 
     // What we should get back upon successfully calling /Login is a security token for
     // use in future API calls this session.
@@ -176,7 +176,7 @@ export class myQApi {
     // Now let's get our account information.
     const data = await response.json() as myQAccount;
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
+    this.debug(util.inspect(data, { colors: true, depth: 10, sorted: true }));
 
     // No account information returned.
     if(!data?.Account) {
@@ -223,7 +223,7 @@ export class myQApi {
     // Now let's get our account information.
     const data = await response.json() as myQDeviceList;
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
+    this.debug(util.inspect(data, { colors: true, depth: 10, sorted: true }));
 
     const newDeviceList = data.items;
 
@@ -289,7 +289,7 @@ export class myQApi {
       return false;
     }
 
-    this.debug(util.inspect(data, { colors: true, sorted: true, depth: 10 }));
+    this.debug(util.inspect(data, { colors: true, depth: 10, sorted: true }));
 
     return true;
   }
@@ -302,8 +302,9 @@ export class myQApi {
     }
 
     const response = await this.fetch(this.deviceUrl() + "/Accounts/" + this.accountId + "/Devices/" + deviceId + "/actions", {
-      method: "PUT",
-      body: JSON.stringify({ action_type: command })
+      // eslint-disable-next-line camelcase
+      body: JSON.stringify({ action_type: command }),
+      method: "PUT"
     });
 
     if(!response) {
@@ -373,32 +374,32 @@ export class myQApi {
     // typically "GW", followed by 2 characters that are decoded according to the table below to
     // identify the device type and brand, with the remaining 8 characters representing the serial number.
     const HwInfo: {[index: string]: myQHwInfo} = {
-      "00": { product: "Ethernet Gateway",          brand: "Chamberlain" },
-      "01": { product: "Ethernet Gateway",          brand: "Liftmaster" },
-      "02": { product: "Ethernet Gateway",          brand: "Craftsman" },
-      "03": { product: "WiFi Hub",                  brand: "Chamberlain" },
-      "04": { product: "WiFi Hub",                  brand: "Liftmaster" },
-      "05": { product: "WiFi Hub",                  brand: "Craftsman" },
-      "0A": { product: "WiFi GDO AC",               brand: "Chamberlain" },
-      "0B": { product: "WiFi GDO AC",               brand: "Liftmaster" },
-      "0C": { product: "WiFi GDO AC",               brand: "Craftsman" },
-      "0D": { product: "WiFi GDO AC",               brand: "myQ Replacement Logic Board" },
-      "0E": { product: "WiFi GDO AC 3/4 HP",        brand: "Chamberlain" },
-      "0F": { product: "WiFi GDO AC 3/4 HP",        brand: "Liftmaster" },
-      "10": { product: "WiFi GDO AC 3/4 HP",        brand: "Craftsman" },
-      "11": { product: "WiFi GDO AC 3/4 HP",        brand: "myQ Replacement Logic Board" },
-      "12": { product: "WiFi GDO DC 1.25 HP",       brand: "Chamberlain" },
-      "13": { product: "WiFi GDO DC 1.25 HP",       brand: "Liftmaster" },
-      "14": { product: "WiFi GDO DC 1.25 HP",       brand: "Craftsman" },
-      "15": { product: "WiFi GDO DC 1.25 HP",       brand: "myQ Replacement Logic Board" },
-      "20": { product: "myQ Home Bridge",           brand: "Chamberlain" },
-      "21": { product: "myQ Home Bridge",           brand: "Liftmaster" },
-      "23": { product: "Smart Garage Hub",          brand: "Chamberlain" },
-      "24": { product: "Smart Garage Hub",          brand: "Liftmaster" },
-      "27": { product: "WiFi Wall Mount Opener",    brand: "Liftmaster" },
-      "28": { product: "WiFi Wall Mount Operator",  brand: "Liftmaster Commercial" },
-      "80": { product: "Ethernet Gateway",          brand: "Liftmaster EU" },
-      "81": { product: "Ethernet Gateway",          brand: "Chamberlain EU" }
+      "00": { brand: "Chamberlain",                   product: "Ethernet Gateway"          },
+      "01": { brand: "Liftmaster",                    product: "Ethernet Gateway"          },
+      "02": { brand: "Craftsman",                     product: "Ethernet Gateway"          },
+      "03": { brand: "Chamberlain",                   product: "WiFi Hub"                  },
+      "04": { brand: "Liftmaster",                    product: "WiFi Hub"                  },
+      "05": { brand: "Craftsman",                     product: "WiFi Hub"                  },
+      "0A": { brand: "Chamberlain",                   product: "WiFi GDO AC"               },
+      "0B": { brand: "Liftmaster",                    product: "WiFi GDO AC"               },
+      "0C": { brand: "Craftsman",                     product: "WiFi GDO AC"               },
+      "0D": { brand: "myQ Replacement Logic Board",   product: "WiFi GDO AC"               },
+      "0E": { brand: "Chamberlain",                   product: "WiFi GDO AC 3/4 HP"        },
+      "0F": { brand: "Liftmaster",                    product: "WiFi GDO AC 3/4 HP"        },
+      "10": { brand: "Craftsman",                     product: "WiFi GDO AC 3/4 HP"        },
+      "11": { brand: "myQ Replacement Logic Board",   product: "WiFi GDO AC 3/4 HP"        },
+      "12": { brand: "Chamberlain",                   product: "WiFi GDO DC 1.25 HP"       },
+      "13": { brand: "Liftmaster",                    product: "WiFi GDO DC 1.25 HP"       },
+      "14": { brand: "Craftsman",                     product: "WiFi GDO DC 1.25 HP"       },
+      "15": { brand: "myQ Replacement Logic Board",   product: "WiFi GDO DC 1.25 HP"       },
+      "20": { brand: "Chamberlain",                   product: "myQ Home Bridge"           },
+      "21": { brand: "Liftmaster",                    product: "myQ Home Bridge"           },
+      "23": { brand: "Chamberlain",                   product: "Smart Garage Hub"          },
+      "24": { brand: "Liftmaster",                    product: "Smart Garage Hub"          },
+      "27": { brand: "Liftmaster",                    product: "WiFi Wall Mount Opener"    },
+      "28": { brand: "Liftmaster Commercial",         product: "WiFi Wall Mount Operator"  },
+      "80": { brand: "Liftmaster EU",                 product: "Ethernet Gateway"          },
+      "81": { brand: "Chamberlain EU",                product: "Ethernet Gateway"          }
     };
 
     if(serial?.length < 4) {

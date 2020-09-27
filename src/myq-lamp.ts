@@ -189,6 +189,7 @@ export class myQLamp extends myQAccessory {
       this.accessory.context.lampState = myQState === true;
       this.accessory.getService(this.hap.Service.Switch)?.getCharacteristic(this.hap.Characteristic.On)?.updateValue(this.accessory.context.lampState);
 
+      // eslint-disable-next-line camelcase
       (this.accessory.context.device as myQDevice).state.lamp_state = this.accessory.context.lampState ? "on" : "off";
 
       // When we detect any state change, we want to increase our polling resolution to provide timely updates.
