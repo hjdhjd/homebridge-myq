@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.3.1 (2020-09-27)
+  * Logging refinements and housekeeping.
+
 ## 2.3.0 (2020-09-19)
   * Support for myQ-enabled lights, lamps, and switches.
 
