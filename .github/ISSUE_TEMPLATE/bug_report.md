@@ -36,9 +36,8 @@ Remove any sensitive information.
 **Environment:**
 
 * **Homebridge Version**: <!-- homebridge -V -->
-* **Homebridge myQ Version**:
+* **Homebridge-myQ Plugin Version**:
 * **Operating System and OS Version**: <!-- Raspbian / Ubuntu / Debian / Windows / macOS / Docker -->
-
 
 <!-- Click the "Preview" tab before you submit to ensure the formatting is correct. -->
 
