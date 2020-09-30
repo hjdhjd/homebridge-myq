@@ -47,8 +47,8 @@
   "main": "dist/index.js",
   "devDependencies": {
     "@types/node": "^14.11.2",
-    "@typescript-eslint/eslint-plugin": "^4.2.0",
-    "@typescript-eslint/parser": "^4.2.0",
+    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",
     "homebridge": "^1.2.3",
     "rimraf": "^3.0.2",
