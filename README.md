@@ -30,6 +30,8 @@ In a nutshell, the aim of this plugin for things to *just work* with minimal req
 
 What does *just work* mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener, lamp, or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
+`homebridge-myq` has been around a long time and is trusted by thousands of users. It's the first myQ [Homebridge](https://homebridge.io) plugin to provide comprehensive support for various myQ features such as obstruction detection, and the first to provide support for multiple myQ device types (currently, garage door openers and lamps). As more of the API can be decoded, my aim is to support as many device types as possible. I relay on this plugin every day and actively maintain and support it.
+
 ### Features
 - ***Easy* configuration - all you need is your myQ username and password to get started.** The defaults work for the vast majority of users. When you want more, there are [advanced options](#advanced-config) you can play with, if you choose.
 
@@ -40,6 +42,8 @@ What does *just work* mean in practice? It means that this plugin will discover 
 - **[Battery status detection](#battery-status) on supported myQ door position sensor devices.** If you have a myQ supported door position sensor, you'll see an alert raised in the Home app to inform you when the battery is running low.
 
 - **The ability to [selectively hide and show](#feature-options) specific gateways (useful when you have multiple homes) or openers.** For those who only want to show particular devices in HomeKit, or particular homes, a flexible and intuitive way to configure device availability at a granular level is available.
+
+- **Full MQTT support.** For those who use MQTT, this plugin provides full MQTT support with a rich set of options. [Read the MQTT documentation](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md) for more details.
 
 ### <A NAME="myq-contribute"></A>How you can contribute and make this plugin even better
 The myQ API is undocumented and implementing a plugin like this one is the result of many hours of reverse engineering, trial and error, and community support. This work stands on the shoulders of other myQ API projects out there and this project attempts to contribute back to that community base of knowledge to further improve myQ support for everyone.
