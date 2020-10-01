@@ -35,9 +35,11 @@ Remove any sensitive information.
 
 **Environment:**
 
-* **Homebridge Version**: <!-- homebridge -V -->
+* **Homebridge Version:** <!-- homebridge -V -->
+* **Node Version:** <!-- node -v -->
 * **Homebridge-myQ Plugin Version**:
-* **Operating System and OS Version**: <!-- Raspbian / Ubuntu / Debian / Windows / macOS / Docker -->
+* **Apple Device and iOS / macOS / iPadOS / tvOS Version:**<!-- Type of Apple device you're using and associated OS version -->
+* **Operating System and OS Version:** <!-- Raspbian / Ubuntu / Debian / Windows / macOS / Docker -->
 
 <!-- Click the "Preview" tab before you submit to ensure the formatting is correct. -->
 
