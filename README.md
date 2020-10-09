@@ -26,11 +26,11 @@ Unfortunately, some of us have encountered significant issues with the hardware 
 Either solution will provide you with robust HomeKit integration, and you'll soon be automating your myQ smart garage with the richness of Apple's HomeKit ecosystem!
 
 ## Why use this plugin for myQ support in HomeKit?
-In a nutshell, the aim of this plugin for things to *just work* with minimal required configuration by you, the end user. The goal is to provide as close to a streamlined experience as you would expect from a first-party or native HomeKit solution. For the adventurous, those additional granular options are, of course, available to support more esoteric use cases or other unique needs.
+In a nutshell, the aim of this plugin for things to *just work* with minimal required configuration by users. The goal is to provide as close to a streamlined experience as you would expect from a first-party or native HomeKit solution. For the adventurous, those additional granular options are, of course, available to support more esoteric use cases or other unique needs.
 
 What does *just work* mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener, lamp, or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
-`homebridge-myq` has been around a long time and is trusted by thousands of users. It's the first myQ [Homebridge](https://homebridge.io) plugin to provide comprehensive support for various myQ features such as obstruction detection, and the first to provide support for multiple myQ device types (currently, garage door openers and lamps). As more of the API can be decoded, my aim is to support as many device types as possible. I relay on this plugin every day and actively maintain and support it.
+`homebridge-myq` has been around a long time and is trusted by thousands of users. It's the first myQ [Homebridge](https://homebridge.io) plugin to provide comprehensive support for various myQ features such as obstruction detection, and the first to provide support for multiple myQ device types (currently, garage door openers and lamps). As more of the API can be decoded, my aim is to support as many device types as possible. I rely on this plugin every day and actively maintain and support it.
 
 ### Features
 - ***Easy* configuration - all you need is your myQ username and password to get started.** The defaults work for the vast majority of users. When you want more, there are [advanced options](#advanced-config) you can play with, if you choose.
