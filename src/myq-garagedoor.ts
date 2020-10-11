@@ -48,13 +48,11 @@ export class myQGarageDoor extends myQAccessory {
 
     let garagedoorService = this.accessory.getService(this.hap.Service.GarageDoorOpener);
 
-    // Clear out stale services.
-    if(garagedoorService) {
-      this.accessory.removeService(garagedoorService);
+    // Add the garage door opener service to the accessory, if needed.
+    if(!garagedoorService) {
+      garagedoorService = new this.hap.Service.GarageDoorOpener(this.accessory.displayName ?? device.name);
+      this.accessory.addService(garagedoorService);
     }
-
-    // Add the garage door opener service to the accessory.
-    garagedoorService = new this.hap.Service.GarageDoorOpener(this.accessory.displayName ?? device.name);
 
     // The initial door state when we first startup. The bias functions will help us
     // figure out what to do if we're caught in a tweener state.
@@ -63,8 +61,7 @@ export class myQGarageDoor extends myQAccessory {
 
     // Add all the events to our accessory so we can act on HomeKit actions. We also set the current and target door states
     // based on our saved state from previous sessions.
-    this.accessory
-      .addService(garagedoorService)
+    garagedoorService
       .setCharacteristic(this.hap.Characteristic.CurrentDoorState, doorCurrentState)
       .setCharacteristic(this.hap.Characteristic.TargetDoorState, doorTargetState)
       .getCharacteristic(this.hap.Characteristic.TargetDoorState)

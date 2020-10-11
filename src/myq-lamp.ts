@@ -54,16 +54,13 @@ export class myQLamp extends myQAccessory {
 
     let switchService = this.accessory.getService(this.hap.Service.Switch);
 
-    // Clear out stale services.
-    if(switchService) {
-      this.accessory.removeService(switchService);
+    // Add the switch service to the accessory, if needed.
+    if(!switchService) {
+      switchService = new this.hap.Service.Switch(this.name());
+      this.accessory.addService(switchService);
     }
 
-    // Add the switch service to the accessory.
-    switchService = new this.hap.Service.Switch(this.name());
-
-    this.accessory
-      .addService(switchService)
+    switchService
       .getCharacteristic(this.hap.Characteristic.On)
       .on(CharacteristicEventTypes.GET, this.getLampState.bind(this))
       .on(CharacteristicEventTypes.SET, this.setLampState.bind(this))
