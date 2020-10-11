@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.3.2 (2020-10-11)
+  * Small optimization around Homebridge startup.
+  * Dependency updates.
+
 ## 2.3.1 (2020-09-27)
   * Logging refinements and housekeeping.
 
