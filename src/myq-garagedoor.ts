@@ -308,17 +308,20 @@ export class myQGarageDoor extends myQAccessory {
     if(oldState !== myQState) {
 
       accessory.context.doorState = myQState;
-      accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.CurrentDoorState)?.updateValue(myQState);
 
       // We are only going to update the target state if our current state is NOT stopped. If we are stopped,
       // we are at the target state by definition. Unfortunately, the iOS Home app doesn't seem to correctly
       // report a stopped state, although you can find it correctly reported in other HomeKit apps like Eve Home.
+      // Also, we need to set `TargetDoorState` before `CurrentDoorState` in order to get reliable ios notifications
+
       if(myQState !== hap.Characteristic.CurrentDoorState.STOPPED) {
 
         const targetState = this.doorTargetStateBias(myQState);
 
         accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
       }
+
+      accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.CurrentDoorState)?.updateValue(myQState);
 
       // When we detect any state change, we want to increase our polling resolution to provide timely updates.
       this.platform.pollOptions.count = 0;
