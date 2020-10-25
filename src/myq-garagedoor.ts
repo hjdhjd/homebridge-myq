@@ -312,7 +312,7 @@ export class myQGarageDoor extends myQAccessory {
       // We are only going to update the target state if our current state is NOT stopped. If we are stopped,
       // we are at the target state by definition. Unfortunately, the iOS Home app doesn't seem to correctly
       // report a stopped state, although you can find it correctly reported in other HomeKit apps like Eve Home.
-      // Also, we need to set `TargetDoorState` before `CurrentDoorState` in order to get reliable ios notifications
+      // Also, we need to set `TargetDoorState` before setting `CurrentDoorState` in order to get reliable iOS notifications.
 
       if(myQState !== hap.Characteristic.CurrentDoorState.STOPPED) {
 
