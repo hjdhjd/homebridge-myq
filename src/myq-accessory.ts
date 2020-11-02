@@ -77,7 +77,7 @@ export abstract class myQAccessory {
 
       this.accessory
         .getService(this.hap.Service.AccessoryInformation)
-        ?.getCharacteristic(this.hap.Characteristic.FirmwareRevision).updateValue(gwParent.state.firmware_version);
+        ?.updateCharacteristic(this.hap.Characteristic.FirmwareRevision, gwParent.state.firmware_version);
 
       // If we're able to lookup hardware information, use it. getHwInfo returns an object containing
       // device type and brand information.
@@ -88,17 +88,17 @@ export abstract class myQAccessory {
     // Update the manufacturer information for this device.
     this.accessory
       .getService(this.hap.Service.AccessoryInformation)
-      ?.getCharacteristic(this.hap.Characteristic.Manufacturer).updateValue(gwBrand);
+      ?.updateCharacteristic(this.hap.Characteristic.Manufacturer, gwBrand);
 
     // Update the model information for this device.
     this.accessory
       .getService(this.hap.Service.AccessoryInformation)
-      ?.getCharacteristic(this.hap.Characteristic.Model).updateValue(gwProduct);
+      ?.updateCharacteristic(this.hap.Characteristic.Model, gwProduct);
 
     // Update the serial number for this device.
     this.accessory
       .getService(this.hap.Service.AccessoryInformation)
-      ?.getCharacteristic(this.hap.Characteristic.SerialNumber).updateValue(device.serial_number);
+      ?.updateCharacteristic(this.hap.Characteristic.SerialNumber, device.serial_number);
 
     return true;
   }

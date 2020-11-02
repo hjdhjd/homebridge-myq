@@ -41,8 +41,7 @@ export class myQLamp extends myQAccessory {
     // Update the model information for this device.
     this.accessory
       .getService(this.hap.Service.AccessoryInformation)
-      ?.getCharacteristic(this.hap.Characteristic.Model)
-      .updateValue("myQ Light Control");
+      ?.updateCharacteristic(this.hap.Characteristic.Model, "myQ Light Control");
 
     // We're done.
     return true;
@@ -63,9 +62,9 @@ export class myQLamp extends myQAccessory {
     switchService
       .getCharacteristic(this.hap.Characteristic.On)
       .on(CharacteristicEventTypes.GET, this.getLampState.bind(this))
-      .on(CharacteristicEventTypes.SET, this.setLampState.bind(this))
-      .updateValue(this.accessory.context.lampState as boolean);
+      .on(CharacteristicEventTypes.SET, this.setLampState.bind(this));
 
+    switchService.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState as boolean);
     switchService.setPrimaryService(true);
 
     return true;
@@ -184,7 +183,7 @@ export class myQLamp extends myQAccessory {
       }
 
       this.accessory.context.lampState = myQState === true;
-      this.accessory.getService(this.hap.Service.Switch)?.getCharacteristic(this.hap.Characteristic.On)?.updateValue(this.accessory.context.lampState);
+      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState);
 
       // eslint-disable-next-line camelcase
       (this.accessory.context.device as myQDevice).state.lamp_state = this.accessory.context.lampState ? "on" : "off";
