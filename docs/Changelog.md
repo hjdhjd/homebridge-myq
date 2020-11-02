@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.3.3 (2020-11-01)
+  * Workaround for occasional HomeKit quirks in garage door notifications. This should result in more robust (and less quirky) notification behavior when you open and close garage doors.
+
 ## 2.3.2 (2020-10-11)
   * Small optimization around Homebridge startup.
   * Dependency updates.
