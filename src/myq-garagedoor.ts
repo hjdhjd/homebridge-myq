@@ -62,8 +62,8 @@ export class myQGarageDoor extends myQAccessory {
     // Add all the events to our accessory so we can act on HomeKit actions. We also set the current and target door states
     // based on our saved state from previous sessions.
     garagedoorService
-      .setCharacteristic(this.hap.Characteristic.CurrentDoorState, doorCurrentState)
-      .setCharacteristic(this.hap.Characteristic.TargetDoorState, doorTargetState)
+      .updateCharacteristic(this.hap.Characteristic.CurrentDoorState, doorCurrentState)
+      .updateCharacteristic(this.hap.Characteristic.TargetDoorState, doorTargetState)
       .getCharacteristic(this.hap.Characteristic.TargetDoorState)
       .on(CharacteristicEventTypes.SET, this.setDoorState.bind(this));
 
@@ -235,15 +235,15 @@ export class myQGarageDoor extends myQAccessory {
     // Close the garage door.
     if(value === hap.Characteristic.TargetDoorState.CLOSED) {
 
-      // HomeKit is informing us to close the garage door, but let's make sure it's not already closed first.
+      // HomeKit is asking us to close the garage door, but let's make sure it's not already closed first.
       if(myQState !== hap.Characteristic.CurrentDoorState.CLOSED) {
-        // We set this to closing instead of closed for a couple of reasons. First, myQ won't immediately execute
-        // this command for safety reasons - it enforces a warning tone for a few seconds before it starts the action.
-        // Second, HomeKit gets confused with our multiple updates of this value, so we'll set it to closing and hope
-        // for the best.
+
+        // We set this to closing instead of closed because we want to show state transitions in HomeKit. In
+        // addition, myQ won't immediately execute this command for safety reasons - it enforces a warning tone
+        // for a few seconds before it starts the action.
         accessory
           .getService(hap.Service.GarageDoorOpener)
-          ?.getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.CLOSING);
+          ?.updateCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.CLOSING);
 
         // Execute this command and begin polling myQ for state changes.
         void this.doorCommand(hap.Characteristic.TargetDoorState.CLOSED);
@@ -262,10 +262,11 @@ export class myQGarageDoor extends myQAccessory {
 
       // HomeKit is informing us to open the door, but we don't want to act if it's already open.
       if(myQState !== hap.Characteristic.CurrentDoorState.OPEN) {
+
         // We set this to opening instad of open because we want to show our state transitions to HomeKit and end users.
         accessory
           .getService(hap.Service.GarageDoorOpener)
-          ?.getCharacteristic(hap.Characteristic.CurrentDoorState).updateValue(hap.Characteristic.CurrentDoorState.OPENING);
+          ?.updateCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.OPENING);
 
         // Execute this command and begin polling myQ for state changes.
         void this.doorCommand(hap.Characteristic.TargetDoorState.OPEN);
@@ -312,16 +313,16 @@ export class myQGarageDoor extends myQAccessory {
       // We are only going to update the target state if our current state is NOT stopped. If we are stopped,
       // we are at the target state by definition. Unfortunately, the iOS Home app doesn't seem to correctly
       // report a stopped state, although you can find it correctly reported in other HomeKit apps like Eve Home.
-      // Also, we need to set `TargetDoorState` before setting `CurrentDoorState` in order to get reliable iOS notifications.
-
+      // Finally, we want to ensure we update TargetDoorState before updating CurrentDoorState in order to work
+      // around some notification quirks HomeKit occasionally has.
       if(myQState !== hap.Characteristic.CurrentDoorState.STOPPED) {
 
         const targetState = this.doorTargetStateBias(myQState);
 
-        accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.TargetDoorState)?.updateValue(targetState);
+        accessory.getService(hap.Service.GarageDoorOpener)?.updateCharacteristic(hap.Characteristic.TargetDoorState, targetState);
       }
 
-      accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.CurrentDoorState)?.updateValue(myQState);
+      accessory.getService(hap.Service.GarageDoorOpener)?.updateCharacteristic(hap.Characteristic.CurrentDoorState, myQState);
 
       // When we detect any state change, we want to increase our polling resolution to provide timely updates.
       this.platform.pollOptions.count = 0;
@@ -340,7 +341,7 @@ export class myQGarageDoor extends myQAccessory {
 
       // Update our battery state.
       if(batteryStatus !== -1) {
-        accessory.getService(hap.Service.GarageDoorOpener)?.getCharacteristic(hap.Characteristic.StatusLowBattery)?.updateValue(batteryStatus);
+        accessory.getService(hap.Service.GarageDoorOpener)?.updateCharacteristic(hap.Characteristic.StatusLowBattery, batteryStatus);
       }
     }
 
@@ -401,7 +402,7 @@ export class myQGarageDoor extends myQAccessory {
 
         accessory
           .getService(hap.Service.GarageDoorOpener)
-          ?.getCharacteristic(hap.Characteristic.ObstructionDetected).updateValue(this.obstructionDetected);
+          ?.updateCharacteristic(hap.Characteristic.ObstructionDetected, this.obstructionDetected);
 
         this.log.info("%s: Obstruction cleared.", this.accessory.displayName);
       }, MYQ_OBSTRUCTION_ALERT_DURATION * 1000);
