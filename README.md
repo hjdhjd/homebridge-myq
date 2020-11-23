@@ -84,20 +84,7 @@ If you prefer to install `homebridge-myq` from the command line, you can do so b
 sudo npm install -g homebridge-myq
 ```
 
-## Plugin Configuration
-If you choose to configure this plugin directly instead of using the [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
-
-```js
-"platforms": [{
-    "platform": "myQ",
-    "email": "email@email.com",
-    "password": "password"
-}]
-```
-
-For most people, I recommend using [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
-
-## <A NAME="notes"></A>Additional Notes
+### <A NAME="notes"></A>Things To Be Aware Of
 - <A NAME="myq-errors"></A>The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future API changes that may come. Unfortunately, it's an ongoing challenge since API changes can be sudden and unpredictable.
 
 - **As a result of the above you *will* see errors similar to this on an occasional basis in the Homebridge logs:**
@@ -115,3 +102,23 @@ For most people, I recommend using [Homebridge Configuration web UI](https://git
     ```
   This can be safely ignored. It's an error message indicating that, in HomeKit, the garage door opener accessory service doesn't normally support battery status. HomeKit will still report it correctly, and alert you accordingly.
 
+## Plugin Configuration
+If you choose to configure this plugin directly instead of using the [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
+
+```js
+"platforms": [{
+    "platform": "myQ",
+    "email": "email@email.com",
+    "password": "password"
+}]
+```
+
+For most people, I recommend using [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
+
+## Plugin Development Dashboard
+This is mostly of interest to the true developer nerds amongst us.
+
+[![License](https://img.shields.io/npm/l/homebridge-myq?color=%230559C9&logo=open%20source%20initiative&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/blob/master/LICENSE.md)
+[![Build Status](https://img.shields.io/github/workflow/status/hjdhjd/homebridge-myq/Continuous%20Integration?color=%230559C9&logo=github-actions&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/actions?query=workflow%3A%22Continuous+Integration%22)
+[![Dependencies](https://img.shields.io/librariesio/release/npm/homebridge-myq?color=%230559C9&logo=dependabot&style=for-the-badge)](https://libraries.io/npm/homebridge-myq)
+[![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/hjdhjd/homebridge-myq/latest?color=%230559C9&logo=github&sort=semver&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/commits/master)
