@@ -63,6 +63,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       activeRefreshDuration: "activeRefreshDuration" in config ? parseInt(config.activeRefreshDuration as string) : MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
       activeRefreshInterval: "activeRefreshInterval" in config ? parseInt(config.activeRefreshInterval as string) : MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
       appId: "appId" in config ? config.appId as string : MYQ_API_APPID,
+      batteryStatus: config.batteryStatus == true,
       debug: config.debug === true,
       email: config.email as string,
       mqttTopic: "mqttTopic" in config ? config.mqttTopic as string : MYQ_MQTT_TOPIC,

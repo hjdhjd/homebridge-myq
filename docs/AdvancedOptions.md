@@ -30,6 +30,7 @@ This step is not required. The defaults should work well for almost everyone, bu
     "activeRefreshInterval": 3,
     "activeRefreshDuration": 300,
     "appId": "abcdefg",
+    "batteryStatus": true,
     "options": ["Hide.GW12345", "Show.CG6789"],
     "mqttUrl": "mqtt:1.2.3.4",
     "mqttTopic": "myq",
@@ -48,6 +49,7 @@ This step is not required. The defaults should work well for almost everyone, bu
 | activeRefreshInterval | Refresh interval in `seconds` to use when myQ device state changes are detected.   | 3       | No       |
 | activeRefreshDuration | Duration in `seconds` to use `activeRefreshInterval` to refresh myQ device status. | 300     | No       |
 | appId                 | Override the builtin myQ appId to a user supplied one. **Use with extreme care.**  | false   | No       |
+| batteryStatus         | Enable support for battery status.                                                 | true    | No       |
 | options               | Configure plugin [feature options](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/FeatureOptions.md).  | []      | No       |
 | mqttUrl               | The URL of your MQTT broker. **This must be in URL form**, e.g.: `mqtt://user@password:1.2.3.4`. |      | No       |
 | mqttTopic             | The base topic to use when publishing MQTT messages.                               | "myq"   | No       |

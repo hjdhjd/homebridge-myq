@@ -101,6 +101,14 @@
         "type": "string",
         "required": false,
         "description": "Override the builtin myQ application identifier when connecting to the myQ API. Use with extreme caution."
+      },
+
+      "batteryStatus": {
+        "title": "Enable Battery Support",
+	"default": true,
+        "type": "boolean",
+        "required": false,
+        "description": "Enable displaying battery status."
       }
 
     }
@@ -173,7 +181,8 @@
             "activeRefreshInterval",
             "activeRefreshDuration",
             "debug",
-            "appId"
+            "appId",
+            "batteryStatus"
           ]
         }
       ]

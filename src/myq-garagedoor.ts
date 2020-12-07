@@ -86,6 +86,11 @@ export class myQGarageDoor extends myQAccessory {
   // Configure the battery status information for HomeKit.
   private configureBatteryInfo(): boolean {
 
+    if(!this.config.batteryStatus) {
+      this.log.info("Support for battery status is disabled.")
+      return false;
+    }
+
     // If we don't have a door position sensor, we're done.
     if(this.doorPositionSensorBatteryStatus() === -1) {
       return false;

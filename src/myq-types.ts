@@ -155,6 +155,7 @@ export interface myQOptionsInterface {
   activeRefreshDuration: number,
   activeRefreshInterval: number,
   appId: string,
+  batteryStatus: boolean,
   debug: boolean,
   email: string,
   mqttTopic: string,
