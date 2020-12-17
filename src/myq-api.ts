@@ -7,12 +7,12 @@ import {
   MYQ_API_APPID,
   MYQ_API_TOKEN_REFRESH_INTERVAL,
   MYQ_API_URL,
-  MYQ_API_USER_AGENT,
   MYQ_API_VERSION_MAJOR,
   MYQ_API_VERSION_MINOR
 } from "./settings";
 import fetch, { FetchError, Headers, RequestInfo, RequestInit, Response } from "node-fetch";
 import { myQAccount, myQDevice, myQDeviceList, myQHwInfo, myQToken } from "./myq-types";
+import crypto from "crypto";
 import { myQPlatform } from "./myq-platform";
 import util from "util";
 
@@ -69,7 +69,7 @@ export class myQApi {
 
     // Set our myQ headers.
     this.headers.set("Content-Type", "application/json");
-    this.headers.set("User-Agent", MYQ_API_USER_AGENT);
+    this.headers.set("User-Agent", crypto.randomBytes(10).toString("hex"));
     this.headers.set("ApiVersion", this.ApiVersion());
     this.headers.set("BrandId", "2");
     this.headers.set("Culture", "en");
