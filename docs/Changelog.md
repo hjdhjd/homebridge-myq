@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.3.7 (2020-12-16)
+  * myQ API changes broke things...again...so we fix them...again! The initial login request changed ever so slightly.
+
 ## 2.3.6 (2020-12-16)
   * myQ API changes broke things...so we fix them! `homebridge-myq` will now generate a random user agent string at startup to avoid potential API blacklisting by myQ servers.
 
