@@ -162,7 +162,8 @@ export interface myQOptionsInterface {
   name: string,
   options: string[],
   password: string,
-  refreshInterval: number
+  refreshInterval: number,
+  userAgent: string
 }
 
 // We use types instead of interfaces here because we can more easily set the entire thing as readonly.
