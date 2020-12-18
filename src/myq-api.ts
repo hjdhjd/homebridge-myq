@@ -67,14 +67,13 @@ export class myQApi {
     this.password = platform.config.password;
     this.platform = platform;
 
-    // Set our myQ headers.
+    // Set our myQ headers. We randomly generate a user agent since the myQ API seems to regularly blacklist certain ones.
     this.headers.set("Content-Type", "application/json");
     this.headers.set("User-Agent", crypto.randomBytes(10).toString("hex"));
     this.headers.set("ApiVersion", this.ApiVersion());
     this.headers.set("BrandId", "2");
     this.headers.set("Culture", "en");
     this.headers.set("MyQApplicationId", this.platform.config.appId);
-    this.headers.set("SecurityToken", "");
 
     // Allow a user to override the appId if needed. This should, hopefully, be a rare occurrence.
     if(this.platform.config.appId !== MYQ_API_APPID) {
