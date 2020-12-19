@@ -7,7 +7,6 @@ import {
   MYQ_API_APPID,
   MYQ_API_TOKEN_REFRESH_INTERVAL,
   MYQ_API_URL,
-  MYQ_API_USER_AGENT,
   MYQ_API_VERSION_MAJOR,
   MYQ_API_VERSION_MINOR
 } from "./settings";
@@ -70,7 +69,7 @@ export class myQApi {
 
     // Set our myQ headers.
     this.headers.set("Content-Type", "application/json");
-    this.headers.set("User-Agent", this.platform.config.userAgent);
+    this.headers.set("User-Agent", crypto.randomBytes(10).toString("hex"));
     this.headers.set("ApiVersion", this.ApiVersion());
     this.headers.set("BrandId", "2");
     this.headers.set("Culture", "en");
@@ -82,8 +81,8 @@ export class myQApi {
       this.log.info("myQ API: Overriding builtin myQ application identifier and using: %s", this.platform.config.appId);
     }
 
-    if (this.platform.config.userAgent === MYQ_API_USER_AGENT) {
-      this.log.info("myQ API: Overriding builtin myQ User-Agent value and using: %s", this.platform.config.userAgent);
+    if (this.platform.config.userAgent) {
+      this.log.info("myQ API: Overriding random myQ User-Agent value and using: %s", this.platform.config.userAgent);
     }
   }
 

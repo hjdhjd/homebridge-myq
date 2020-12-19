@@ -23,9 +23,6 @@ export const MYQ_API_APPID = "JVM/G9Nwih5BwKgNCjLxiFUQxQijAebyyg8QUHr7JOrP+tuPb8
 // myQ API URL endpoint.
 export const MYQ_API_URL = "https://api.myqdevice.com/api";
 
-// myQ API user agent.		
-export const MYQ_API_USER_AGENT = "myQ/169.0.23130 CFNetwork/1209 Darwin/20.2.0";
-
 // myQ API version.
 export const MYQ_API_VERSION_MAJOR = 5;
 export const MYQ_API_VERSION_MINOR = 1;
