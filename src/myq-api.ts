@@ -79,6 +79,10 @@ export class myQApi {
     if(this.platform.config.appId !== MYQ_API_APPID) {
       this.log.info("myQ API: Overriding builtin myQ application identifier and using: %s", this.platform.config.appId);
     }
+
+    if (this.platform.config.userAgent) {
+      this.log.info("myQ API: Overriding random myQ User-Agent value and using: %s", this.platform.config.userAgent);
+    }
   }
 
   // Log us into myQ and get a security token.

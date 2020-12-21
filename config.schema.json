@@ -101,6 +101,13 @@
         "type": "string",
         "required": false,
         "description": "Override the builtin myQ application identifier when connecting to the myQ API. Use with extreme caution."
+      },
+
+      "userAgent": {
+        "title": "User-Agent",
+        "type": "string",
+        "required": false,
+        "description": "Override the User-Agent header sent with requests."
       }
 
     }
@@ -173,7 +180,8 @@
             "activeRefreshInterval",
             "activeRefreshDuration",
             "debug",
-            "appId"
+            "appId",
+            "userAgent"
           ]
         }
       ]
