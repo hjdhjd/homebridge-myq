@@ -15,7 +15,6 @@ import {
   MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
   MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
   MYQ_API_APPID,
-  MYQ_API_USER_AGENT,
   MYQ_DEVICE_REFRESH_INTERVAL,
   MYQ_MQTT_TOPIC,
   PLATFORM_NAME,
@@ -72,7 +71,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       options: config.options as string[],
       password: config.password as string,
       refreshInterval: "refreshInterval" in config ? parseInt(config.refreshInterval as string) : MYQ_DEVICE_REFRESH_INTERVAL,
-      userAgent: "userAgent" in config ? config.userAgent as string : MYQ_API_USER_AGENT,
+      userAgent: config.userAgent as string
     };
 
     // We need login credentials or we're not starting.
