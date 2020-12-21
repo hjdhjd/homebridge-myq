@@ -107,7 +107,7 @@
         "title": "User-Agent",
         "type": "string",
         "required": false,
-        "description": "Override the User-Agent header sent with requests."
+        "description": "Override the builtin randomly generated User-Agent header when connecting to the myQ API. Use with extreme caution."
       }
 
     }
