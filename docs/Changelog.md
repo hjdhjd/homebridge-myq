@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
-## 2.3.7 (2020-12-16)
+## 2.4.0 (2020-12-21)
+  * Feature: future-proofing against potential API issues allowing users to override the user agent, when needed.
+  
+## 2.3.7 (2020-12-18)
   * myQ API changes broke things...again...so we fix them...again! The initial login request changed ever so slightly.
 
 ## 2.3.6 (2020-12-16)
