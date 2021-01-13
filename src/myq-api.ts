@@ -418,21 +418,25 @@ export class myQApi {
 
   // Complete version string.
   private apiVersion(): string {
+
     return MYQ_API_VERSION_MAJOR.toString() + "." + MYQ_API_VERSION_MINOR.toString();
   }
 
   // myQ login and account URL for API calls.
   private apiUrl(): string {
+
     return MYQ_API_URL + "/v" + MYQ_API_VERSION_MAJOR.toString();
   }
 
   // myQ accounts URL for API calls.
   private accountsUrl(): string {
-    return this.apiUrl() + ".1/Accounts";
+
+    return this.apiUrl() + "." + MYQ_API_VERSION_MINOR.toString() + "/Accounts";
   }
 
   // myQ devices URL for API calls.
   private deviceUrl(): string {
+
     return MYQ_API_URL + "/v" + this.apiVersion();
   }
 
@@ -449,22 +453,26 @@ export class myQApi {
 
       // Bad username and password.
       if(response.status === 401) {
+
         this.log.error("myQ API: Invalid myQ credentials given. Check your login and password.");
         return null;
       }
 
       // Some other unknown error occurred.
       if(!response.ok) {
+
         this.log.error("myQ API: Error: %s %s", response.status, response.statusText);
         return null;
       }
 
       return response;
+
     } catch(error) {
 
       if(error instanceof FetchError) {
 
         switch(error.code) {
+
           case "ECONNREFUSED":
             this.log.error("myQ API: Connection refused.");
             break;
