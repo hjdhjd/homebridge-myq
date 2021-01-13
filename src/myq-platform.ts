@@ -205,7 +205,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // Exclude or include certain openers based on configuration parameters.
-      if(!this.deviceVisible(device)) {
+      if(!this.optionEnabled(device)) {
         continue;
       }
 
@@ -265,7 +265,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       const device = oldAccessory.context.device as myQDevice;
 
       // We found this accessory in myQ. Figure out if we really want to see it in HomeKit.
-      if(device && this.deviceVisible(device)) {
+      if(device && this.optionEnabled(device)) {
         continue;
       }
 
@@ -338,7 +338,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
   }
 
   // Utility function to let us know if a myQ device should be visible in HomeKit or not.
-  private deviceVisible(device: myQDevice): boolean {
+  private optionEnabled(device: myQDevice | null, option = "", defaultReturnValue = true): boolean {
 
     // There are a couple of ways to hide and show devices that we support. The rules of the road are:
     //
@@ -353,7 +353,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
     // Nothing configured - we show all myQ devices to HomeKit.
     if(!this.config.options) {
-      return true;
+      return defaultReturnValue;
     }
 
     // No device. Sure, we'll show it.
@@ -361,7 +361,11 @@ export class myQPlatform implements DynamicPlatformPlugin {
       return true;
     }
 
-    // We've explicitly enabled this opener.
+    if(option) {
+      this.debug("Option: %s", option);
+    }
+
+    // We've explicitly enabled this device.
     if(this.config.options.indexOf("Show." + (device.serial_number)) !== -1) {
       return true;
     }
@@ -386,8 +390,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
       return false;
     }
 
+
     // Nothing special to do - make this opener visible.
-    return true;
+    return defaultReturnValue;
   }
 
   // Utility for debug logging.
