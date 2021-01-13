@@ -70,9 +70,6 @@ export class myQApi {
     // Set our myQ headers. We randomly generate a user agent since the myQ API seems to regularly blacklist certain ones.
     this.headers.set("Content-Type", "application/json");
     this.headers.set("User-Agent", crypto.randomBytes(10).toString("hex"));
-    this.headers.set("ApiVersion", this.ApiVersion());
-    this.headers.set("BrandId", "2");
-    this.headers.set("Culture", "en");
     this.headers.set("MyQApplicationId", this.platform.config.appId);
 
     // Allow a user to override the appId if needed. This should, hopefully, be a rare occurrence.
@@ -93,7 +90,7 @@ export class myQApi {
     this.lastAuthenticateCall = now;
 
     // Login to the myQ API and get a security token for our session.
-    const response = await this.fetch(this.ApiUrl() + "/Login", {
+    const response = await this.fetch(this.apiUrl() + "/Login", {
       body: JSON.stringify({ Password: this.password, UserName: this.email }),
       method: "POST"
     });
@@ -160,6 +157,7 @@ export class myQApi {
 
   // Get our myQ account information.
   private async getAccount(): Promise<boolean> {
+
     // If we don't have a security token yet, acquire one before proceeding.
     if(!this.securityToken && !(await this.acquireSecurityToken())) {
       return false;
@@ -168,7 +166,7 @@ export class myQApi {
     // Get the account information.
     const params = new URLSearchParams({ expand: "account" });
 
-    const response = await this.fetch(this.ApiUrl() + "/My?" + params.toString(), { method: "GET" });
+    const response = await this.fetch(this.apiUrl() + "/My?" + params.toString(), { method: "GET" });
 
     if(!response) {
       this.log.error("myQ API: Unable to login. Acquiring a new security token and retrying later.");
@@ -195,6 +193,7 @@ export class myQApi {
 
   // Get the list of myQ devices associated with an account.
   public async refreshDevices(): Promise<boolean> {
+
     const now = Date.now();
 
     // We want to throttle how often we call this API as a failsafe. If we call it more
@@ -215,7 +214,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(this.deviceUrl() + "/Accounts/" + this.accountId + "/Devices", { method: "GET" });
+    const response = await this.fetch(this.accountsUrl() + "/" + this.accountId + "/Devices", { method: "GET" });
 
     if(!response) {
       this.log.error("myQ API: Unable to update device status from myQ servers. Acquiring a new security token and retrying later.");
@@ -276,7 +275,7 @@ export class myQApi {
     }
 
     // Get the list of device information.
-    const response = await this.fetch(this.deviceUrl() + "/Accounts/" + this.accountId + "/devices/" + deviceId, { method: "GET" });
+    const response = await this.fetch(this.accountsUrl() + "/" + this.accountId + "/devices/" + deviceId, { method: "GET" });
 
     if(!response) {
       this.log.error("myQ API: Unable to query device status from myQ servers. Acquiring a new security token and retrying later.");
@@ -299,12 +298,14 @@ export class myQApi {
 
   // Execute an action on a myQ device.
   public async execute(deviceId: string, command: string): Promise<boolean> {
+
     // Validate and potentially refresh our security token.
     if(!(await this.checkSecurityToken())) {
       return false;
     }
 
-    const response = await this.fetch(this.deviceUrl() + "/Accounts/" + this.accountId + "/Devices/" + deviceId + "/actions", {
+    const response = await this.fetch(this.accountsUrl() + "/" + this.accountId + "/Devices/" + deviceId + "/actions", {
+
       // eslint-disable-next-line camelcase
       body: JSON.stringify({ action_type: command }),
       method: "PUT"
@@ -416,22 +417,28 @@ export class myQApi {
   }
 
   // Complete version string.
-  private ApiVersion(): string {
+  private apiVersion(): string {
     return MYQ_API_VERSION_MAJOR.toString() + "." + MYQ_API_VERSION_MINOR.toString();
   }
 
   // myQ login and account URL for API calls.
-  private ApiUrl(): string {
+  private apiUrl(): string {
     return MYQ_API_URL + "/v" + MYQ_API_VERSION_MAJOR.toString();
+  }
+
+  // myQ accounts URL for API calls.
+  private accountsUrl(): string {
+    return this.apiUrl() + ".1/Accounts";
   }
 
   // myQ devices URL for API calls.
   private deviceUrl(): string {
-    return MYQ_API_URL + "/v" + this.ApiVersion();
+    return MYQ_API_URL + "/v" + this.apiVersion();
   }
 
   // Utility to let us streamline error handling and return checking from the myQ API.
   private async fetch(url: RequestInfo, options: RequestInit): Promise<Response | null> {
+
     let response: Response;
 
     // Set our headers.
