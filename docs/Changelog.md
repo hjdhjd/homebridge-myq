@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
-## 2.4.2 (2021-01-01)
+## 2.4.2 (2021-01-13)
   * Deal with the latest minor updates in the myQ API as an interim step while we deal with the larger myQ API version update. More work ahead, but this should get most people back up and running - for now.
 
 ## 2.4.1 (2021-01-01)
