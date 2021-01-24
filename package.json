@@ -1,6 +1,6 @@
 {
   "name": "homebridge-myq",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "displayName": "Homebridge myQ",
   "description": "HomeKit integration of myQ enabled devices such as those from LiftMaster and Chamberlain.",
   "author": {
