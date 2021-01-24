@@ -14,7 +14,6 @@ import {
 import {
   MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
   MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
-  MYQ_API_APPID,
   MYQ_DEVICE_REFRESH_INTERVAL,
   MYQ_MQTT_TOPIC,
   PLATFORM_NAME,
@@ -62,7 +61,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.config = {
       activeRefreshDuration: "activeRefreshDuration" in config ? parseInt(config.activeRefreshDuration as string) : MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
       activeRefreshInterval: "activeRefreshInterval" in config ? parseInt(config.activeRefreshInterval as string) : MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
-      appId: "appId" in config ? config.appId as string : MYQ_API_APPID,
       debug: config.debug === true,
       email: config.email as string,
       mqttTopic: "mqttTopic" in config ? config.mqttTopic as string : MYQ_MQTT_TOPIC,
@@ -70,8 +68,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
       name: config.name as string,
       options: config.options as string[],
       password: config.password as string,
-      refreshInterval: "refreshInterval" in config ? parseInt(config.refreshInterval as string) : MYQ_DEVICE_REFRESH_INTERVAL,
-      userAgent: config.userAgent as string
+      refreshInterval: "refreshInterval" in config ? parseInt(config.refreshInterval as string) : MYQ_DEVICE_REFRESH_INTERVAL
     };
 
     // We need login credentials or we're not starting.
@@ -158,13 +155,13 @@ export class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // Check to see if this accessory's device object is still in myQ or not.
-      if(!this.myQ.Devices.some(x => x.serial_number === (accessory.context.device as myQDevice).serial_number)) {
+      if(!this.myQ.devices.some(x => x.serial_number === (accessory.context.device as myQDevice).serial_number)) {
         accessory.context.device = null;
       }
     }
 
     // Iterate through the list of devices that myQ has returned and sync them with what we show HomeKit.
-    for(const device of this.myQ.Devices) {
+    for(const device of this.myQ.devices) {
 
       // If we have no serial number or device family, something is wrong.
       if(!device.serial_number || !device.device_family) {
@@ -366,12 +363,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // We've explicitly enabled this device.
-    if(this.config.options.indexOf("Show." + (device.serial_number)) !== -1) {
+    if(this.config.options.indexOf("Enable." + (device.serial_number)) !== -1) {
       return true;
     }
 
     // We've explicitly hidden this opener.
-    if(this.config.options.indexOf("Hide." + device.serial_number) !== -1) {
+    if(this.config.options.indexOf("Disable." + device.serial_number) !== -1) {
       return false;
     }
 
@@ -381,12 +378,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
     }
 
     // We've explicitly shown the gateway this opener is attached to.
-    if(this.config.options.indexOf("Show." + device.parent_device_id) !== -1) {
+    if(this.config.options.indexOf("Enable." + device.parent_device_id) !== -1) {
       return true;
     }
 
     // We've explicitly hidden the gateway this opener is attached to.
-    if(this.config.options.indexOf("Hide." + device.parent_device_id) !== -1) {
+    if(this.config.options.indexOf("Disable." + device.parent_device_id) !== -1) {
       return false;
     }
 

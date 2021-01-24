@@ -49,7 +49,7 @@ export abstract class myQAccessory {
     }
 
     // Execute the command.
-    await this.myQ.execute(device.serial_number, myQCommand);
+    await this.myQ.execute(device, myQCommand);
 
     // Increase the frequency of our polling for state updates to catch any updates from myQ.
     // This will trigger polling at activeRefreshInterval until activeRefreshDuration is hit. If you
@@ -68,7 +68,7 @@ export abstract class myQAccessory {
 
     // Set the firmware revision for this device.
     // Fun fact: This firmware information is stored on the gateway not the device.
-    const gwParent = this.myQ.Devices.find(x => x.serial_number === device.parent_device_id);
+    const gwParent = this.myQ.devices.find(x => x.serial_number === device.parent_device_id);
     let gwBrand = "Liftmaster";
     let gwProduct = "myQ";
 

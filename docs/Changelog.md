@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.6.0 (2021-01-23)
+  * Feature: guest accounts are now formally supported. Your myQ credentials will now show all devices your login has access to.
+  * Change: **feature option semantics have changed** to be consistent across the other plugins I develop and maintain. What used to be: `Hide.serialnumber` and `Show.serialnumber` are now `Disable.serialnumber` and `Enable.serialnumber`.
+  * Dependency updates.
+
+## 2.5.0 (2021-01-21)
+  * Feature: support for myQ API v6 allowing `homebridge-myq` to use the latest features and evolving capabilities of the myQ API. This should help deal with the deprecation of the legacy login methods that Liftmaster / Chamberlain are clearly in the process of retiring. A huge thank you to @jarz who partnered with me on this one...he did most of the real heavy lifting in getting a working OAuth+PKCE-based login proof-of-concept working. Thank you for your contribution to the community and your partnership. Some things of note with the new API:
+
+    * myQ guest access logins are now available and can be used for login credentials.
+    * Looks like we have better potential access to cameras and locks...more exploration is needed...nothing to report for now.
+    * **myQ lamp devices may or may not work**. I didn't have a lamp device to test with, and had to take an educated guess at how to execute lamp-related commands in the new API. **I would welcome reports on this for lamp users to see whether things work or not.**
+  * Removed legacy options that aren't relevant with the myQ v6 API.
+  * Housekeeping and dependency updates.
+
 ## 2.4.2 (2021-01-13)
   * Deal with the latest minor updates in the myQ API as an interim step while we deal with the larger myQ API version update. More work ahead, but this should get most people back up and running - for now.
   * Dependency updates.

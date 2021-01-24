@@ -41,7 +41,7 @@
           "title": "Feature Option",
           "required": false,
           "description": "Enter only one option per entry. See project page for the complete list of available options.",
-          "placeholder": "e.g. Hide.SerialNumber"
+          "placeholder": "e.g. Disable.SerialNumber"
         }
       },
 
@@ -94,20 +94,6 @@
         "type": "boolean",
         "required": false,
         "description": "Logging verbosity for debugging. Default: false."
-      },
-
-      "appId": {
-        "title": "myQ Application Identifier Override",
-        "type": "string",
-        "required": false,
-        "description": "Override the builtin myQ application identifier when connecting to the myQ API. Use with extreme caution."
-      },
-
-      "userAgent": {
-        "title": "User-Agent",
-        "type": "string",
-        "required": false,
-        "description": "Override the builtin randomly generated User-Agent header when connecting to the myQ API. Use with extreme caution."
       }
 
     }
@@ -179,9 +165,7 @@
             "refreshInterval",
             "activeRefreshInterval",
             "activeRefreshDuration",
-            "debug",
-            "appId",
-            "userAgent"
+            "debug"
           ]
         }
       ]
