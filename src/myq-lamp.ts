@@ -240,11 +240,11 @@ export class myQLamp extends myQAccessory {
     switch(command) {
 
       case false:
-        myQCommand = "turnoff";
+        myQCommand = "off";
         break;
 
       case true:
-        myQCommand = "turnon";
+        myQCommand = "on";
         break;
 
       default:
