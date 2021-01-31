@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.6.2 (2021-01-31)
+  * Fix: lamps should now work under the new myQ API.
+
 ## 2.6.1 (2021-01-23)
   * Re-release for housekeeping reasons.
   * Feature: guest accounts are now formally supported. Your myQ credentials will now show all devices your login has access to.
