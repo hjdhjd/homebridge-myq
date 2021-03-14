@@ -70,7 +70,7 @@ If you have these devices and would like to contribute, please open an [issue](h
 * Advanced Topics
   * [Feature Options](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/FeatureOptions.md): granular options to allow you to show or hide specific garage door openers, gateways, and more.
   * [MQTT](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md): how to configure MQTT support.
-  * [Advanced Configuration](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/AdvancedOptions.md): complete list of configuration options available in this plugin.
+  * <a id="advanced-config"/>[Advanced Configuration](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/AdvancedOptions.md): complete list of configuration options available in this plugin.
   * [Changelog](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/Changelog.md): changes and release history of this plugin, starting with v2.0.
 
 ## Installation
