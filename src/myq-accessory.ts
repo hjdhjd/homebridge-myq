@@ -81,8 +81,8 @@ export abstract class myQAccessory {
 
       // If we're able to lookup hardware information, use it. getHwInfo returns an object containing
       // device type and brand information.
-      gwProduct = gwInfo?.product;
-      gwBrand = gwInfo?.brand;
+      gwProduct ||= gwInfo?.product;
+      gwBrand ||= gwInfo?.brand;
     }
 
     // Update the manufacturer information for this device.
