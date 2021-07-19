@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.6.3 (2021-07-19)
+  * Dependency updates.
+
 ## 2.6.2 (2021-01-31)
   * Fix: lamps should now work under the new myQ API.
 
