@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.6.4 (2021-08-16)
+  * Improve response checking from the myQ API on logins.
+  * Housekeeping.
+
 ## 2.6.3 (2021-07-19)
   * Dependency updates.
 
