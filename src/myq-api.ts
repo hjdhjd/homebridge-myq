@@ -138,7 +138,12 @@ export class myQApi {
     // Parse the myQ login page and grab what we need.
     const htmlText = await authPage.text();
     const loginPageHtml = parse(htmlText);
-    const requestVerificationToken = loginPageHtml.querySelector("input[name=__RequestVerificationToken]").getAttribute("value") as string;
+    const requestVerificationToken = loginPageHtml.querySelector("input[name=__RequestVerificationToken]")?.getAttribute("value") as string;
+    
+    if(!requestVerificationToken) {
+      this.log.error("myQ API: Unable to complete OAuth login. The verification token could not be retrieved. Will retry later.");
+      return null;
+    }
 
     // Set the login info.
     const loginBody = new URLSearchParams({ "Email": this.email, "Password": this.password, "__RequestVerificationToken": requestVerificationToken });
