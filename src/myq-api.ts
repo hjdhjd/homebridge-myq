@@ -139,7 +139,7 @@ export class myQApi {
     const htmlText = await authPage.text();
     const loginPageHtml = parse(htmlText);
     const requestVerificationToken = loginPageHtml.querySelector("input[name=__RequestVerificationToken]")?.getAttribute("value") as string;
-    
+
     if(!requestVerificationToken) {
       this.log.error("myQ API: Unable to complete OAuth login. The verification token could not be retrieved. Will retry later.");
       return null;
