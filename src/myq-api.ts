@@ -65,6 +65,8 @@ import util from "util";
 export class myQApi {
   public devices!: myQDevice[];
   private accessToken: string | null;
+  private refreshToken: string;
+  private tokenScope: string;
   private accessTokenTimestamp!: number;
   private debug: (message: string, ...parameters: unknown[]) => void;
   private email: string;
@@ -80,6 +82,8 @@ export class myQApi {
   constructor(platform: myQPlatform) {
 
     this.accessToken = null;
+    this.refreshToken = "";
+    this.tokenScope = "";
     this.accounts = [];
     this.debug = platform.debug.bind(platform);
     this.email = platform.config.email;
@@ -261,9 +265,49 @@ export class myQApi {
 
     // Grab the token JSON.
     const token = await response.json() as myQToken;
+    this.refreshToken = token.refresh_token;
+    this.tokenScope = redirectUrl.searchParams.get("scope") || "" ;
 
     // Return the access token in cookie-ready form: "Bearer ...".
     return token.token_type + " " + token.access_token;
+  }
+
+  private async simpleTokenRefresh(): Promise<boolean> {
+
+    try {
+      // Create the request to get our access and refresh tokens.
+      const requestBody = new URLSearchParams({
+        "client_id": MYQ_API_CLIENT_ID,
+        "client_secret": Buffer.from(MYQ_API_CLIENT_SECRET, "base64").toString(),
+        "grant_type": "refresh_token",
+        "redirect_uri": MYQ_API_REDIRECT_URI,
+        "refresh_token": this.refreshToken,
+        "scope": this.tokenScope
+      });
+
+      const response = await this.fetch("https://partner-identity.myq-cloud.com/connect/token", {
+        body: requestBody.toString(),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "null"
+        },
+        method: "POST"
+      }, true);
+
+      if(!response) {
+        this.log.error("myQ API: Unable to use refresh token. Will retry full OAuth flow.");
+        return false;
+      }
+
+      // Grab the token JSON.
+      const token = await response.json() as myQToken;
+      this.refreshToken = token.refresh_token;
+      this.accessToken = token.token_type + " " + token.access_token;
+      return true
+    } catch (error) {
+      this.log.error("myQ API: Unable to use refresh token. Will retry full OAuth flow.");
+      return false;
+    }
   }
 
   // Log us into myQ and get an access token.
@@ -330,6 +374,11 @@ export class myQApi {
 
     // Is it time to refresh? If not, we're good for now.
     if((now - this.accessTokenTimestamp) < (MYQ_API_TOKEN_REFRESH_INTERVAL * 60 * 1000)) {
+      return true;
+    }
+
+    //Try using the refresh token first
+    if (await this.simpleTokenRefresh()){
       return true;
     }
 
