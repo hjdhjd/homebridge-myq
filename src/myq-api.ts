@@ -275,6 +275,7 @@ export class myQApi {
   private async simpleTokenRefresh(): Promise<boolean> {
 
     try {
+    
       // Create the request to get our access and refresh tokens.
       const requestBody = new URLSearchParams({
         "client_id": MYQ_API_CLIENT_ID,
@@ -304,7 +305,7 @@ export class myQApi {
       this.refreshToken = token.refresh_token;
       this.accessToken = token.token_type + " " + token.access_token;
       return true
-    } catch (error) {
+    } catch(error) {
       this.log.error("myQ API: Unable to use refresh token. Will retry full OAuth flow.");
       return false;
     }
@@ -377,8 +378,8 @@ export class myQApi {
       return true;
     }
 
-    //Try using the refresh token first
-    if (await this.simpleTokenRefresh()){
+    // Try using the refresh token before getting a new token.
+    if(await this.simpleTokenRefresh()){
       return true;
     }
 
