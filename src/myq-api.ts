@@ -82,8 +82,6 @@ export class myQApi {
   constructor(platform: myQPlatform) {
 
     this.accessToken = null;
-    this.refreshToken = "";
-    this.tokenScope = "";
     this.accounts = [];
     this.debug = platform.debug.bind(platform);
     this.email = platform.config.email;
@@ -91,6 +89,8 @@ export class myQApi {
     this.log = platform.log;
     this.password = platform.config.password;
     this.platform = platform;
+    this.refreshToken = "";
+    this.tokenScope = "";
 
     // The myQ API v6 doesn't seem to require an HTTP user agent to be set - so we don't.
     this.headers.set("User-Agent", "null");
@@ -266,49 +266,53 @@ export class myQApi {
     // Grab the token JSON.
     const token = await response.json() as myQToken;
     this.refreshToken = token.refresh_token;
-    this.tokenScope = redirectUrl.searchParams.get("scope") || "" ;
+    this.tokenScope = redirectUrl.searchParams.get("scope") ?? "" ;
 
     // Return the access token in cookie-ready form: "Bearer ...".
     return token.token_type + " " + token.access_token;
   }
 
-  private async simpleTokenRefresh(): Promise<boolean> {
+  // Refresh our OAuth access token.
+  private async refreshOAuthToken(): Promise<boolean> {
 
-    try {
-    
-      // Create the request to get our access and refresh tokens.
-      const requestBody = new URLSearchParams({
-        "client_id": MYQ_API_CLIENT_ID,
-        "client_secret": Buffer.from(MYQ_API_CLIENT_SECRET, "base64").toString(),
-        "grant_type": "refresh_token",
-        "redirect_uri": MYQ_API_REDIRECT_URI,
-        "refresh_token": this.refreshToken,
-        "scope": this.tokenScope
-      });
+    // Create the request to refresh tokens.
+    const requestBody = new URLSearchParams({
+      "client_id": MYQ_API_CLIENT_ID,
+      "client_secret": Buffer.from(MYQ_API_CLIENT_SECRET, "base64").toString(),
+      "grant_type": "refresh_token",
+      "redirect_uri": MYQ_API_REDIRECT_URI,
+      "refresh_token": this.refreshToken,
+      "scope": this.tokenScope
+    });
 
-      const response = await this.fetch("https://partner-identity.myq-cloud.com/connect/token", {
-        body: requestBody.toString(),
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": "null"
-        },
-        method: "POST"
-      }, true);
+    // Execute the refresh token request.
+    const response = await this.fetch("https://partner-identity.myq-cloud.com/connect/token", {
+      body: requestBody.toString(),
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "null"
+      },
+      method: "POST"
+    }, true);
 
-      if(!response) {
-        this.log.error("myQ API: Unable to use refresh token. Will retry full OAuth flow.");
-        return false;
-      }
-
-      // Grab the token JSON.
-      const token = await response.json() as myQToken;
-      this.refreshToken = token.refresh_token;
-      this.accessToken = token.token_type + " " + token.access_token;
-      return true
-    } catch(error) {
-      this.log.error("myQ API: Unable to use refresh token. Will retry full OAuth flow.");
+    if(!response) {
       return false;
     }
+
+    // Grab the refresh token JSON.
+    const token = await response.json() as myQToken;
+    this.accessToken = token.token_type + " " + token.access_token;
+    this.accessTokenTimestamp = Date.now();
+    this.refreshToken = token.refresh_token;
+    this.tokenScope = token.scope ?? this.tokenScope;
+
+    // Update our authorization header.
+    this.headers.set("Authorization", this.accessToken);
+
+    this.debug("myQ API: Successfully refreshed the myQ API access token.");
+
+    // We're done.
+    return true;
   }
 
   // Log us into myQ and get an access token.
@@ -338,7 +342,7 @@ export class myQApi {
     if(firstConnection) {
       this.log.info("myQ API: Successfully connected to the myQ API.");
     } else {
-      this.debug("myQ API: Successfully refreshed the myQ API access tokens.");
+      this.debug("myQ API: Successfully reacquired a myQ API access token.");
     }
 
     this.accessToken = token;
@@ -378,10 +382,13 @@ export class myQApi {
       return true;
     }
 
-    // Try using the refresh token before getting a new token.
-    if(await this.simpleTokenRefresh()){
+    // Try refreshing our existing access token before resorting to acquiring a new one.
+    if(await this.refreshOAuthToken()) {
       return true;
     }
+
+    this.log.error("myQ API: Unable to refresh our access token. " +
+      "This error can usually be safely ignored and will be resolved by acquiring a new access token.");
 
     // Now generate a new access token.
     if(!(await this.acquireAccessToken())) {
@@ -652,7 +659,7 @@ export class myQApi {
   }
 
   // Utility to let us streamline error handling and return checking from the myQ API.
-  private async fetch(url: RequestInfo, options: RequestInit = {}, overrideHeaders = false): Promise<Response | null> {
+  private async fetch(url: RequestInfo, options: RequestInit = {}, overrideHeaders = false, isRetry = false): Promise<Response | null> {
 
     let response: Response;
 
@@ -687,22 +694,35 @@ export class myQApi {
         switch(error.code) {
 
           case "ECONNREFUSED":
+
             this.log.error("myQ API: Connection refused.");
             break;
 
           case "ECONNRESET":
+
+            // Retry on connection reset, but no more than once.
+            if(!isRetry) {
+
+              this.debug("myQ API: Connection has been reset. Retrying the API action.");
+              return this.fetch(url, options, overrideHeaders, true);
+            }
+
             this.log.error("myQ API: Connection has been reset.");
+
             break;
 
           case "ENOTFOUND":
+
             this.log.error("myQ API: Hostname or IP address not found.");
             break;
 
           case "UNABLE_TO_VERIFY_LEAF_SIGNATURE":
-            this.log.error("myQ API: Unable to verify myQ TLS security certificate.");
+
+            this.log.error("myQ API: Unable to verify the myQ TLS security certificate.");
             break;
 
           default:
+
             this.log.error(error.message);
         }
 
