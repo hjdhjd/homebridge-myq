@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.7.1 (2021-09-18)
+  * A housekeeping release to remove the core myQ API library out of this plugin and into it's own package to make it available to other developers who want to support myQ capabilities in their projects.
+
 ## 2.7.0 (2021-09-17)
   * Refine how myQ API access tokens refresh credentials in the v6 API.
   * Refine how we handle connection resets by retrying a reset connection before abandoning it and logging into the API anew.
