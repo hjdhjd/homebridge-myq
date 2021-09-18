@@ -10,7 +10,7 @@ import {
 } from "homebridge";
 import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
 import { myQAccessory } from "./myq-accessory";
-import { myQDevice } from "./myq-types";
+import { myQDevice } from "@hjdhjd/myq";
 
 export class myQGarageDoor extends myQAccessory {
 

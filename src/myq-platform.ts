@@ -19,12 +19,12 @@ import {
   PLATFORM_NAME,
   PLUGIN_NAME
 } from "./settings";
-import { myQDevice, myQOptionsInterface } from "./myq-types";
+import { myQApi, myQDevice } from "@hjdhjd/myq";
 import { myQAccessory } from "./myq-accessory";
-import { myQApi } from "./myq-api";
 import { myQGarageDoor } from "./myq-garagedoor";
 import { myQLamp } from "./myq-lamp";
 import { myQMqtt } from "./myq-mqtt";
+import { myQOptionsInterface } from "./myq-config";
 import util from "util";
 
 interface myQPollInterface {
@@ -46,11 +46,13 @@ export class myQPlatform implements DynamicPlatformPlugin {
   private unsupportedDevices: { [index: string]: boolean };
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
+
     this.accessories = [];
     this.api = api;
     this.configuredAccessories = {};
     this.hap = api.hap;
     this.log = log;
+    this.log.debug = this.debug.bind(this);
     this.unsupportedDevices = {};
 
     // We can't start without being configured.
@@ -118,7 +120,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     };
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQApi(this);
+    this.myQ = new myQApi(this.config.email, this.config.password, this.log);
 
     // Create an MQTT connection, if needed.
     if(!this.mqtt && this.config.mqttUrl) {
@@ -394,6 +396,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
   // Utility for debug logging.
   public debug(message: string, ...parameters: unknown[]): void {
+
     if(this.config.debug) {
       this.log.info(util.format(message, ...parameters));
     }

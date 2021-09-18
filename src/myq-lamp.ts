@@ -9,9 +9,10 @@ import {
   CharacteristicValue
 } from "homebridge";
 import { myQAccessory } from "./myq-accessory";
-import { myQDevice } from "./myq-types";
+import { myQDevice } from "@hjdhjd/myq";
 
 export class myQLamp extends myQAccessory {
+
   private lastUpdate!: number;
 
   // Configure a lamp accessory for HomeKit.

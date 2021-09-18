@@ -4,7 +4,7 @@
  */
 import { Logging, PlatformAccessory } from "homebridge";
 import mqtt, { MqttClient } from "mqtt";
-import { myQDevice, myQOptions } from "./myq-types";
+import { myQDevice, myQOptions } from "@hjdhjd/myq";
 import { MYQ_MQTT_RECONNECT_INTERVAL } from "./settings";
 import { myQPlatform } from "./myq-platform";
 
