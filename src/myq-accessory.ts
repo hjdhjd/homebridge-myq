@@ -3,7 +3,8 @@
  * myq-accessory.ts: Base class for all myQ accessories.
  */
 import { API, HAP, Logging, PlatformAccessory } from "homebridge";
-import { myQApi, myQDevice, myQOptions } from "@hjdhjd/myq";
+import { myQApi, myQDevice } from "@hjdhjd/myq";
+import { myQOptions } from "./myq-config";
 import { myQPlatform } from "./myq-platform";
 
 export abstract class myQAccessory {
