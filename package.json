@@ -56,7 +56,7 @@
   "dependencies": {
     "@hjdhjd/myq": "^6.0.4",
     "mqtt": "^4.2.8",
-    "node-html-parser": "^4.1.4",
+    "node-html-parser": "^5.0.0",
     "pkce-challenge": "^2.2.0",
     "util": "^0.12.4"
   }
