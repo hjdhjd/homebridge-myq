@@ -13,7 +13,10 @@
         "type": "string",
         "required": true,
         "placeholder": "user@example.com",
-        "description": "Email address used for your myQ account."
+        "description": "Email address used for your myQ account.",
+        "x-schema-form": {
+           "type": "password"
+         }
       },
 
       "password": {
