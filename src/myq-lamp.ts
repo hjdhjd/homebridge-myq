@@ -2,12 +2,7 @@
  *
  * myq-lamp.ts: Lamp device class for myQ.
  */
-import {
-  CharacteristicEventTypes,
-  CharacteristicGetCallback,
-  CharacteristicSetCallback,
-  CharacteristicValue
-} from "homebridge";
+import { CharacteristicValue } from "homebridge";
 import { myQAccessory } from "./myq-accessory";
 import { myQDevice } from "@hjdhjd/myq";
 
@@ -62,8 +57,10 @@ export class myQLamp extends myQAccessory {
 
     switchService
       .getCharacteristic(this.hap.Characteristic.On)
-      .on(CharacteristicEventTypes.GET, this.getLampState.bind(this))
-      .on(CharacteristicEventTypes.SET, this.setLampState.bind(this));
+      .onGet(() => {
+        return this.accessory.context.lampState === true;
+      })
+      .onSet(this.setLampState.bind(this));
 
     switchService.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState as boolean);
     switchService.setPrimaryService(true);
@@ -128,13 +125,8 @@ export class myQLamp extends myQAccessory {
 
   }
 
-  // Return lamp status.
-  private getLampState(callback: CharacteristicGetCallback): void {
-    callback(null, this.accessory.context.lampState === true);
-  }
-
   // Turn on or off the lamp.
-  private setLampState(value: CharacteristicValue, callback?: CharacteristicSetCallback): boolean {
+  private setLampState(value: CharacteristicValue): boolean {
 
     if((this.accessory.context.lampState as boolean) !== value) {
       this.log.info("%s: %s.", this.name(), (value === true) ? "On" : "Off");
@@ -146,11 +138,6 @@ export class myQLamp extends myQAccessory {
 
     // Execute the command.
     void this.lampCommand(value);
-
-    // Inform HomeKit.
-    if(callback) {
-      callback(null);
-    }
 
     return true;
 
@@ -183,8 +170,8 @@ export class myQLamp extends myQAccessory {
         this.lastUpdate = myQLastUpdate;
       }
 
-      this.accessory.context.lampState = myQState === true;
-      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState);
+      const myQLampState: CharacteristicValue = this.accessory.context.lampState = myQState === true;
+      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, myQLampState);
 
       // eslint-disable-next-line camelcase
       (this.accessory.context.device as myQDevice).state.lamp_state = this.accessory.context.lampState ? "on" : "off";

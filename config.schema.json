@@ -15,7 +15,7 @@
         "placeholder": "user@example.com",
         "description": "Email address used for your myQ account.",
         "x-schema-form": {
-           "type": "password"
+           "type": "email"
          }
       },
 
@@ -24,7 +24,10 @@
         "type": "string",
         "required": true,
         "placeholder": "mypassword",
-        "description": "Password used for your myQ account."
+        "description": "Password used for your myQ account.",
+        "x-schema-form": {
+           "type": "password"
+         }
       },
 
       "name": {
