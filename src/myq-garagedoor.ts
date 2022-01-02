@@ -90,8 +90,6 @@ export class myQGarageDoor extends myQAccessory {
         return this.obstructionDetected;
       });
 
-    garagedoorService.setPrimaryService(false);
-
     return true;
 
   }
@@ -205,7 +203,6 @@ export class myQGarageDoor extends myQAccessory {
       this.log.error("%s: Unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
         accessory.displayName, actionAttempt, actionExisting);
 
-      //new Error("Unable to accept a new set event while another is completing."));
       return false;
     }
 
@@ -250,7 +247,6 @@ export class myQGarageDoor extends myQAccessory {
     // HomeKit has told us something that we don't know how to handle.
     this.log.error("%s: Unknown SET event received: %s.", accessory.displayName, value);
 
-    //new Error("Unknown SET event received: " + value.toString()));
     return false;
   }
 
