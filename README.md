@@ -53,13 +53,7 @@ I would love to support more types of myQ devices. Currently `homebridge-myq` su
 - Garage door openers
 - Lamps and myQ switches
 
-I'm actively interested in adding support for additional device types, and would like to work with people who have myQ-enabled:
-
-- Motion sensors
-- Cameras
-- Locks
-
-If you have these devices and would like to contribute, please open an [issue](https://github.com/hjdhjd/homebridge-myq/issues), label it as a enhancement, and let's figure out how to make this plugin even better! Bonus points if you like puzzles and lots of debugging output. :smile:
+Additional device types will be added as time allows. It's unlikely I will add support for myQ locks due to their deprecated protocol support. myQ cameras may be added at some point, but there are additional non-technical considerations related to the paid myQ product that I want to be mindful of.
 
 ## Documentation
 * Getting going
