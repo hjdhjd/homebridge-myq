@@ -170,8 +170,8 @@ export class myQLamp extends myQAccessory {
         this.lastUpdate = myQLastUpdate;
       }
 
-      const myQLampState: CharacteristicValue = this.accessory.context.lampState = myQState === true;
-      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, myQLampState);
+      this.accessory.context.lampState = myQState === true;
+      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState as boolean);
 
       // eslint-disable-next-line camelcase
       (this.accessory.context.device as myQDevice).state.lamp_state = this.accessory.context.lampState ? "on" : "off";

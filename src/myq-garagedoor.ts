@@ -10,7 +10,7 @@ import { myQDevice } from "@hjdhjd/myq";
 export class myQGarageDoor extends myQAccessory {
 
   private batteryDeviceSupport!: boolean;
-  private ObstructionDetected!: CharacteristicValue;
+  private obstructionDetected!: CharacteristicValue;
   private ObstructionTimer!: NodeJS.Timeout;
 
   // Configure a garage door accessory for HomeKit.
@@ -18,7 +18,7 @@ export class myQGarageDoor extends myQAccessory {
 
     // Initialize.
     this.batteryDeviceSupport = false;
-    this.ObstructionDetected = false;
+    this.obstructionDetected = false;
 
     // Save our context information before we wipe it out.
     const device = this.accessory.context.device as myQDevice;
@@ -83,11 +83,11 @@ export class myQGarageDoor extends myQAccessory {
         this.doorStatus();
 
         // See if we have an obstruction to alert on.
-        if (this.ObstructionDetected) {
+        if (this.obstructionDetected) {
           this.log.info("%s: Obstruction detected.", this.accessory.displayName);
         }
 
-        return this.ObstructionDetected;
+        return this.obstructionDetected;
       });
 
     garagedoorService.setPrimaryService(false);
@@ -354,18 +354,18 @@ export class myQGarageDoor extends myQAccessory {
       clearTimeout(this.ObstructionTimer);
 
       // Obstruction detected.
-      this.ObstructionDetected = true;
+      this.obstructionDetected = true;
 
       const accessory = this.accessory;
       const hap = this.hap;
 
       // Set the timer for clearing out the obstruction state.
       this.ObstructionTimer = setTimeout(() => {
-        this.ObstructionDetected = false;
+        this.obstructionDetected = false;
 
         accessory
           .getService(hap.Service.GarageDoorOpener)
-          ?.updateCharacteristic(hap.Characteristic.ObstructionDetected, this.ObstructionDetected);
+          ?.updateCharacteristic(hap.Characteristic.ObstructionDetected, this.obstructionDetected);
 
         this.log.info("%s: Obstruction cleared.", this.accessory.displayName);
       }, MYQ_OBSTRUCTION_ALERT_DURATION * 1000);
@@ -394,8 +394,6 @@ export class myQGarageDoor extends myQAccessory {
       default:
         this.log.error("%s: Unknown door command encountered: %s.", this.accessory.displayName, command);
         return false;
-        break;
-
     }
 
     return super.command(myQCommand);

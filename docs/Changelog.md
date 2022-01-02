@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.7.2 (2022-01-01)
+   * Lock `mqtt` upstream package version due to a bug introduced in a newer version until it gets sorted out.
+   * Dependency updates.
+   
 ## 2.7.1 (2021-09-18)
   * A housekeeping release to remove the core myQ API library out of this plugin and into it's own package to make it available to other developers who want to support myQ capabilities in their projects.
 

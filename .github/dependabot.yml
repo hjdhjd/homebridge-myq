@@ -32,5 +32,5 @@ updates:
 
     # Ignore certain dependency updates.
     ignore:
-      # Ignore node-fetch updates for now due to the breaking change in module management.
-      - dependency-name: "node-fetch"
+      # Ignore mqtt updates for now due to the breaking change in module management.
+      - dependency-name: "mqtt"
