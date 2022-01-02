@@ -153,7 +153,7 @@ export class myQGarageDoor extends myQAccessory {
       let targetState;
 
       // Figure out what we're setting to.
-      switch (value) {
+      switch(value) {
 
         case "open":
           targetState = this.hap.Characteristic.TargetDoorState.OPEN;
@@ -403,7 +403,7 @@ export class myQGarageDoor extends myQAccessory {
   private translateDoorState(state: CharacteristicValue): string {
 
     // HomeKit state decoder ring.
-    switch (state) {
+    switch(state) {
 
       case this.hap.Characteristic.CurrentDoorState.OPEN:
         return "Open";
@@ -436,7 +436,7 @@ export class myQGarageDoor extends myQAccessory {
     // Our current state reflects having to take an opinion on what open or closed means to
     // HomeKit. For the obvious states, this is easy. For some of the edge cases, it can be less so.
     // Our north star is that if we are in an obstructed state, we are open.
-    switch (myQState) {
+    switch(myQState) {
       case this.hap.Characteristic.CurrentDoorState.OPEN:
       case this.hap.Characteristic.CurrentDoorState.OPENING:
       case MYQ_OBSTRUCTED:
@@ -462,7 +462,7 @@ export class myQGarageDoor extends myQAccessory {
     // obstructed, we're going to assume the desired target state is to be open, since that
     // is the typical garage door behavior, and it's impossible for us to know with reasonable
     // certainty what the original intention of the action was.
-    switch (myQState) {
+    switch(myQState) {
       case this.hap.Characteristic.CurrentDoorState.OPEN:
       case this.hap.Characteristic.CurrentDoorState.OPENING:
       case this.hap.Characteristic.CurrentDoorState.STOPPED:

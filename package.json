@@ -29,7 +29,7 @@
     "remote"
   ],
   "engines": {
-    "homebridge": ">=1.3.5",
+    "homebridge": ">=1.3.9",
     "node": "^14.18.1 || ^16.13.0"
   },
   "scripts": {
