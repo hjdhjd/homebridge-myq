@@ -2,21 +2,16 @@
  *
  * myq-garagedoor.ts: Garage door device class for myQ.
  */
-import {
-  CharacteristicEventTypes,
-  CharacteristicGetCallback,
-  CharacteristicSetCallback,
-  CharacteristicValue
-} from "homebridge";
 import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
+import { CharacteristicValue } from "homebridge";
 import { myQAccessory } from "./myq-accessory";
 import { myQDevice } from "@hjdhjd/myq";
 
 export class myQGarageDoor extends myQAccessory {
 
   private batteryDeviceSupport!: boolean;
-  private obstructionDetected!: boolean;
-  private obstructionTimer!: NodeJS.Timeout;
+  private obstructionDetected!: CharacteristicValue;
+  private ObstructionTimer!: NodeJS.Timeout;
 
   // Configure a garage door accessory for HomeKit.
   protected configureDevice(): void {
@@ -65,19 +60,35 @@ export class myQGarageDoor extends myQAccessory {
       .updateCharacteristic(this.hap.Characteristic.CurrentDoorState, doorCurrentState)
       .updateCharacteristic(this.hap.Characteristic.TargetDoorState, doorTargetState)
       .getCharacteristic(this.hap.Characteristic.TargetDoorState)
-      .on(CharacteristicEventTypes.SET, this.setDoorState.bind(this));
+      .onSet(this.setDoorState.bind(this));
 
     // Add all the events to our accessory so we can tell HomeKit our state.
     garagedoorService
       .getCharacteristic(this.hap.Characteristic.CurrentDoorState)
-      .on(CharacteristicEventTypes.GET, this.getDoorState.bind(this));
+      .onGet(() => {
+        if(this.doorStatus() === -1) {
+          new Error("Unable to determine the current door state.");
+        }
+
+        // Return garage door status.
+        return this.doorStatus();
+      });
 
     // Make sure we can detect obstructions.
     garagedoorService
       .getCharacteristic(this.hap.Characteristic.ObstructionDetected)
-      .on(CharacteristicEventTypes.GET, this.getObstructed.bind(this));
+      .onGet(() => {
 
-    garagedoorService.setPrimaryService(true);
+        // For a refresh of the door status, but we're really unconcerned about what it returns here.
+        this.doorStatus();
+
+        // See if we have an obstruction to alert on.
+        if(this.obstructionDetected) {
+          this.log.info("%s: Obstruction detected.", this.accessory.displayName);
+        }
+
+        return this.obstructionDetected;
+      });
 
     return true;
 
@@ -90,27 +101,28 @@ export class myQGarageDoor extends myQAccessory {
     if(this.doorPositionSensorBatteryStatus() === -1) {
       return false;
     }
-
     const gdService = this.accessory.getService(this.hap.Service.GarageDoorOpener);
 
     // Verify we've already setup the garage door service before trying to configure it.
     if(!gdService) {
       return false;
+    } else {
+      const gdBatteryService = this.accessory.getService(this.hap.Service.Battery)
+        || this.accessory.addService(this.hap.Service.Battery);
+
+      gdBatteryService
+        .getCharacteristic(this.hap.Characteristic.StatusLowBattery)
+        .onGet(() => {
+          return this.doorPositionSensorBatteryStatus();
+        });
+
+      // We only want to configure this once, not on each update.
+      // Not the most elegant solution, but it gets the job done.
+      this.batteryDeviceSupport = true;
+      this.log.info("%s: Door position sensor detected. Enabling battery status support.", this.accessory.displayName);
+
+      return true;
     }
-
-    gdService
-      .getCharacteristic(this.hap.Characteristic.StatusLowBattery)
-      .on(CharacteristicEventTypes.GET, (callback: CharacteristicGetCallback) => {
-        callback(null, this.doorPositionSensorBatteryStatus());
-      });
-
-    // We only want to configure this once, not on each update.
-    // Not the most elegant solution, but it gets the job done.
-    this.batteryDeviceSupport = true;
-    this.log.info("%s: Door position sensor detected. Enabling battery status support.", this.accessory.displayName);
-
-    return true;
-
   }
 
   // Configure MQTT.
@@ -168,49 +180,16 @@ export class myQGarageDoor extends myQAccessory {
 
   }
 
-  // Return whether or not the garage door detects an obstruction.
-  private getObstructed(callback: CharacteristicGetCallback): void {
-
-    // For a refresh of the door status, but we're really unconcerned about what it returns here.
-    this.doorStatus();
-
-    // See if we have an obstruction to alert on.
-    if(this.obstructionDetected) {
-      this.log.info("%s: Obstruction detected.", this.accessory.displayName);
-    }
-
-    callback(null, this.obstructionDetected);
-
-  }
-
-  // Return garage door status.
-  private getDoorState(callback: CharacteristicGetCallback): void {
-
-    const doorState = this.doorStatus();
-
-    if(doorState === -1) {
-      callback(new Error("Unable to determine the current door state."));
-    } else {
-      callback(null, doorState);
-    }
-
-  }
-
   // Open or close the garage door.
-  private setDoorState(value: CharacteristicValue, callback?: CharacteristicSetCallback): boolean {
+  private setDoorState(value: CharacteristicValue): boolean {
 
     const myQState = this.doorStatus();
     const accessory = this.accessory;
     const hap = this.hap;
 
     if(myQState === -1) {
-
-      if(callback) {
-        callback(new Error("Unable to determine the current door state."));
-      }
-
+      //new Error("Unable to determine the current door state."));
       return false;
-
     }
 
     // If we are already opening or closing the garage door, we error out. myQ doesn't appear to allow
@@ -224,12 +203,7 @@ export class myQGarageDoor extends myQAccessory {
       this.log.error("%s: Unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
         accessory.displayName, actionAttempt, actionExisting);
 
-      if(callback) {
-        callback(new Error("Unable to accept a new set event while another is completing."));
-      }
-
       return false;
-
     }
 
     // Close the garage door.
@@ -249,12 +223,7 @@ export class myQGarageDoor extends myQAccessory {
         void this.doorCommand(hap.Characteristic.TargetDoorState.CLOSED);
       }
 
-      if(callback) {
-        callback(null);
-      }
-
       return true;
-
     }
 
     // Open the garage door.
@@ -272,23 +241,13 @@ export class myQGarageDoor extends myQAccessory {
         void this.doorCommand(hap.Characteristic.TargetDoorState.OPEN);
       }
 
-      if(callback) {
-        callback(null);
-      }
-
       return true;
-
     }
 
     // HomeKit has told us something that we don't know how to handle.
     this.log.error("%s: Unknown SET event received: %s.", accessory.displayName, value);
 
-    if(callback) {
-      callback(new Error("Unknown SET event received: " + value.toString()));
-    }
-
     return false;
-
   }
 
   // Update our HomeKit status.
@@ -341,7 +300,7 @@ export class myQGarageDoor extends myQAccessory {
 
       // Update our battery state.
       if(batteryStatus !== -1) {
-        accessory.getService(hap.Service.GarageDoorOpener)?.updateCharacteristic(hap.Characteristic.StatusLowBattery, batteryStatus);
+        accessory.getService(hap.Service.Battery)?.updateCharacteristic(hap.Characteristic.StatusLowBattery, batteryStatus);
       }
     }
 
@@ -355,11 +314,11 @@ export class myQGarageDoor extends myQAccessory {
     // Door state cheat sheet.
     // autoreverse is how the myQ API communicated an obstruction...go figure. Unfortunately, it
     // only seems to last the duration of the door reopening (reversal).
-    const doorStates: {[index: string]: CharacteristicValue} = {
+    const doorStates: { [index: string]: CharacteristicValue } = {
       autoreverse: MYQ_OBSTRUCTED,
-      closed:  this.hap.Characteristic.CurrentDoorState.CLOSED,
+      closed: this.hap.Characteristic.CurrentDoorState.CLOSED,
       closing: this.hap.Characteristic.CurrentDoorState.CLOSING,
-      open:    this.hap.Characteristic.CurrentDoorState.OPEN,
+      open: this.hap.Characteristic.CurrentDoorState.OPEN,
       opening: this.hap.Characteristic.CurrentDoorState.OPENING,
       stopped: this.hap.Characteristic.CurrentDoorState.STOPPED
     };
@@ -388,7 +347,7 @@ export class myQGarageDoor extends myQAccessory {
     // out the alert.
     if(myQState === MYQ_OBSTRUCTED) {
       // Clear any other timer that might be out there for obstructions.
-      clearTimeout(this.obstructionTimer);
+      clearTimeout(this.ObstructionTimer);
 
       // Obstruction detected.
       this.obstructionDetected = true;
@@ -397,7 +356,7 @@ export class myQGarageDoor extends myQAccessory {
       const hap = this.hap;
 
       // Set the timer for clearing out the obstruction state.
-      this.obstructionTimer = setTimeout(() => {
+      this.ObstructionTimer = setTimeout(() => {
         this.obstructionDetected = false;
 
         accessory
@@ -431,8 +390,6 @@ export class myQGarageDoor extends myQAccessory {
       default:
         this.log.error("%s: Unknown door command encountered: %s.", this.accessory.displayName, command);
         return false;
-        break;
-
     }
 
     return super.command(myQCommand);
