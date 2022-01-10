@@ -66,6 +66,7 @@ export class myQGarageDoor extends myQAccessory {
     garagedoorService
       .getCharacteristic(this.hap.Characteristic.CurrentDoorState)
       .onGet(() => {
+
         if(this.doorStatus() === -1) {
           new Error("Unable to determine the current door state.");
         }
@@ -106,23 +107,31 @@ export class myQGarageDoor extends myQAccessory {
     // Verify we've already setup the garage door service before trying to configure it.
     if(!gdService) {
       return false;
-    } else {
-      const gdBatteryService = this.accessory.getService(this.hap.Service.Battery)
-        || this.accessory.addService(this.hap.Service.Battery);
-
-      gdBatteryService
-        .getCharacteristic(this.hap.Characteristic.StatusLowBattery)
-        .onGet(() => {
-          return this.doorPositionSensorBatteryStatus();
-        });
-
-      // We only want to configure this once, not on each update.
-      // Not the most elegant solution, but it gets the job done.
-      this.batteryDeviceSupport = true;
-      this.log.info("%s: Door position sensor detected. Enabling battery status support.", this.accessory.displayName);
-
-      return true;
     }
+
+    // Add the battery service if we don't have it, so we can report on battery state.
+    const gdBatteryService = this.accessory.getService(this.hap.Service.Battery) ||
+      this.accessory.addService(this.hap.Service.Battery);
+
+    if(!gdBatteryService) {
+
+      this.log.error("%s: Unable to add battery status support.", this.accessory.displayName);
+      return false;
+    }
+
+    gdBatteryService
+      .getCharacteristic(this.hap.Characteristic.StatusLowBattery)
+      .onGet(() => {
+
+        return this.doorPositionSensorBatteryStatus();
+      });
+
+    // We only want to configure this once, not on each update.
+    // Not the most elegant solution, but it gets the job done.
+    this.batteryDeviceSupport = true;
+    this.log.info("%s: Door position sensor detected. Enabling battery status support.", this.accessory.displayName);
+
+    return true;
   }
 
   // Configure MQTT.
