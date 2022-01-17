@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.7.4 (2022-01-17)
+  * Dependency updates.
+
 ## 2.7.3 (2022-01-09)
   * Housekeeping.
 
