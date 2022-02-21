@@ -61,6 +61,7 @@ export class myQGarageDoor extends myQAccessory {
       .updateCharacteristic(this.hap.Characteristic.TargetDoorState, doorTargetState)
       .getCharacteristic(this.hap.Characteristic.TargetDoorState)
       .onSet((value) => {
+
         this.setDoorState(value);
       });
 
