@@ -60,7 +60,9 @@ export class myQGarageDoor extends myQAccessory {
       .updateCharacteristic(this.hap.Characteristic.CurrentDoorState, doorCurrentState)
       .updateCharacteristic(this.hap.Characteristic.TargetDoorState, doorTargetState)
       .getCharacteristic(this.hap.Characteristic.TargetDoorState)
-      .onSet(this.setDoorState.bind(this));
+      .onSet((value) => {
+        this.setDoorState(value);
+      });
 
     // Add all the events to our accessory so we can tell HomeKit our state.
     garagedoorService
