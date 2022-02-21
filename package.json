@@ -54,6 +54,7 @@
     "typescript": "^4.5.4"
   },
   "dependencies": {
+    "@homebridge/plugin-ui-utils": "^0.0.19",
     "@hjdhjd/myq": "^6.0.6",
     "mqtt": "4.3.4",
     "node-html-parser": "^5.2.0",
