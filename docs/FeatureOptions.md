@@ -23,6 +23,7 @@ The `options` setting is an array of strings used to customize feature options. 
 
 * <CODE>Disable.<I>serialnumber</I></CODE> - hide the opener or gateway identified by `serialnumber` from HomeKit.
 * <CODE>Enable.<I>serialnumber</I></CODE> - show the opener or gateway identified by `serialnumber` from HomeKit.
+* <CODE>Disable.BatteryStatus</CODE> - disables battery status detection on otherwise supported myQ door position sensor devices
 
 The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
 
