@@ -25,6 +25,7 @@ import { myQGarageDoor } from "./myq-garagedoor";
 import { myQLamp } from "./myq-lamp";
 import { myQMqtt } from "./myq-mqtt";
 import { myQOptionsInterface } from "./myq-config";
+import process from "process";
 import util from "util";
 
 interface myQPollInterface {
@@ -64,12 +65,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
       activeRefreshDuration: "activeRefreshDuration" in config ? parseInt(config.activeRefreshDuration as string) : MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
       activeRefreshInterval: "activeRefreshInterval" in config ? parseInt(config.activeRefreshInterval as string) : MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
       debug: config.debug === true,
-      email: config.email as string,
+      email: process.env.MYQ_EMAIL || config.email as string,
       mqttTopic: "mqttTopic" in config ? config.mqttTopic as string : MYQ_MQTT_TOPIC,
-      mqttUrl: config.mqttUrl as string,
+      mqttUrl: process.env.MYQ_MQTT_URL || config.mqttUrl as string,
       name: config.name as string,
       options: config.options as string[],
-      password: config.password as string,
+      password: process.env.MYQ_PASSWORD || config.password as string,
       refreshInterval: "refreshInterval" in config ? parseInt(config.refreshInterval as string) : MYQ_DEVICE_REFRESH_INTERVAL
     };
 
