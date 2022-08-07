@@ -38,6 +38,8 @@ You configure MQTT settings within a `controller` configuration block. The setti
 
 To reemphasize the above: **mqttUrl** must be a valid URL. Just entering a hostname will result in an error. The URL can use any of these protocols: `mqtt`, `mqtts`, `tcp`, `tls`, `ws`, `wss`.
 
+**mqttUrl** can also be set by setting the `$MQTT_URL` environment variable, which will take precedence over the configuration setting.
+
 When events are published, by default, the topics look like:
 
 ```sh

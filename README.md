@@ -107,6 +107,8 @@ If you choose to configure this plugin directly instead of using the [Homebridge
 }]
 ```
 
+The email and password fields can also be injected using the environment variables `$MYQ_EMAIL` and `$MYQ_PASSWORD`, which will take precedence over the values in the `config.json` file.
+
 For most people, I recommend using [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x) to configure this plugin rather than doing so directly. It's easier to use for most users, especially newer users, and less prone to typos, leading to other problems.
 
 ## Plugin Development Dashboard
