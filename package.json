@@ -57,7 +57,7 @@
     "@homebridge/plugin-ui-utils": "^0.0.19",
     "@hjdhjd/myq": "^6.0.6",
     "mqtt": "4.3.4",
-    "node-html-parser": "^5.2.0",
+    "node-html-parser": "^6.1.0",
     "pkce-challenge": "^2.2.0",
     "util": "^0.12.4"
   }
