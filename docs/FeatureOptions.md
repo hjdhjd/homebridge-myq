@@ -21,8 +21,10 @@ Feature options allow you to enable or disable certain features in this plugin.
 
 The `options` setting is an array of strings used to customize feature options. Available options:
 
-* <CODE>Disable.<I>serialnumber</I></CODE> - hide the opener or gateway identified by `serialnumber` from HomeKit.
-* <CODE>Enable.<I>serialnumber</I></CODE> - show the opener or gateway identified by `serialnumber` from HomeKit.
+- `Disable.<your_serial_number>` - hide the opener or gateway identified by `<your_serial_number>` from HomeKit.
+- `Enable.<your_serial_number>` - show the opener or gateway identified by `<your_serial_number>` from HomeKit.
+
+With both the `Disable` and `Enable` options, replace `<your_serial_number>` with the serial number for your specific device found within the device "Accessory Details" in the Home app.
 
 The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
 
