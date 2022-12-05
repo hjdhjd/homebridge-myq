@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.8.1 (2022-12-05)
+  * Web UI to peruse through the list of detected myQ devices.
+  * Dependency updates and housekeeping.
+
 ## 2.8.0 (2022-12-05)
   * Web UI to peruse through the list of detected myQ devices.
   * Dependency updates and housekeeping.
