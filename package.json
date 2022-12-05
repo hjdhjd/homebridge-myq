@@ -43,6 +43,7 @@
   },
   "main": "dist/index.js",
   "devDependencies": {
+    "@hjdhjd/myq": "^6.0.7",
     "@types/node": "^18.11.11",
     "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
