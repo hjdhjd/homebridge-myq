@@ -20,7 +20,7 @@ jobs:
     # Create the build matrix for all the environments we're validating against.
     strategy:
       matrix:
-        node-version: [ 16.x, 18.x ]
+        node-version: [ lts/* ]
         os: [ ubuntu-latest ]
 
     # Specify the environments we're going to build in.
@@ -34,7 +34,7 @@ jobs:
       - name: Setup the node ${{ matrix.node-version }} environment.
         uses: actions/setup-node@v3
         with:
-          node-version: lts/-1
+          node-version: ${{ matrix.node-version }}
 
       - name: Build and install the package with a clean slate.
         run: |
