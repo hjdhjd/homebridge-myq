@@ -34,7 +34,7 @@ jobs:
       - name: Setup the node ${{ matrix.node-version }} environment.
         uses: actions/setup-node@v3
         with:
-          node-version: lts/-1
+          node-version: lts/*
 
       - name: Build and install the package with a clean slate.
         run: |
