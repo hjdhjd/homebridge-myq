@@ -20,7 +20,7 @@ jobs:
     # Create the build matrix for all the environments we're validating against.
     strategy:
       matrix:
-        node-version: [ lts/-1, lts/* ]
+        node-version: [ lts/-2, lts/-1, lts/* ]
         os: [ ubuntu-latest ]
 
     # Specify the environments we're going to build in.
