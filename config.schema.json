@@ -135,7 +135,7 @@
           "type": "array",
           "orderable": true,
           "title": " ",
-          "description": "Feature options allow you to further customize the behavior of this plugin such as the ability to show or hide specific garage door openers.",
+          "description": "Feature options allow you to further customize the behavior of this plugin such as the ability to show or hide specific garage door openers. (one of the following: Enable.SerialNumber, Disable.SerialNumber, ReadOnly.SerialNumber)",
           "buttonText": "Add Feature Option",
           "items": [
             "options[]"

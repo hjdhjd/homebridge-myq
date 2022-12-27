@@ -199,6 +199,11 @@ export class myQGarageDoor extends myQAccessory {
     const accessory = this.accessory;
     const hap = this.hap;
 
+    // No state changes are permitted for this opener
+    if(this.config.options.indexOf("ReadOnly." + this.accessory.context.device.serial_number) !== -1) {
+      return false;
+    }
+
     if(myQState === -1) {
       //new Error("Unable to determine the current door state."));
       return false;
