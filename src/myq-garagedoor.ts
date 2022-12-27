@@ -200,6 +200,7 @@ export class myQGarageDoor extends myQAccessory {
     const hap = this.hap;
 
     if(myQState === -1) {
+
       //new Error("Unable to determine the current door state."));
       return false;
     }
