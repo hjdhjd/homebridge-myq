@@ -22,13 +22,19 @@ Feature options allow you to enable or disable certain features in this plugin.
 The `options` setting is an array of strings used to customize feature options. Available options:
 
 - `Disable.<your_serial_number>` - hide the opener or gateway identified by `<your_serial_number>` from HomeKit.
-- `Enable.<your_serial_number>` - show the opener or gateway identified by `<your_serial_number>` from HomeKit.
+- `Enable.<your_serial_number>` (default) - show the opener or gateway identified by `<your_serial_number>` from HomeKit.
+
+- `Disable.BatteryInfo` - disable low battery notification for battery-enabled door position sensors for myQ garage openers.
+- `Enable.BatteryInfo` (default) - disable low battery notification for battery-enabled door position sensors for myQ garage openers.
+
+- `Disable.ReadOnly` (default) - enable HomeKit commands to open and close myQ garage openers.
+- `Enable.ReadOnly` - disable HomeKit commands from opening and closing myQ garage openers.
 
 With both the `Disable` and `Enable` options, replace `<your_serial_number>` with the serial number for your specific device found within the device "Accessory Details" in the Home app.
 
 The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
 
-Before using this feature, you should understand how gateways and openers work in myQ. Gateways are the devices in your home that actually communicate your status to myQ. Openers are attached to gateways. A typical home will have a single gateway and one, or more, openers. If you choose to hide a gateway, you will also hide all the openers associated with that gateway.
+Before using these features, you should understand how gateways and openers work in myQ. Gateways are the devices in your home that actually communicate your status to myQ. Openers are attached to gateways. A typical home will have a single gateway and one, or more, openers. If you choose to hide a gateway, you will also hide all the openers associated with that gateway.
 
 If you've hidden a gateway, and all it's openers with it, you can selectively enable a single opener associated with that gateway by explicitly setting a `Show.` feature option. This should give you a lot of richness in how you enable or disable devices for HomeKit use.
 

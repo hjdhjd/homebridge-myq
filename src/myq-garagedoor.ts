@@ -1,4 +1,4 @@
-/* Copyright(C) 2017-2022, HJD (https://github.com/hjdhjd). All rights reserved.
+/* Copyright(C) 2017-2023, HJD (https://github.com/hjdhjd). All rights reserved.
  *
  * myq-garagedoor.ts: Garage door device class for myQ.
  */
@@ -103,19 +103,40 @@ export class myQGarageDoor extends myQAccessory {
 
     // If we don't have a door position sensor, we're done.
     if(this.doorPositionSensorBatteryStatus() === -1) {
+
       return false;
     }
+
     const gdService = this.accessory.getService(this.hap.Service.GarageDoorOpener);
 
     // Verify we've already setup the garage door service before trying to configure it.
     if(!gdService) {
+
       return false;
     }
 
-    // Add the battery service if we don't have it, so we can report on battery state.
-    const gdBatteryService = this.accessory.getService(this.hap.Service.Battery) ||
-      this.accessory.addService(this.hap.Service.Battery);
+    // Check to see if we already have a battery service on this accessory.
+    let gdBatteryService = this.accessory.getService(this.hap.Service.Battery);
 
+    // We've explicitly disabled the door position sensor, remove the battery service if we have one.
+    if(!this.platform.optionEnabled(this.accessory.context.device as myQDevice, "BatteryInfo")) {
+
+      if(gdBatteryService) {
+
+        this.accessory.removeService(gdBatteryService);
+      }
+
+      this.log.info("%s: Battery status information will not be displayed in HomeKit.", this.accessory.displayName);
+      return false;
+    }
+
+    // Add the service, if needed.
+    if(!gdBatteryService) {
+
+      gdBatteryService = this.accessory.addService(this.hap.Service.Battery);
+    }
+
+    // Something's gone wrong, we're done.
     if(!gdBatteryService) {
 
       this.log.error("%s: Unable to add battery status support.", this.accessory.displayName);
@@ -166,99 +187,124 @@ export class myQGarageDoor extends myQAccessory {
       switch(value) {
 
         case "open":
+
           targetState = this.hap.Characteristic.TargetDoorState.OPEN;
           targetName = "Open";
+
           break;
 
         case "close":
+
           targetState = this.hap.Characteristic.TargetDoorState.CLOSED;
           targetName = "Close";
+
           break;
 
         default:
-          this.log.error("%s: Unknown door command received via MQTT: %s.", this.accessory.displayName, value);
-          return;
 
+          this.log.error("%s: Unknown door command received via MQTT: %s.", this.accessory.displayName, value);
+
+          return;
       }
 
       // Move the door to the desired position.
       if(this.setDoorState(targetState)) {
+
         this.log.info("%s: %s command received via MQTT.", this.accessory.displayName, targetName);
+
         return;
       }
 
       this.log.error("%s: Error executing door command via MQTT: %s.", this.accessory.displayName, value);
     });
-
   }
 
   // Open or close the garage door.
   private setDoorState(value: CharacteristicValue): boolean {
 
+    const device = this.accessory.context.device as myQDevice;
     const myQState = this.doorStatus();
-    const accessory = this.accessory;
-    const hap = this.hap;
 
+    if(!device) {
+
+      this.log.error("%s: Can't find the associated device in the myQ API.", this.accessory.displayName);
+      return false;
+    }
+
+    // If we don't know the door state, we're done.
     if(myQState === -1) {
 
-      //new Error("Unable to determine the current door state."));
+      return false;
+    }
+
+    const actionExisting = myQState === this.hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
+    const actionAttempt = value === this.hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
+
+    // If this garage door is read-only, we won't process any requests to set state.
+    if(this.platform.optionEnabled(device, "ReadOnly", false)) {
+
+      this.log.info("%s: Unable to %s door. The door has been configured to be read only.", this.accessory.displayName, actionAttempt);
+
+      // Tell HomeKit that we haven't in fact changed our state so we don't end up in an inadvertent opening or closing state.
+      setTimeout(() => {
+
+        this.accessory.getService(this.hap.Service.GarageDoorOpener)?.updateCharacteristic(this.hap.Characteristic.TargetDoorState,
+          value === this.hap.Characteristic.TargetDoorState.CLOSED ? this.hap.Characteristic.TargetDoorState.OPEN : this.hap.Characteristic.TargetDoorState.CLOSED);
+
+      }, 0);
+
       return false;
     }
 
     // If we are already opening or closing the garage door, we error out. myQ doesn't appear to allow
     // interruptions to an open or close command that is currently executing - it must be allowed to
     // complete its action before accepting a new one.
-    if((myQState === hap.Characteristic.CurrentDoorState.OPENING) || (myQState === hap.Characteristic.CurrentDoorState.CLOSING)) {
-
-      const actionExisting = myQState === hap.Characteristic.CurrentDoorState.OPENING ? "opening" : "closing";
-      const actionAttempt = value === hap.Characteristic.TargetDoorState.CLOSED ? "close" : "open";
+    if((myQState === this.hap.Characteristic.CurrentDoorState.OPENING) || (myQState === this.hap.Characteristic.CurrentDoorState.CLOSING)) {
 
       this.log.error("%s: Unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
-        accessory.displayName, actionAttempt, actionExisting);
+        this.accessory.displayName, actionAttempt, actionExisting);
 
       return false;
     }
 
     // Close the garage door.
-    if(value === hap.Characteristic.TargetDoorState.CLOSED) {
+    if(value === this.hap.Characteristic.TargetDoorState.CLOSED) {
 
       // HomeKit is asking us to close the garage door, but let's make sure it's not already closed first.
-      if(myQState !== hap.Characteristic.CurrentDoorState.CLOSED) {
+      if(myQState !== this.hap.Characteristic.CurrentDoorState.CLOSED) {
 
         // We set this to closing instead of closed because we want to show state transitions in HomeKit. In
         // addition, myQ won't immediately execute this command for safety reasons - it enforces a warning tone
         // for a few seconds before it starts the action.
-        accessory
-          .getService(hap.Service.GarageDoorOpener)
-          ?.updateCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.CLOSING);
+        this.accessory.getService(this.hap.Service.GarageDoorOpener)
+          ?.updateCharacteristic(this.hap.Characteristic.CurrentDoorState, this.hap.Characteristic.CurrentDoorState.CLOSING);
 
         // Execute this command and begin polling myQ for state changes.
-        void this.doorCommand(hap.Characteristic.TargetDoorState.CLOSED);
+        void this.doorCommand(this.hap.Characteristic.TargetDoorState.CLOSED);
       }
 
       return true;
     }
 
     // Open the garage door.
-    if(value === hap.Characteristic.TargetDoorState.OPEN) {
+    if(value === this.hap.Characteristic.TargetDoorState.OPEN) {
 
       // HomeKit is informing us to open the door, but we don't want to act if it's already open.
-      if(myQState !== hap.Characteristic.CurrentDoorState.OPEN) {
+      if(myQState !== this.hap.Characteristic.CurrentDoorState.OPEN) {
 
         // We set this to opening instad of open because we want to show our state transitions to HomeKit and end users.
-        accessory
-          .getService(hap.Service.GarageDoorOpener)
-          ?.updateCharacteristic(hap.Characteristic.CurrentDoorState, hap.Characteristic.CurrentDoorState.OPENING);
+        this.accessory.getService(this.hap.Service.GarageDoorOpener)
+          ?.updateCharacteristic(this.hap.Characteristic.CurrentDoorState, this.hap.Characteristic.CurrentDoorState.OPENING);
 
         // Execute this command and begin polling myQ for state changes.
-        void this.doorCommand(hap.Characteristic.TargetDoorState.OPEN);
+        void this.doorCommand(this.hap.Characteristic.TargetDoorState.OPEN);
       }
 
       return true;
     }
 
     // HomeKit has told us something that we don't know how to handle.
-    this.log.error("%s: Unknown SET event received: %s.", accessory.displayName, value);
+    this.log.error("%s: Unknown SET event received: %s.", this.accessory.displayName, value);
 
     return false;
   }
@@ -266,59 +312,56 @@ export class myQGarageDoor extends myQAccessory {
   // Update our HomeKit status.
   public updateState(): boolean {
 
-    const accessory = this.accessory;
-    const hap = this.hap;
-    const oldState = accessory.context.doorState as CharacteristicValue;
+    const oldState = this.accessory.context.doorState as CharacteristicValue;
     const myQState = this.doorStatus();
 
     // If we can't get our status, we're probably not able to connect to the myQ API.
     if(myQState === -1) {
-      this.log.error("%s: Unable to determine the current door state.", accessory.displayName);
+
+      this.log.error("%s: Unable to determine the current door state.", this.accessory.displayName);
       return false;
     }
 
     // Update the state in HomeKit
     if(oldState !== myQState) {
 
-      accessory.context.doorState = myQState;
+      this.accessory.context.doorState = myQState;
 
       // We are only going to update the target state if our current state is NOT stopped. If we are stopped,
       // we are at the target state by definition. Unfortunately, the iOS Home app doesn't seem to correctly
       // report a stopped state, although you can find it correctly reported in other HomeKit apps like Eve Home.
       // Finally, we want to ensure we update TargetDoorState before updating CurrentDoorState in order to work
       // around some notification quirks HomeKit occasionally has.
-      if(myQState !== hap.Characteristic.CurrentDoorState.STOPPED) {
+      if(myQState !== this.hap.Characteristic.CurrentDoorState.STOPPED) {
 
-        const targetState = this.doorTargetStateBias(myQState);
-
-        accessory.getService(hap.Service.GarageDoorOpener)?.updateCharacteristic(hap.Characteristic.TargetDoorState, targetState);
+        this.accessory.getService(this.hap.Service.GarageDoorOpener)?.updateCharacteristic(this.hap.Characteristic.TargetDoorState, this.doorTargetStateBias(myQState));
       }
 
-      accessory.getService(hap.Service.GarageDoorOpener)?.updateCharacteristic(hap.Characteristic.CurrentDoorState, myQState);
+      this.accessory.getService(this.hap.Service.GarageDoorOpener)?.updateCharacteristic(this.hap.Characteristic.CurrentDoorState, myQState);
 
       // When we detect any state change, we want to increase our polling resolution to provide timely updates.
       this.platform.pollOptions.count = 0;
       this.platform.poll(this.config.refreshInterval * -1);
 
-      this.log.info("%s: %s.", accessory.displayName, this.translateDoorState(myQState));
+      this.log.info("%s: %s.", this.accessory.displayName, this.translateDoorState(myQState));
 
       // Publish to MQTT, if the user has configured it.
-      this.platform.mqtt?.publish(accessory, "garagedoor", this.translateDoorState(myQState).toLowerCase());
-
+      this.platform.mqtt?.publish(this.accessory, "garagedoor", this.translateDoorState(myQState).toLowerCase());
     }
 
     // Update battery status only if it's supported by the device.
     if(this.batteryDeviceSupport) {
+
       const batteryStatus = this.doorPositionSensorBatteryStatus();
 
       // Update our battery state.
       if(batteryStatus !== -1) {
-        accessory.getService(hap.Service.Battery)?.updateCharacteristic(hap.Characteristic.StatusLowBattery, batteryStatus);
+
+        this.accessory.getService(this.hap.Service.Battery)?.updateCharacteristic(this.hap.Characteristic.StatusLowBattery, batteryStatus);
       }
     }
 
     return true;
-
   }
 
   // Return the status of the door. This function maps myQ door status to HomeKit door status.
@@ -339,6 +382,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device as myQDevice;
 
     if(!device) {
+
       this.log.error("%s: Can't find the associated device in the myQ API.", this.accessory.displayName);
       return -1;
     }
@@ -492,6 +536,7 @@ export class myQGarageDoor extends myQAccessory {
     const device = this.accessory.context.device as myQDevice;
 
     if(!device) {
+
       this.log.error("%s: Can't find the associated device in the myQ API.", this.accessory.displayName, this.accessory.UUID);
       return -1;
     }

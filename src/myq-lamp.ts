@@ -1,4 +1,4 @@
-/* Copyright(C) 2017-2022, HJD (https://github.com/hjdhjd). All rights reserved.
+/* Copyright(C) 2017-2023, HJD (https://github.com/hjdhjd). All rights reserved.
  *
  * myq-lamp.ts: Lamp device class for myQ.
  */
