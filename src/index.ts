@@ -2,11 +2,12 @@
  *
  * index.ts: homebridge-myq plugin registration.
  */
-import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
+import { PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
 import { API } from "homebridge";
-import { myQPlatform } from "./myq-platform";
+import { myQPlatform } from "./myq-platform.js";
 
 // Register our platform with homebridge.
-export = (api: API): void => {
+export default (api: API): void => {
+
   api.registerPlatform(PLUGIN_NAME, PLATFORM_NAME, myQPlatform);
-}
+};

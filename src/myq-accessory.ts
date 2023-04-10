@@ -4,8 +4,8 @@
  */
 import { API, HAP, Logging, PlatformAccessory } from "homebridge";
 import { myQApi, myQDevice } from "@hjdhjd/myq";
-import { myQOptions } from "./myq-config";
-import { myQPlatform } from "./myq-platform";
+import { myQOptions } from "./myq-config.js";
+import { myQPlatform } from "./myq-platform.js";
 
 export abstract class myQAccessory {
   protected readonly accessory: PlatformAccessory;

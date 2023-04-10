@@ -2,9 +2,9 @@
  *
  * myq-garagedoor.ts: Garage door device class for myQ.
  */
-import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings";
+import { MYQ_OBSTRUCTED, MYQ_OBSTRUCTION_ALERT_DURATION } from "./settings.js";
 import { CharacteristicValue } from "homebridge";
-import { myQAccessory } from "./myq-accessory";
+import { myQAccessory } from "./myq-accessory.js";
 import { myQDevice } from "@hjdhjd/myq";
 
 export class myQGarageDoor extends myQAccessory {

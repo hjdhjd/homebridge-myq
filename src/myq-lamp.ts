@@ -3,7 +3,7 @@
  * myq-lamp.ts: Lamp device class for myQ.
  */
 import { CharacteristicValue } from "homebridge";
-import { myQAccessory } from "./myq-accessory";
+import { myQAccessory } from "./myq-accessory.js";
 import { myQDevice } from "@hjdhjd/myq";
 
 export class myQLamp extends myQAccessory {

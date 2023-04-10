@@ -1,22 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "commonjs",
-    "lib": [
-      "ES2015",
-      "ES2016",
-      "ES2017",
-      "ES2018",
-      "ES2019",
-      "dom"
-    ],
-    "sourceMap": true,
-    "rootDir": "src",
-    "outDir": "dist",
-
-    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "lib": [
+      "DOM",
+      "ES2021"
+    ],
+    "module": "ES2022",
+    "moduleResolution":"node",
+    "outDir": "dist",
+    "rootDir": "src",
+    "sourceMap": true,
+    "strict": true,
+    "target": "ES2021"
   },
   "include": [
     "src"

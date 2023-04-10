@@ -2,30 +2,16 @@
  *
  * myq-platform.ts: homebridge-myq platform class.
  */
-import {
-  API,
-  APIEvent,
-  DynamicPlatformPlugin,
-  HAP,
-  Logging,
-  PlatformAccessory,
-  PlatformConfig
-} from "homebridge";
-import {
-  MYQ_ACTIVE_DEVICE_REFRESH_DURATION,
-  MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
-  MYQ_DEVICE_REFRESH_INTERVAL,
-  MYQ_MQTT_TOPIC,
-  PLATFORM_NAME,
-  PLUGIN_NAME
-} from "./settings";
+import { API, APIEvent, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformConfig } from "homebridge";
+import { MYQ_ACTIVE_DEVICE_REFRESH_DURATION, MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL, MYQ_DEVICE_REFRESH_INTERVAL, MYQ_MQTT_TOPIC,
+  PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
 import { myQApi, myQDevice } from "@hjdhjd/myq";
-import { myQAccessory } from "./myq-accessory";
-import { myQGarageDoor } from "./myq-garagedoor";
-import { myQLamp } from "./myq-lamp";
-import { myQMqtt } from "./myq-mqtt";
-import { myQOptionsInterface } from "./myq-config";
-import util from "util";
+import { myQAccessory } from "./myq-accessory.js";
+import { myQGarageDoor } from "./myq-garagedoor.js";
+import { myQLamp } from "./myq-lamp.js";
+import { myQMqtt } from "./myq-mqtt.js";
+import { myQOptionsInterface } from "./myq-config.js";
+import util from "node:util";
 
 interface myQPollInterface {
   count: number,
