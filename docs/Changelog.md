@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.10.0 (2023-04-10)
+  * Improvement: better performance across the board.
+  * Housekeeping.
+
 ## 2.9.0 (2023-01-03)
   * Feature: new feature option to allow users to disable battery notifications for myQ devices with a battery-enabled door position sensor. You can disable low battery notifications by using `Disable.BatteryInfo`.
   * Feature: new feature option to allow for setting garage door openers to read-only. You can configure garage door openers as read-only using `Enable.ReadOnly`.
