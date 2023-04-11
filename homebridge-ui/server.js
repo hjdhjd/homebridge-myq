@@ -4,8 +4,8 @@
 /* eslint-disable new-cap */
 'use strict';
 
-const { HomebridgePluginUiServer } = require('@homebridge/plugin-ui-utils');
-const fs = require('fs');
+import { HomebridgePluginUiServer } from "@homebridge/plugin-ui-utils";
+import * as fs from "node:fs";
 
 class PluginUiServer extends HomebridgePluginUiServer {
   constructor () {
