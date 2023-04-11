@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 2.10.1 (2023-04-11)
+  * Fix: webUI bugfixes.
+
 ## 2.10.0 (2023-04-10)
   * Improvement: better performance across the board.
   * Housekeeping.
