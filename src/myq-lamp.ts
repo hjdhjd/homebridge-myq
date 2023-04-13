@@ -83,7 +83,7 @@ export class myQLamp extends myQAccessory {
       }
 
       // Publish the state of the lamp.
-      this.platform.mqtt?.publish(this.accessory, "lamp", (this.accessory.context.lampState as boolean) ? "On" : "Off");
+      this.platform.mqtt?.publish(this.accessory, "lamp", (this.accessory.context.lampState as boolean) ? "on" : "off");
       this.log.info("%s: Lamp status published via MQTT.", this.name());
     });
 
@@ -183,12 +183,10 @@ export class myQLamp extends myQAccessory {
       this.log.info("%s: %s.", this.name(), myQState ? "On" : "Off");
 
       // Publish to MQTT, if the user has configured it.
-      this.platform.mqtt?.publish(this.accessory, "lamp", myQState ? "On" : "Off");
-
+      this.platform.mqtt?.publish(this.accessory, "lamp", myQState ? "on" : "off");
     }
 
     return true;
-
   }
 
   // Return the status of the lamp. This function maps myQ lamp status to HomeKit lamp status.
@@ -216,7 +214,6 @@ export class myQLamp extends myQAccessory {
     }
 
     return myQState;
-
   }
 
   // Execute lamp commands.
@@ -243,5 +240,4 @@ export class myQLamp extends myQAccessory {
 
     return super.command(myQCommand);
   }
-
 }

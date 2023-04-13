@@ -172,7 +172,7 @@ export class myQGarageDoor extends myQAccessory {
       }
 
       // Publish the state of the garage door.
-      this.platform.mqtt?.publish(this.accessory, "garagedoor", this.translateDoorState(this.doorStatus()));
+      this.platform.mqtt?.publish(this.accessory, "garagedoor", this.translateDoorState(this.doorStatus()).toLowerCase());
       this.log.info("%s: Garage door status published via MQTT.", this.accessory.displayName);
     });
 
