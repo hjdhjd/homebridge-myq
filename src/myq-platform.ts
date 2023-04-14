@@ -19,6 +19,7 @@ interface myQPollInterface {
 }
 
 export class myQPlatform implements DynamicPlatformPlugin {
+
   private readonly accessories: PlatformAccessory[];
   public readonly api: API;
   public config!: myQOptionsInterface;
@@ -55,8 +56,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
       activeRefreshInterval: "activeRefreshInterval" in config ? parseInt(config.activeRefreshInterval as string) : MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL,
       debug: config.debug === true,
       email: config.email as string,
-      mqttTopic: "mqttTopic" in config ? config.mqttTopic as string : MYQ_MQTT_TOPIC,
+      mqttTopic: config.mqttTopic as string ?? MYQ_MQTT_TOPIC,
       mqttUrl: config.mqttUrl as string,
+      myQRegion: config.myQRegion as string,
       name: config.name as string,
       options: config.options as string[],
       password: config.password as string,
@@ -121,7 +123,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     };
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQApi(this.config.email, this.config.password, this.log);
+    this.myQ = new myQApi(this.config.email, this.config.password, this.log, this.config.myQRegion);
 
     // Create an MQTT connection, if needed.
     if(!this.mqtt && this.config.mqttUrl) {

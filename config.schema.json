@@ -69,6 +69,14 @@
         "description": "URL for the MQTT broker you'd like to publish event messages to. Default: None."
       },
 
+      "myQRegion": {
+        "type": "string",
+        "title": "myQ API Cloud Region",
+        "required": false,
+        "placeholder": "e.g. east",
+        "description": "The cloud geographic region to access the myQ API. Valid values are only east or west. Default: autoselected by the myQ API."
+      },
+
       "refreshInterval": {
         "title": "Refresh Interval",
         "type": "integer",
@@ -169,6 +177,7 @@
         {
           "description": "These settings should be rarely used or needed by most people. Use these with caution.",
           "items": [
+            "myQRegion",
             "refreshInterval",
             "activeRefreshInterval",
             "activeRefreshDuration",
