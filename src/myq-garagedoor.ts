@@ -261,7 +261,7 @@ export class myQGarageDoor extends myQAccessory {
     // complete its action before accepting a new one.
     if((myQState === this.hap.Characteristic.CurrentDoorState.OPENING) || (myQState === this.hap.Characteristic.CurrentDoorState.CLOSING)) {
 
-      this.log.error("%s: Unable to %s door while currently attempting to complete %s. myQ must complete it's existing action before attempting a new one.",
+      this.log.error("%s: Unable to %s door while currently attempting to complete %s. myQ must complete its existing action before attempting a new one.",
         this.accessory.displayName, actionAttempt, actionExisting);
 
       return false;
