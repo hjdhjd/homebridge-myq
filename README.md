@@ -30,7 +30,7 @@ In a nutshell, the aim of this plugin for things to *just work* with minimal req
 
 What does *just work* mean in practice? It means that this plugin will discover all your myQ devices and poll at regular, reasonable intervals for changes in state of a garage door opener, lamp, or other myQ devices and inform HomeKit of those changes. By default. Without additional configuration beyond the login information required for myQ services.
 
-`homebridge-myq` has been around a long time and is trusted by thousands of users. It's the first myQ [Homebridge](https://homebridge.io) plugin to provide comprehensive support for various myQ features such as obstruction detection, and the first to provide support for multiple myQ device types (currently, garage door openers and lamps). As more of the API can be decoded, my aim is to support as many device types as possible. I rely on this plugin every day and actively maintain and support it.
+`homebridge-myq` has been around a long time and is trusted by thousands of users. It's the first myQ [Homebridge](https://homebridge.io) plugin to provide comprehensive support for various myQ features such as obstruction detection, and the first to provide support for multiple myQ device types. As more of the API can be decoded, my aim is to support as many device types as possible. I rely on this plugin every day and actively maintain and support it.
 
 ### Features
 - ***Easy* configuration - all you need is your myQ username and password to get started.** The defaults work for the vast majority of users. When you want more, there are [advanced options](#advanced-config) you can play with, if you choose.
@@ -41,7 +41,7 @@ What does *just work* mean in practice? It means that this plugin will discover 
 
 - **[Battery status detection](#battery-status) on supported myQ door position sensor devices.** If you have a myQ supported door position sensor, you'll see an alert raised in the Home app to inform you when the battery is running low.
 
-- **The ability to [selectively hide and show](#feature-options) specific gateways (useful when you have multiple homes) or openers.** For those who only want to show particular devices in HomeKit, or particular homes, a flexible and intuitive way to configure device availability at a granular level is available.
+- **The ability to [selectively hide and show](#feature-options) specific myQ devices.** For those who only want to show particular devices in HomeKit, or particular homes, a flexible and intuitive way to configure device availability at a granular level is available.
 
 - **Full MQTT support.** For those who use MQTT, this plugin provides full MQTT support with a rich set of options. [Read the MQTT documentation](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md) for more details.
 
@@ -50,19 +50,19 @@ The myQ API is undocumented and implementing a plugin like this one is the resul
 
 I would love to support more types of myQ devices. Currently `homebridge-myq` supports the following device types:
 
-- Garage door openers
+- Garage door and gate openers
 - Lamps and myQ switches
 
 Additional device types will be added as time allows. It's unlikely I will add support for myQ locks due to their deprecated protocol support. myQ cameras may be added at some point, but there are additional non-technical considerations related to the paid myQ product that I want to be mindful of.
 
 ## Documentation
-* Getting going
+* Getting Started
   * [Installation](#installation): installing this plugin, including system requirements.
   * [Plugin Configuration](#plugin-configuration): how to quickly get up and running.
   * [Additional Notes](#notes): some things you should be aware of, including myQ-specific quirks.
 
 * Advanced Topics
-  * [Feature Options](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/FeatureOptions.md): granular options to allow you to show or hide specific garage door openers, gateways, and more.
+  * [Feature Options](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/FeatureOptions.md): granular options to allow you to show or hide specific garage door openers and more.
   * [MQTT](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md): how to configure MQTT support.
   * [Advanced Configuration](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/AdvancedOptions.md): complete list of configuration options available in this plugin.
   * [Changelog](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/Changelog.md): changes and release history of this plugin, starting with v2.0.
@@ -70,31 +70,19 @@ Additional device types will be added as time allows. It's unlikely I will add s
 ## Installation
 If you are new to Homebridge, please first read the [Homebridge](https://homebridge.io) [documentation](https://github.com/homebridge/homebridge/wiki) and installation instructions before proceeding.
 
-If you have installed the [Homebridge Config UI](https://github.com/oznu/homebridge-config-ui-x), you can intall this plugin by going to the `Plugins` tab and searching for `homebridge-myq` and installing it.
-
-If you prefer to install `homebridge-myq` from the command line, you can do so by executing:
-
-```sh
-sudo npm install -g homebridge-myq
-```
+If you have installed the [Homebridge Config UI](https://github.com/homebridge/homebridge-config-ui-x), you can intall this plugin by going to the `Plugins` tab and searching for `homebridge-myq` and installing it.
 
 ### <A NAME="notes"></A>Things To Be Aware Of
-- <A NAME="myq-errors"></A>The myQ API gets regularly updated and unfortunately this results in regularly breaking this and other myQ-related plugins. I've refactored this plugin in part to make it easier to maintain with future API changes that may come. Unfortunately, it's an ongoing challenge since API changes can be sudden and unpredictable.
+- <A NAME="myq-errors"></A>The myQ API has largely stabilized in recent years, particularly with the advent of the v6 version of the API. However, the myQ cloud can (and does) have occasional reliability challenges that can manifest through connectivity issues that you will see in the Homebridge logs related to this plugin. These are not bugs in `homebridge-myq` and there's not much we can do it aside from attempt to gracefully handle the errors when they occur. The myQ cloud is quite reliable the large majority (~93-95% by my estimate) of the time. Please do not open bug reports related to API issues - they'll be closed summarily unless it's a new API-specific issue that's emerged as a result of changes to the undocumented myQ API. These issues are largely harmless and resolve themselves on their own, usually in minutes, and occasionally in hours or days.
 
 - **As a result of the above you *will* see errors similar to this on an occasional basis in the Homebridge logs:**
 
     ```
     myQ API: Unable to update device status from the myQ API. Acquiring a new access token.
     ```
-  These messages can be safely ignored. myQ API errors *will* inevtiably happen. The myQ server-side infrastructure from Liftmaster / Chamberlain is not completely reliable and occasionally errors out due to server maintenance, network issues, or other infrastructure hiccups that occur on the myQ end of things. This plugin has no control over this, unfortunately, and all we can do is handle those errors gracefully, which is what I've attempted to do. The logging is informative and **not a cause for significant concern unless it is constant and ongoing**, which would be indicative of the larger API issues referenced above. When one of these errors is detected, we log back into the myQ infrastructure, obtain new API security credentials, and attempt refresh our status in the next scheduled update, which by is roughly [every 12 seconds by default](#advanced-config).
+  These messages can be safely ignored. myQ API errors *will* inevtiably happen. The myQ cloud infrastructure from Liftmaster / Chamberlain is not completely reliable and occasionally errors out due to infrastructure maintenance, network issues, or other infrastructure hiccups that occur on the myQ end of things. This plugin has no control over this. The logging is informative and **not a cause for significant concern unless it is constant and ongoing for multiple days**, which would be indicative of the larger API issues referenced above. When one of these errors is detected, we log back into the myQ infrastructure, obtain new API security credentials, and attempt refresh our status in the next scheduled update, which by is roughly [every 12 seconds by default](#advanced-config).
 
 - <A NAME="obstruction-status"></A>Obstruction detection in myQ is more nuanced than one might think at first glance. When myQ detects an obstruction, that obstruction is only visible in the API for a *very* small amount of time, typically no more than a few seconds. This presents a user experience problem - if you remain completely faithful to the myQ API and only show the user the obstruction for the very short amount of time that it actually occurs, the user might never notice it because the alert is not visible for more than a few seconds. Instead, the design decision I've chosen to make is to ensure that any detected obstruction is alerted in HomeKit for 30 seconds from the last time myQ detected that obstruction. This ensures that the user has a reasonable chance of noticing there was an obstruction at some point in the very recent past, without having to have the user stare at the Home app constantly to happen to catch an ephemeral state.
-
-- <A NAME="battery-status"></A>If your myQ device has support for battery status, `homebridge-myq` will automatically detect and add support for it in HomeKit. However, you **will** see a warning message in the [Homebridge](https://homebridge.io) logs along the lines of:
-    ```
-    HAP Warning: Characteristic 00000079-0000-1000-8000-0026BB765291 not in required or optional characteristics for service 00000041-0000-1000-8000-0026BB765291. Adding anyway.
-    ```
-  This can be safely ignored. It's an error message indicating that, in HomeKit, the garage door opener accessory service doesn't normally support battery status. HomeKit will still report it correctly, and alert you accordingly.
 
 ## Plugin Configuration
 If you choose to configure this plugin directly instead of using the [Homebridge Configuration web UI](https://github.com/oznu/homebridge-config-ui-x), you'll need to add the platform to your `config.json` in your home directory inside `.homebridge`.
@@ -113,6 +101,6 @@ For most people, I recommend using [Homebridge Configuration web UI](https://git
 This is mostly of interest to the true developer nerds amongst us.
 
 [![License](https://img.shields.io/npm/l/homebridge-myq?color=%230559C9&logo=open%20source%20initiative&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/blob/master/LICENSE.md)
-[![Build Status](https://img.shields.io/github/workflow/status/hjdhjd/homebridge-myq/Continuous%20Integration?color=%230559C9&logo=github-actions&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/actions?query=workflow%3A%22Continuous+Integration%22)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/hjdhjd/homebridge-myq/ci.yml?branch=main&color=%230559C9&logo=github-actions&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/actions?query=workflow%3A%22Continuous+Integration%22)
 [![Dependencies](https://img.shields.io/librariesio/release/npm/homebridge-myq?color=%230559C9&logo=dependabot&style=for-the-badge)](https://libraries.io/npm/homebridge-myq)
 [![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/hjdhjd/homebridge-myq/latest?color=%230559C9&logo=github&sort=semver&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/commits/master)

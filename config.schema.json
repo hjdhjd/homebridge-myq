@@ -32,11 +32,11 @@
       },
 
       "name": {
-        "title": "Name",
+        "title": "Plugin Name",
         "type": "string",
-        "required": false,
-        "placeholder": "myQ",
-        "description": "The name to assign this plugin for logging purposes. Default: myQ."
+        "required": true,
+        "default": "myQ",
+        "description": "Name to use for Homebridge logging purposes. Default: myQ."
       },
 
       "options": {
@@ -47,8 +47,8 @@
           "type": "string",
           "title": "Feature Option",
           "required": false,
-          "description": "Enter only one option per entry. See project page for the complete list of available options.",
-          "placeholder": "e.g. Disable.SerialNumber"
+          "description": "Enter only one option per entry. See the plugin documentation for the complete list of available options or use the feature options webUI tab above.",
+          "placeholder": "e.g. Disable.Device.SerialNumber"
         }
       },
 
@@ -56,7 +56,7 @@
         "type": "string",
         "title": "MQTT Base Topic",
         "required": false,
-        "placeholder": "e.g. unifi/protect",
+        "placeholder": "e.g. myq",
         "description": "The base MQTT topic to publish to. Default: myq."
       },
 
@@ -74,7 +74,7 @@
         "title": "myQ API Cloud Region",
         "required": false,
         "placeholder": "e.g. east",
-        "description": "The cloud geographic region to access the myQ API. Valid values are only east or west. Default: autoselected by the myQ API."
+        "description": "The cloud geographic region to access the myQ API. Valid values are only east or west. This option is provided with no support. Default: autoselected by the myQ API."
       },
 
       "refreshInterval": {
@@ -119,7 +119,7 @@
       "type": "section",
       "title": "General Options",
       "expandable": true,
-      "expanded": true,
+      "expanded": false,
       "items": [
         {
           "description": "Enter your myQ username and password below.",
@@ -143,7 +143,7 @@
           "type": "array",
           "orderable": true,
           "title": " ",
-          "description": "Feature options allow you to further customize the behavior of this plugin such as the ability to show or hide specific garage door openers.",
+          "description": "Use the feature options webUI tab above instead of manually configuring feature options here.",
           "buttonText": "Add Feature Option",
           "items": [
             "options[]"

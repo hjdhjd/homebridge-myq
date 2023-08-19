@@ -3,8 +3,7 @@
  * myq-lamp.ts: Lamp device class for myQ.
  */
 import { CharacteristicValue } from "homebridge";
-import { myQAccessory } from "./myq-accessory.js";
-import { myQDevice } from "@hjdhjd/myq";
+import { myQAccessory } from "./myq-device.js";
 
 export class myQLamp extends myQAccessory {
 
@@ -14,18 +13,15 @@ export class myQLamp extends myQAccessory {
   protected configureDevice(): void {
 
     // Save our context information before we wipe it out.
-    const device = this.accessory.context.device as myQDevice;
     const lampInitialState = this.accessory.context.lampState as boolean;
 
     // Clean out the context object.
     this.accessory.context = {};
-    this.accessory.context.device = device;
     this.accessory.context.lampState = lampInitialState;
 
     this.configureInfo();
     this.configureLamp();
     this.configureMqtt();
-
   }
 
   // Configure the lamp device information for HomeKit.
@@ -35,13 +31,10 @@ export class myQLamp extends myQAccessory {
     super.configureInfo();
 
     // Update the model information for this device.
-    this.accessory
-      .getService(this.hap.Service.AccessoryInformation)
-      ?.updateCharacteristic(this.hap.Characteristic.Model, "myQ Light Control");
+    this.accessory.getService(this.hap.Service.AccessoryInformation)?.updateCharacteristic(this.hap.Characteristic.Model, "myQ Light Control");
 
     // We're done.
     return true;
-
   }
 
   // Configure the lightbulb or switch service for HomeKit.
@@ -51,22 +44,28 @@ export class myQLamp extends myQAccessory {
 
     // Add the switch service to the accessory, if needed.
     if(!switchService) {
-      switchService = new this.hap.Service.Switch(this.name());
+
+      switchService = new this.hap.Service.Switch(this.name);
       this.accessory.addService(switchService);
     }
 
-    switchService
-      .getCharacteristic(this.hap.Characteristic.On)
-      .onGet(() => {
-        return this.accessory.context.lampState === true;
-      })
-      .onSet(this.setLampState.bind(this));
+    switchService.getCharacteristic(this.hap.Characteristic.On).onGet(() => {
 
+      return this.accessory.context.lampState === true;
+    });
+
+    switchService.getCharacteristic(this.hap.Characteristic.On).onSet(this.setLampState.bind(this));
     switchService.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState as boolean);
+
+    // Add the configured name for this device.
+    switchService.addOptionalCharacteristic(this.hap.Characteristic.ConfiguredName);
+
+    // Add our status active characteristic.
+    switchService.addOptionalCharacteristic(this.hap.Characteristic.StatusActive);
+
     switchService.setPrimaryService(true);
 
     return true;
-
   }
 
   // Configure MQTT.
@@ -79,12 +78,13 @@ export class myQLamp extends myQAccessory {
 
       // When we get the right message, we return the list of liveviews.
       if(value !== "true") {
+
         return;
       }
 
       // Publish the state of the lamp.
       this.platform.mqtt?.publish(this.accessory, "lamp", (this.accessory.context.lampState as boolean) ? "on" : "off");
-      this.log.info("%s: Lamp status published via MQTT.", this.name());
+      this.log.info("Lamp status published via MQTT.");
     });
 
     // Return the current status of the lamp device.
@@ -98,17 +98,20 @@ export class myQLamp extends myQAccessory {
       switch(value) {
 
         case "on":
+
           targetState = true;
           targetName = "Open";
           break;
 
         case "off":
+
           targetState = false;
           targetName = "Close";
           break;
 
         default:
-          this.log.error("%s: Unknown lamp command received via MQTT: %s.", this.name(), message.toString());
+
+          this.log.error("Unknown lamp command received via MQTT: %s.", message.toString());
           return;
           break;
 
@@ -116,20 +119,20 @@ export class myQLamp extends myQAccessory {
 
       // Move the lamp to the desired position.
       if(this.setLampState(targetState)) {
-        this.log.info("%s: %s command received via MQTT.", this.name(), targetName);
+        this.log.info("%s command received via MQTT.", targetName);
         return;
       }
 
-      this.log.error("%s: Error executing lamp command via MQTT: %s.", this.name(), targetName);
+      this.log.error("Error executing lamp command via MQTT: %s.", targetName);
     });
-
   }
 
   // Turn on or off the lamp.
   private setLampState(value: CharacteristicValue): boolean {
 
     if((this.accessory.context.lampState as boolean) !== value) {
-      this.log.info("%s: %s.", this.name(), (value === true) ? "On" : "Off");
+
+      this.log.info("%s.", (value === true) ? "On" : "Off");
     }
 
     // Save our state and update time.
@@ -140,18 +143,21 @@ export class myQLamp extends myQAccessory {
     void this.lampCommand(value);
 
     return true;
-
   }
 
   // Update our HomeKit status.
   public updateState(): boolean {
+
+    // Update our status.
+    this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.StatusActive, this.myQ?.state.online === true);
 
     const oldState = this.accessory.context.lampState as boolean;
     let myQState = this.lampStatus();
 
     // If we can't get our status, we're probably not able to connect to the myQ API.
     if(myQState === -1) {
-      this.log.error("%s: Unable to determine the current lamp state.", this.name());
+
+      this.log.error("Unable to determine the current lamp state.");
       return false;
     }
 
@@ -161,12 +167,14 @@ export class myQLamp extends myQAccessory {
       // Since the myQ takes at least a couple of seconds to respond to state changes, we work around that
       // by checking when the myQ state was last updated and compare it against when we last performed an
       // action. The most recent update within a reasonable amount of time is the one we go with, until myQ catches up.
-      const myQLastUpdate = (new Date((this.accessory.context.device as myQDevice).state.last_update)).getTime();
+      const myQLastUpdate = (new Date(this.myQ.state.last_update)).getTime();
 
       // If our state update is more recent, and in the last five seconds, we'll prioritize it over what myQ says the state is.
       if((this.lastUpdate > myQLastUpdate) && ((this.lastUpdate + 5000) > Date.now())) {
+
         myQState = oldState;
       } else {
+
         this.lastUpdate = myQLastUpdate;
       }
 
@@ -174,16 +182,22 @@ export class myQLamp extends myQAccessory {
       this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState as boolean);
 
       // eslint-disable-next-line camelcase
-      (this.accessory.context.device as myQDevice).state.lamp_state = this.accessory.context.lampState ? "on" : "off";
+      this.myQ.state.lamp_state = this.accessory.context.lampState ? "on" : "off";
 
       // When we detect any state change, we want to increase our polling resolution to provide timely updates.
       this.platform.pollOptions.count = 0;
       this.platform.poll(this.config.refreshInterval * -1);
 
-      this.log.info("%s: %s.", this.name(), myQState ? "On" : "Off");
+      this.log.info("%s.", myQState ? "On" : "Off");
 
       // Publish to MQTT, if the user has configured it.
       this.platform.mqtt?.publish(this.accessory, "lamp", myQState ? "on" : "off");
+    }
+
+    // Update our configured name, if requested.
+    if(this.hints.syncNames) {
+
+      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.ConfiguredName, this.myQ.name);
     }
 
     return true;
@@ -194,22 +208,23 @@ export class myQLamp extends myQAccessory {
 
     // Lamp state cheat sheet.
     const lampStates: {[index: string]: boolean} = {
+
       off: false,
       on:  true
     };
 
-    const device = this.accessory.context.device as myQDevice;
+    if(!this.myQ) {
 
-    if(!device) {
-      this.log.error("%s: Can't find the associated device in the myQ API.", this.name());
+      this.log.error("Can't find the associated device in the myQ API.");
       return -1;
     }
 
     // Retrieve the lamp state from myQ and map it to HomeKit.
-    const myQState = lampStates[device.state.lamp_state];
+    const myQState = lampStates[this.myQ.state.lamp_state];
 
     if(myQState === undefined) {
-      this.log.error("%s: Unknown lamp state encountered: %s.", this.name(), device.state.lamp_state);
+
+      this.log.error("Unknown lamp state encountered: %s.", this.myQ.state.lamp_state);
       return -1;
     }
 
@@ -225,15 +240,18 @@ export class myQLamp extends myQAccessory {
     switch(command) {
 
       case false:
+
         myQCommand = "off";
         break;
 
       case true:
+
         myQCommand = "on";
         break;
 
       default:
-        this.log.error("%s: Unknown lamp command encountered: %s.", this.name(), command);
+
+        this.log.error("Unknown lamp command encountered: %s.", command);
         return false;
         break;
     }

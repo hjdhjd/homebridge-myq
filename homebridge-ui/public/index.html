@@ -5,6 +5,8 @@
 <div id="pageIntro" style="display: none;">
     <p class="lead text-center">Thank you for installing <strong>homebridge-myq</strong></p>
     <div class="text-center">
+       To optimize performance and responsiveness, please make this plugin a <a target="_blank" href="https://github.com/homebridge/homebridge/wiki/Child-Bridges">child bridge</a> once you've completed configuration.
+       <br>
        <button type="button" class="btn btn-primary" id="introLink">Continue &rarr;</button>
     </div>
  </div>
@@ -12,8 +14,8 @@
     <button type="button" class="btn btn-primary" id="menuSettings">
         Settings
     </button>
-    <button type="button" class="btn btn-primary" id="menuDevices">
-        Devices
+    <button type="button" class="btn btn-primary" id="menuFeatureOptions">
+        Feature Options
     </button>
     <button type="button" class="btn btn-primary mr-0" id="menuHome">
         Support
@@ -25,208 +27,117 @@
         Enable
     </button>
 </div>
-<div id="pageDevices" class="mt-4" style="display: none;">
+<div id="pageFeatureOptions" class="mt-4" style="display: none;">
     <div id="deviceInfo">
-        <form>
-            <div class="form-group">
-                <select class="form-control" id="deviceSelect"></select>
-            </div>
-        </form>
-        <table class="table w-100" id="deviceTable" style="display: none;">
-            <thead>
-                <tr class="table-active">
-                    <th scope="col" style="width: 40%;">Device Name</th>
-                    <th scope="col" style="width: 60%;" id="displayName"></th>
-                </tr>
-            </thead>
-            <tbody>
+        <table class="table table-sm table-borderless">
+          <tr class="align-center">
+            <td id="headerInfo" colspan="2" class="m-0 p-2 text-center font-weight-bold"></td>
+          </tr>
+          <tr class="align-top">
+            <td rowspan="3" class="w-25">
+              <table id="sidebar" class="table table-sm table-bordered m-0 p-0">
                 <tr>
-                    <th scope="row">Device Type</th>
-                    <td id="device_type"></td>
+                  <td>
+                    <table class="table table-sm table-borderless m-0 p-0" id="controllersTable">
+                    </table>
+                  </td>
                 </tr>
                 <tr>
-                    <th scope="row">Device Model</th>
-                    <td id="device_model"></td>
+                  <td>
+                    <table class="table table-sm table-borderless m-0 p-0" id="devicesTable">
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td>
+              <table class="table table-sm table-borderless border-bottom m-0 p-0" id="deviceStatsTable" style="display: none;">
+                <tr id="deviceStatsHeader">
+                    <th style="width: 50%;" class="m-0 p-0"><B>Model<B></th>
+                    <th style="width: 20%;" class="m-0 p-0"><B>Serial</B></th>
+                    <th style="width: 25%;" class="m-0 p-0"><B>Status</B></th>
                 </tr>
                 <tr>
-                    <th scope="row">Device Platform</th>
-                    <td id="device_platform"></td>
+                    <td id="device_model" class="m-0 p-0"></td>
+                    <td id="device_serial" class="m-0 p-0"></td>
+                    <td id="device_online" class="m-0 p-0"></td>
                 </tr>
-                <tr>
-                    <th scope="row">Device Family</th>
-                    <td id="device_family"></td>
-                </tr>
-                <tr>
-                    <th scope="row">Serial Number</th>
-                    <td id="serial_number"></td>
-                </tr>
-                <tr>
-                    <th scope="row">Online</th>
-                    <td id="online"></td>
-                </tr>
-            </tbody>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td id="configTable" style="width: 100%;">
+            </td>
+          </tr>
         </table>
     </div>
 </div>
 <div id="pageSupport" class="mt-4" style="display: none;">
-    <p class="text-center lead">Thank you for using <strong>homebridge-myq</strong></p>
-    <p class="text-center">The links below will take you to our GitHub docs</p>
+    <p class="text-center lead">Thank you for using <strong>homebridge-myq</strong>.</p>
+
+    <p>Other plugins by <a target="_blank" href="https://github.com/hjdhjd">HJD</a>: </p>
+
+    <ul dir="auto">
+      <li><a target="_blank" href="https://github.com/hjdhjd/homebridge-unifi-protect">homebridge-unifi-protect: Complete HomeKit integration for the entire UniFi Protect ecosystem</a></li>
+    </ul>
+
+    <p class="text-center lead">Documentation Reference</p>
+
     <h5>Features</h5>
-    <ul>
+    <ul dir="auto">
         <li>
-            <a href="https://github.com/hjdhjd/homebridge-myq/blob/master/docs/FeatureOptions.md"
-                target="_blank">Feature Options</a>
+            Getting Started
+            <ul dir="auto">
+                <li>
+                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#installation">Installation</a>
+                    : installing this plugin, including system requirements.
+                </li>
+                <li>
+                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#plugin-configuration">Plugin Configuration</a>
+                    : how to quickly get up and running.
+                </li>
+                <li>
+                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#notes">Additional Notes</a>
+                    : some things you should be aware of, including myQ-specific quirks.
+                </li>
+            </ul>
         </li>
         <li>
-            <a href="https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md"
-                target="_blank">MQTT</a>
-        </li>
-        <li>
-            <a href="https://github.com/hjdhjd/homebridge-myq/blob/master/docs/AdvancedOptions.md"
-                target="_blank">Advanced Options</a>
+            Advanced Topics
+            <ul dir="auto">
+                <li>
+                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/FeatureOptions.md">Feature Options</a>
+                    : granular options to allow you to show or hide specific garage door and gate openers, and more.
+                </li>
+                <li>
+                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/MQTT.md">MQTT</a>
+                    : how to configure MQTT support.
+                </li>
+                <li>
+                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/AdvancedOptions.md">Advanced Configuration</a>
+                    : complete list of configuration options available in this plugin.
+                </li>
+            </ul>
         </li>
     </ul>
+
     <h5>Help/About</h5>
+
+    <div>The myQ API has largely stabilized in recent years, particularly with the advent of the v6 version of the API. However, the myQ cloud can (and does) have occasional reliability challenges that can manifest through connectivity issues that you will see in the Homebridge logs related to this plugin. These are not bugs in homebridge-myq and there's not much we can do it aside from attempt to gracefully handle the errors when they occur. The myQ cloud is quite reliable the large majority (~93-95% by my estimate) of the time.<br><br><strong class="text-danger">Please do not open bug reports related to API issues - they'll be closed summarily unless it's a new API-specific issue that's emerged as a result of changes to the undocumented myQ API.</strong></div>
+    <br>
     <ul>
         <li>
-            <a href="https://github.com/hjdhjd/homebridge-myq/issues/new/choose"
-                target="_blank">Support
-                Request</a>
+            <a href="https://discord.gg/QXqfHEW"
+                target="_blank">Discord Support Channel</a>
         </li>
         <li>
-            <a href="https://github.com/hjdhjd/homebridge-myq/blob/master/docs/Changelog.md"
-                target="_blank">Changelog</a>
+            <a href="https://github.com/hjdhjd/homebridge-myq/issues/new/choose"
+                target="_blank">Create a Developer Support Request</a>
+        </li>
+        <li>
+            <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/Changelog.md">Changelog and Release Notes</a>
         </li>
     </ul>
 </div>
-<script>
-    ; (async () => {
-        try {
-            const currentConfig = await homebridge.getPluginConfig()
-            showIntro = () => {
-                const introLink = document.getElementById('introLink')
-                introLink.addEventListener('click', () => {
-                    homebridge.showSpinner()
-                    document.getElementById('pageIntro').style.display = 'none'
-                    document.getElementById('menuWrapper').style.display = 'inline-flex'
-                    showSettings()
-                    homebridge.hideSpinner()
-                })
-                document.getElementById('pageIntro').style.display = 'block'
-            }
-            showDevices = async () => {
-                homebridge.showSpinner()
-                homebridge.hideSchemaForm()
-                document.getElementById('menuHome').classList.remove('btn-elegant')
-                document.getElementById('menuHome').classList.add('btn-primary')
-                document.getElementById('menuDevices').classList.add('btn-elegant')
-                document.getElementById('menuDevices').classList.remove('btn-primary')
-                document.getElementById('menuSettings').classList.remove('btn-elegant')
-                document.getElementById('menuSettings').classList.add('btn-primary')
-                document.getElementById('pageSupport').style.display = 'none'
-                document.getElementById('pageDevices').style.display = 'block'
-                const cachedAccessories =
-                    typeof homebridge.getCachedAccessories === 'function'
-                        ? await homebridge.getCachedAccessories()
-                        : await homebridge.request('/getCachedAccessories')
-                if (cachedAccessories.length > 0) {
-                    cachedAccessories.sort((a, b) => {
-                        return a.displayName.toLowerCase() > b.displayName.toLowerCase()
-                            ? 1
-                            : b.displayName.toLowerCase() > a.displayName.toLowerCase()
-                                ? -1
-                                : 0
-                    })
-                }
-                const deviceSelect = document.getElementById('deviceSelect')
-                deviceSelect.innerHTML = ''
-                cachedAccessories.forEach(a => {
-                    const option = document.createElement('option')
-                    option.text = a.displayName
-                    option.value = a.UUID
-                    deviceSelect.add(option)
-                })
-                showDeviceInfo = async UUID => {
-                    homebridge.showSpinner()
-                    const thisAcc = cachedAccessories.find(x => x.UUID === UUID)
-                    const context = thisAcc.context
-                    document.getElementById('displayName').innerHTML = thisAcc.displayName
-                    document.getElementById('device_type').innerHTML = context.device.device_type
-                    document.getElementById('device_model').innerHTML = context.device.device_model
-                    document.getElementById('device_platform').innerHTML = context.device.device_platform
-                    document.getElementById('device_family').innerHTML = context.device.device_family
-                    document.getElementById('serial_number').innerHTML = context.device.serial_number
-                    document.getElementById('online').innerHTML = context.device.state.online
-                    document.getElementById('deviceTable').style.display = 'inline-table'
-                    homebridge.hideSpinner()
-                }
-                deviceSelect.addEventListener('change', event => showDeviceInfo(event.target.value))
-                if (cachedAccessories.length > 0) {
-                    showDeviceInfo(cachedAccessories[0].UUID)
-                } else {
-                    const option = document.createElement('option')
-                    option.text = 'No Devices'
-                    deviceSelect.add(option)
-                    deviceSelect.disabled = true
-                }
-                homebridge.hideSpinner()
-            }
-            showSupport = () => {
-                homebridge.showSpinner()
-                homebridge.hideSchemaForm()
-                document.getElementById('menuHome').classList.add('btn-elegant')
-                document.getElementById('menuHome').classList.remove('btn-primary')
-                document.getElementById('menuDevices').classList.remove('btn-elegant')
-                document.getElementById('menuDevices').classList.add('btn-primary')
-                document.getElementById('menuSettings').classList.remove('btn-elegant')
-                document.getElementById('menuSettings').classList.add('btn-primary')
-                document.getElementById('pageSupport').style.display = 'block'
-                document.getElementById('pageDevices').style.display = 'none'
-                homebridge.hideSpinner()
-            }
-            showSettings = () => {
-                homebridge.showSpinner()
-                document.getElementById('menuHome').classList.remove('btn-elegant')
-                document.getElementById('menuHome').classList.add('btn-primary')
-                document.getElementById('menuDevices').classList.remove('btn-elegant')
-                document.getElementById('menuDevices').classList.add('btn-primary')
-                document.getElementById('menuSettings').classList.add('btn-elegant')
-                document.getElementById('menuSettings').classList.remove('btn-primary')
-                document.getElementById('pageSupport').style.display = 'none'
-                document.getElementById('pageDevices').style.display = 'none'
-                homebridge.showSchemaForm()
-                homebridge.hideSpinner()
-            }
-            showDisabledBanner = () => {
-                document.getElementById('disabledBanner').style.display = 'block'
-            }
-            enablePlugin = async () => {
-                homebridge.showSpinner()
-                document.getElementById('disabledBanner').style.display = 'none'
-                currentConfig[0].disablePlugin = false
-                await homebridge.updatePluginConfig(currentConfig)
-                await homebridge.savePluginConfig()
-                homebridge.hideSpinner()
-            }
-            menuHome.addEventListener('click', () => showSupport())
-            menuDevices.addEventListener('click', () => showDevices())
-            menuSettings.addEventListener('click', () => showSettings())
-            disabledEnable.addEventListener('click', () => enablePlugin())
-            if (currentConfig.length) {
-                document.getElementById('menuWrapper').style.display = 'inline-flex'
-                showSettings()
-                if (currentConfig[0].disablePlugin) {
-                    showDisabledBanner()
-                }
-            } else {
-                currentConfig.push({ name: 'myQ' })
-                await homebridge.updatePluginConfig(currentConfig)
-                showIntro()
-            }
-        } catch (err) {
-            homebridge.toast.error(err.message, 'Error')
-        } finally {
-            homebridge.hideSpinner()
-        }
-    })()
+<script src="./ui.mjs" type="module">
 </script>

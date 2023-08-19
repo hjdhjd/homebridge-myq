@@ -5,15 +5,16 @@
 import { API, APIEvent, DynamicPlatformPlugin, HAP, Logging, PlatformAccessory, PlatformConfig } from "homebridge";
 import { MYQ_ACTIVE_DEVICE_REFRESH_DURATION, MYQ_ACTIVE_DEVICE_REFRESH_INTERVAL, MYQ_DEVICE_REFRESH_INTERVAL, MYQ_MQTT_TOPIC,
   PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
-import { myQApi, myQDevice } from "@hjdhjd/myq";
-import { myQAccessory } from "./myq-accessory.js";
+import { featureOptionCategories, featureOptions, isOptionEnabled, myQOptions } from "./myq-options.js";
+import { myQAccessory } from "./myq-device.js";
+import { myQApi } from "@hjdhjd/myq";
 import { myQGarageDoor } from "./myq-garagedoor.js";
 import { myQLamp } from "./myq-lamp.js";
 import { myQMqtt } from "./myq-mqtt.js";
-import { myQOptionsInterface } from "./myq-config.js";
 import util from "node:util";
 
 interface myQPollInterface {
+
   count: number,
   maxCount: number,
 }
@@ -22,13 +23,14 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
   private readonly accessories: PlatformAccessory[];
   public readonly api: API;
-  public config!: myQOptionsInterface;
-  private readonly configOptions: string[];
+  private featureOptionDefaults: { [index: string]: boolean };
+  public config!: myQOptions;
+  public readonly configOptions: string[];
   private readonly configuredAccessories: { [index: string]: myQAccessory };
   public readonly hap: HAP;
   public readonly log: Logging;
   public readonly mqtt!: myQMqtt;
-  public readonly myQ!: myQApi;
+  public readonly myQApi!: myQApi;
   private pollingTimer!: NodeJS.Timeout;
   public readonly pollOptions!: myQPollInterface;
   private unsupportedDevices: { [index: string]: boolean };
@@ -39,10 +41,20 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.api = api;
     this.configOptions = [];
     this.configuredAccessories = {};
+    this.featureOptionDefaults = {};
     this.hap = api.hap;
     this.log = log;
     this.log.debug = this.debug.bind(this);
     this.unsupportedDevices = {};
+
+    // Build our list of default values for our feature options.
+    for(const category of featureOptionCategories) {
+
+      for(const options of featureOptions[category.name]) {
+
+        this.featureOptionDefaults[(category.name + (options.name.length ? "." + options.name : "")).toLowerCase()] = options.default;
+      }
+    }
 
     // We can't start without being configured.
     if(!config) {
@@ -99,7 +111,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
       for(const featureOption of this.config.options) {
 
-        this.configOptions.push(featureOption.toUpperCase());
+        this.configOptions.push(featureOption.toLowerCase());
       }
     }
 
@@ -123,7 +135,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     };
 
     // Initialize our connection to the myQ API.
-    this.myQ = new myQApi(this.config.email, this.config.password, this.log, this.config.myQRegion);
+    this.myQApi = new myQApi(this.config.email, this.config.password, this.log, this.config.myQRegion);
 
     // Create an MQTT connection, if needed.
     if(!this.mqtt && this.config.mqttUrl) {
@@ -142,8 +154,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
   // intentionally avoid doing anything significant here, and save all that logic
   // for device discovery.
   public configureAccessory(accessory: PlatformAccessory): void {
+
     // Zero out the myQ device pointer on startup. This will be set by device discovery.
-    accessory.context.device = null;
+    delete accessory.context.device;
 
     // Add this to the accessory array so we can track it.
     this.accessories.push(accessory);
@@ -152,26 +165,12 @@ export class myQPlatform implements DynamicPlatformPlugin {
   // Discover new myQ devices and sync existing ones with the myQ API.
   private discoverAndSyncAccessories(): boolean {
 
-    // Remove any device objects from now-stale accessories.
-    for(const accessory of this.accessories) {
-
-      // We only need to do this if the device object is set.
-      if(!accessory.context.device) {
-        continue;
-      }
-
-      // Check to see if this accessory's device object is still in myQ or not.
-      if(!this.myQ.devices.some(x => x.serial_number === (accessory.context.device as myQDevice).serial_number)) {
-
-        accessory.context.device = null;
-      }
-    }
-
     // Iterate through the list of devices that myQ has returned and sync them with what we show HomeKit.
-    for(const device of this.myQ.devices) {
+    for(const device of this.myQApi.devices) {
 
       // If we have no serial number or device family, something is wrong.
       if(!device.serial_number || !device.device_family) {
+
         continue;
       }
 
@@ -204,14 +203,14 @@ export class myQPlatform implements DynamicPlatformPlugin {
           // Notify the user we see this device, but we aren't adding it to HomeKit.
           this.unsupportedDevices[device.serial_number] = true;
 
-          this.log.info("myQ device family '%s' is not currently supported, ignoring: %s.", device.device_family, this.myQ.getDeviceName(device));
+          this.log.info("myQ device family '%s' is not currently supported, ignoring: %s.", device.device_family, this.myQApi.getDeviceName(device));
           continue;
 
           break;
       }
 
       // Exclude or include certain openers based on configuration parameters.
-      if(!this.optionEnabled(device)) {
+      if(!isOptionEnabled(this.configOptions, device, "Device", this.featureOptionDefault("Device"))) {
 
         continue;
       }
@@ -223,21 +222,20 @@ export class myQPlatform implements DynamicPlatformPlugin {
       let accessory = this.accessories.find(x => x.UUID === uuid);
 
       if(!accessory) {
+
         accessory = new this.api.platformAccessory(device.name, uuid);
 
-        this.log.info("%s: Adding %s device to HomeKit: %s.", device.name, device.device_family, this.myQ.getDeviceName(device));
+        this.log.info("%s: Adding %s device to HomeKit: %s.", device.name, device.device_family, this.myQApi.getDeviceName(device));
 
         // Register this accessory with homebridge and add it to the accessory array so we can track it.
         this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
         this.accessories.push(accessory);
       }
 
-      // Link the accessory to it's device object.
-      accessory.context.device = device;
-
-      // If we've already configured this accessory, we're done here.
+      // If we've already configured this accessory, update it's state and we're done here.
       if(this.configuredAccessories[accessory.UUID]) {
 
+        this.configuredAccessories[accessory.UUID].myQ = device;
         continue;
       }
 
@@ -247,13 +245,13 @@ export class myQPlatform implements DynamicPlatformPlugin {
         case (device.device_family.indexOf("garagedoor") !== -1):
 
           // We have a garage door.
-          this.configuredAccessories[accessory.UUID] = new myQGarageDoor(this, accessory);
+          this.configuredAccessories[accessory.UUID] = new myQGarageDoor(this, accessory, device);
           break;
 
         case (device.device_family === "lamp"):
 
           // We have a lamp.
-          this.configuredAccessories[accessory.UUID] = new myQLamp(this, accessory);
+          this.configuredAccessories[accessory.UUID] = new myQLamp(this, accessory, device);
           break;
 
         default:
@@ -270,15 +268,15 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Remove myQ devices that are no longer found in the myQ API, but we still have in HomeKit.
     for(const oldAccessory of this.accessories) {
 
-      const device = oldAccessory.context.device as myQDevice;
+      const device = this.configuredAccessories[oldAccessory.UUID];
 
       // We found this accessory in myQ. Figure out if we really want to see it in HomeKit.
-      if(device && this.optionEnabled(device)) {
+      if(device?.hasFeature("Device")) {
 
         continue;
       }
 
-      this.log.info("%s: Removing myQ device from HomeKit.", oldAccessory.displayName);
+      this.log.info("%s: Removing myQ device from HomeKit.", device?.name ?? oldAccessory.displayName);
 
       delete this.configuredAccessories[oldAccessory.UUID];
       this.accessories.splice(this.accessories.indexOf(oldAccessory), 1);
@@ -292,7 +290,8 @@ export class myQPlatform implements DynamicPlatformPlugin {
   private async updateAccessories(): Promise<boolean> {
 
     // Refresh the full device list from the myQ API.
-    if(!(await this.myQ.refreshDevices())) {
+    if(!(await this.myQApi.refreshDevices())) {
+
       return false;
     }
 
@@ -301,11 +300,11 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
     // Iterate through our accessories and update its status with the corresponding myQ status.
     for(const key in this.configuredAccessories) {
+
       this.configuredAccessories[key].updateState();
     }
 
     return true;
-
   }
 
   // Periodically poll the myQ API for status.
@@ -316,12 +315,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Clear the last polling interval out.
     clearTimeout(this.pollingTimer);
 
-    // Normally, count just increments on each call. However, when we want to increase our
-    // polling frequency, count is set to 0 (elsewhere in the plugin) to put us in a more
-    // frequent polling mode. This is determined by the values configured for
-    // activeRefreshDuration and activeRefreshInterval which specify the maximum length of time
-    // for this increased polling frequency (activeRefreshDuration) and the actual frequency of
-    // each update (activeRefreshInterval).
+    // Normally, count just increments on each call. However, when we want to increase our polling frequency, count is set to 0 (elsewhere in the plugin)
+    // to put us in a more frequent polling mode. This is determined by the values configured for activeRefreshDuration and activeRefreshInterval which
+    // specify the maximum length of time for this increased polling frequency (activeRefreshDuration) and the actual frequency of each update (activeRefreshInterval).
     if(this.pollOptions.count < this.pollOptions.maxCount) {
 
       refresh = this.config.activeRefreshInterval + delay;
@@ -348,103 +344,18 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
   }
 
-  // Utility function to let us know if a device or feature should be enabled or not.
-  public optionEnabled(device: myQDevice | null, option = "", defaultReturnValue = true): boolean {
+  // Utility to return the default value for a feature option.
+  public featureOptionDefault(option: string): boolean {
 
-    // There are a couple of ways to enable and disable options. The rules of the road are:
-    //
-    // 1. Explicitly disabling, or enabling an option on the myQ gateway propogates to all the devices
-    //    that are managed by that gateway. Why might you want to do this? Because...
-    //
-    // 2. Explicitly disabling, or enabling an option on a device by its serial number will always
-    //    override the above. This means that it's possible to disable an option for a gateway,
-    //    and all the devices that are managed by it, and then override that behavior on a single
-    //    device that it's managing.
+    const defaultValue = this.featureOptionDefaults[option.toLowerCase()];
 
-    // Nothing configured - we assume the default return value.
-    if(!this.configOptions) {
-
-      return defaultReturnValue;
-    }
-
-    // No device. Sure, we'll show it.
-    if(!device) {
+    // If it's unknown to us, assume it's true.
+    if(defaultValue === undefined) {
 
       return true;
     }
 
-    // Upper case parameters for easier checks.
-    option = option ? option.toUpperCase() : "";
-
-    const deviceSerial = (device.serial_number ?? "").toUpperCase();
-
-    let optionSetting;
-
-    // If we've specified a device, check for device-specific options first. Otherwise, we're dealing
-    // with a gateway-specific or global option.
-    if(deviceSerial) {
-
-      // First we test for device-level option settings.
-      // No option specified means we're testing to see if this device should be shown in HomeKit.
-      optionSetting = option ? option + "." + deviceSerial : deviceSerial;
-
-      // We've explicitly enabled this option for this device.
-      if(this.configOptions.indexOf("ENABLE." + optionSetting) !== -1) {
-
-        return true;
-      }
-
-      // We've explicitly disabled this option for this device.
-      if(this.configOptions.indexOf("DISABLE." + optionSetting) !== -1) {
-
-        return false;
-      }
-    }
-
-    // If we don't have a gateway attached to this device, we're done here.
-    if(!device.parent_device_id || !device.parent_device_id.length) {
-
-      return defaultReturnValue;
-    }
-
-    // Now we test for gateway-level option settings.
-    // No option specified means we're testing to see if the devices attached to this gateway should be shown in HomeKit.
-    const gatewaySerial = device.parent_device_id.toUpperCase();
-    optionSetting = option ? option + "." + gatewaySerial : gatewaySerial;
-
-    // We've explicitly enabled this option for this gateway and all the devices attached to it.
-    if(this.configOptions.indexOf("ENABLE." + optionSetting) !== -1) {
-
-      return true;
-    }
-
-    // We've explicitly disabled this option for this gateway and all the devices attached to it.
-    if(this.configOptions.indexOf("DISABLE." + optionSetting) !== -1) {
-
-      return false;
-    }
-
-    // Finally, let's see if we have a global option here.
-    // No option means we're done - it's a special case for testing if a gateway or attached device should be hidden in HomeKit.
-    if(!option) {
-
-      return defaultReturnValue;
-    }
-
-    // We've explicitly enabled this globally for all devices.
-    if(this.configOptions.indexOf("ENABLE." + option) !== -1) {
-
-      return true;
-    }
-
-    // We've explicitly disabled this globally for all devices.
-    if(this.configOptions.indexOf("DISABLE." + option) !== -1) {
-
-      return false;
-    }
-
-    // Nothing special to do - assume the option is defaultReturnValue.
-    return defaultReturnValue;
+    return defaultValue;
   }
 
   // Utility for debug logging.

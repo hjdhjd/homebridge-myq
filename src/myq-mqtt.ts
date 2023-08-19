@@ -6,10 +6,11 @@ import { Logging, PlatformAccessory } from "homebridge";
 import mqtt, { MqttClient } from "mqtt";
 import { MYQ_MQTT_RECONNECT_INTERVAL } from "./settings.js";
 import { myQDevice } from "@hjdhjd/myq";
-import { myQOptions } from "./myq-config.js";
+import { myQOptions } from "./myq-options.js";
 import { myQPlatform } from "./myq-platform.js";
 
 export class myQMqtt {
+
   private config: myQOptions;
   private debug: (message: string, ...parameters: unknown[]) => void;
   private isConnected: boolean;
@@ -19,6 +20,7 @@ export class myQMqtt {
   private subscriptions: { [index: string]: (cbBuffer: Buffer) => void };
 
   constructor(myq: myQPlatform) {
+
     this.config = myq.config;
     this.debug = myq.debug.bind(myq);
     this.isConnected = false;
@@ -48,20 +50,21 @@ export class myQMqtt {
 
         switch(error.message) {
           case "Missing protocol":
+
             this.log.error("MQTT Broker: Invalid URL provided: %s.", this.config.mqttUrl);
             break;
 
           default:
+
             this.log.error("MQTT Broker: Error: %s.", error.message);
             break;
-
         }
-
       }
     }
 
     // We've been unable to even attempt to connect. It's likely we have a configuration issue - we're done here.
     if(!this.mqtt) {
+
       return;
     }
 
@@ -73,9 +76,7 @@ export class myQMqtt {
       // Magic incantation to redact passwords.
       const redact = /^(?<pre>.*:\/{0,2}.*:)(?<pass>.*)(?<post>@.*)/;
 
-      this.log.info("Connected to MQTT broker: %s (topic: %s).",
-        this.config.mqttUrl.replace(redact, "$<pre>REDACTED$<post>"), this.config.mqttTopic);
-
+      this.log.info("Connected to MQTT broker: %s (topic: %s).", this.config.mqttUrl.replace(redact, "$<pre>REDACTED$<post>"), this.config.mqttTopic);
     });
 
     // Notify the user when we've disconnected.
@@ -84,10 +85,12 @@ export class myQMqtt {
       if(this.isConnected) {
 
         this.isConnected = false;
-        this.log.info("Disconnected from MQTT broker: %s", this.config.mqttUrl);
 
+        // Magic incantation to redact passwords.
+        const redact = /^(?<pre>.*:\/{0,2}.*:)(?<pass>.*)(?<post>@.*)/;
+
+        this.log.info("Disconnected from MQTT broker: %s", this.config.mqttUrl.replace(redact, "$<pre>REDACTED$<post>"));
       }
-
     });
 
     // Process inbound messages and pass it to the right message handler.
@@ -96,38 +99,38 @@ export class myQMqtt {
       if(this.subscriptions[topic]) {
 
         this.subscriptions[topic](message);
-
       }
     });
 
     // Notify the user when there's a connectivity error.
-    this.mqtt.on("error", (error: NodeJS.ErrnoException) => {
+    this.mqtt.on("error", (error: Error) => {
 
-      switch(error.code) {
+      switch((error as NodeJS.ErrnoException).code) {
+
         case "ECONNREFUSED":
-          this.log.error("MQTT Broker: Connection refused (url: %s). Will retry again in %s minute%s.",
-            this.config.mqttUrl,
+
+          this.log.error("MQTT Broker: Connection refused (url: %s). Will retry again in %s minute%s.", this.config.mqttUrl,
             MYQ_MQTT_RECONNECT_INTERVAL / 60, MYQ_MQTT_RECONNECT_INTERVAL / 60 > 1 ? "s": "");
           break;
 
         case "ECONNRESET":
-          this.log.error("MQTT Broker: Connection reset (url: %s). Will retry again in %s minute%s.",
-            this.config.mqttUrl,
+
+          this.log.error("MQTT Broker: Connection reset (url: %s). Will retry again in %s minute%s.", this.config.mqttUrl,
             MYQ_MQTT_RECONNECT_INTERVAL / 60, MYQ_MQTT_RECONNECT_INTERVAL / 60 > 1 ? "s": "");
           break;
 
         case "ENOTFOUND":
+
           this.mqtt?.end(true);
           this.log.error("MQTT Broker: Hostname or IP address not found. (url: %s).", this.config.mqttUrl);
           break;
 
         default:
-          this.log.error("MQTT Broker: %s (url: %s). Will retry again in %s minute%s.",
-            error, this.config.mqttUrl,
+
+          this.log.error("MQTT Broker: %s (url: %s). Will retry again in %s minute%s.", error, this.config.mqttUrl,
             MYQ_MQTT_RECONNECT_INTERVAL / 60, MYQ_MQTT_RECONNECT_INTERVAL / 60 > 1 ? "s": "");
           break;
       }
-
     });
   }
 
@@ -136,6 +139,7 @@ export class myQMqtt {
 
     // No accessory, we're done.
     if(!accessory) {
+
       return;
     }
 
@@ -153,6 +157,7 @@ export class myQMqtt {
 
     // No accessory, we're done.
     if(!accessory) {
+
       return;
     }
 

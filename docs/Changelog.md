@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 3.0.0 (2023-08-19)
+  * New feature: updated and modernized webUI to be inline with my other plugins. **Please note: there are several breaking changes to feature option names in this release. Please use the webUI to configure feature options.** For those familiar with one of my other plugins, `homebridge-unifi-protect` the webUI will look quite familiar to you.
+  * New feature: you can now synchronize names of your myQ devices with HomeKit. Synchronization is one-way and it will always view the myQ name as the source. The option is disabled by default.
+  * Improvement: further refinements to the myQ API to handle some of the more common errors gracefully and be more forgiving of issues on the myQ cloud end of the equation.
+  * **Note as of v3.0.0, Node 18 is the minimum required version of Node for `homebridge-myq`.**
+  * Housekeeping and documentation improvements.
+
 ## 2.12.0 (2023-05-14)
   * Housekeeping.
 

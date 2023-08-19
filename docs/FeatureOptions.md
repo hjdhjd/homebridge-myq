@@ -17,30 +17,76 @@
 `homebridge-myq` is a [Homebridge](https://homebridge.io) plugin that makes myQ-enabled devices available to [Apple's](https://www.apple.com) [HomeKit](https://www.apple.com/ios/home) smart home platform. myQ-enabled devices include many smart garage door openers made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door or other device is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
 
 ### Feature Options
-Feature options allow you to enable or disable certain features in this plugin.
 
-The `options` setting is an array of strings used to customize feature options. Available options:
+Feature options allow you to enable or disable certain features in this plugin. These feature options provide unique flexibility by also allowing you to set a scope for each option that allows you more granular control in how this plugin makes features and capabilities available in HomeKit.
 
-- `Disable.<your_serial_number>` - hide the opener or gateway identified by `<your_serial_number>` from HomeKit.
-- `Enable.<your_serial_number>` (default) - show the opener or gateway identified by `<your_serial_number>` from HomeKit.
+The priority given to these options works in the following order, from highest to lowest priority where settings that are higher in priority will override the ones below:
 
-- `Disable.BatteryInfo` - disable low battery notification for battery-enabled door position sensors for myQ garage openers.
-- `Enable.BatteryInfo` (default) - disable low battery notification for battery-enabled door position sensors for myQ garage openers.
+  * Device options that are enabled or disabled.
+  * Global options that are enabled or disabled.
 
-- `Disable.ReadOnly` (default) - enable HomeKit commands to open and close myQ garage openers.
-- `Enable.ReadOnly` - disable HomeKit commands from opening and closing myQ garage openers.
+All feature options can be set at any scope level, or at multiple scope levels. If an option isn't applicable to a particular category of device, it is ignored. If you want to override a global feature option you've set, you can override the global feature option for the individual device, if you choose.
 
-With both the `Disable` and `Enable` options, replace `<your_serial_number>` with the serial number for your specific device found within the device "Accessory Details" in the Home app.
+**Note: it's strongly recommended that you use the Homebridge webUI](https://github.com/homebridge/homebridge-config-ui-x) to configure this plugin - it's easier to use for most people, and will ensure you always have a valid configuration.**
 
-The plugin will log all devices it encounters and knows about, and you can use that to guide what you'd like to hide or show.
+#### Specifying Scope
+Scoping rules:
 
-Before using these features, you should understand how gateways and openers work in myQ. Gateways are the devices in your home that actually communicate your status to myQ. Openers are attached to gateways. A typical home will have a single gateway and one, or more, openers. If you choose to hide a gateway, you will also hide all the openers associated with that gateway.
+  * If you don't use a scoping specifier, feature options will be applied globally for all devices and streaming clients.
+  * To use a device-specific feature option, append the option with `.serial`, where `serial` is the serial number of the myQ device, as shown in the `hombridge-myq` logs within Homebridge.
 
-If you've hidden a gateway, and all it's openers with it, you can selectively enable a single opener associated with that gateway by explicitly setting a `Show.` feature option. This should give you a lot of richness in how you enable or disable devices for HomeKit use.
+`homebridge-myq` will log all devices it discovers on startup, including serial numbers, which you can use to tailor the feature options you'd like to enable or disable on a per-device basis.
 
-The priority given to these options works in this order, from highest to lowest priority where settings that are higher in priority can override lower ones:
+### Getting Started
+Before using these features, you should understand how feature options propagate to controllers and the devices attached to them. If you choose to disable a controller from being available to HomeKit, you will also disable all the cameras attached to that controller. If you've disabled a controller, you can selectively enable a single device associated with that controller by explicitly using the `Enable.` Feature Option with that device's serial number. This provides you a lot of richness in how you enable or disable devices for HomeKit use.
 
-* Show any opener we've explicitly said to show.
-* Show any gateway we've explicitly said to show.
-* Hide any opener we've explicitly hidden.
-* Hide any gateway we've explicitly hidden.
+The `options` setting is an array of strings used to customize Feature Options in your `config.json`. I would encourage most users, however, to use the [Homebridge webUI](https://github.com/homebridge/homebridge-config-ui-x), to configure Feature Options as well as other options in this plugin. It contains additional validation checking of parameters to ensure the configuration is always valid.
+
+#### Example Configuration
+An example `options` setting might look like this in your config.json:
+
+```js
+"platforms": [
+  {
+    "platform": "myQ",
+
+    "options": [
+      "Disable.Device.CG12345",
+      "Enable.Device.CG6789"
+    ],
+
+    "email": "email@email.com",
+    "password": "password"
+  }
+]
+```
+In this example:
+
+* The first line `Disable.Device.CG12345` prevents the door opener with the serial number `CG12345` from appearing in HomeKit.
+* The second line `Enable.Device.CG6789` shows the door opener with the serial number `CG6789` in HomeKit. In this instance, an option such as this one is unnecessary given that myQ devices are shown by default in `homebridge-myq` and is provided as an example only.
+
+### <A NAME="reference"></A>Feature Options Reference
+Feature options provide a rich mechanism for tailoring your `homebridge-myq` experience. The reference below is divided into functional category groups:
+
+**Note: it's strongly recommended that you use the Homebridge webUI](https://github.com/homebridge/homebridge-config-ui-x) to configure this plugin - it's easier to use for most people, and will ensure you always have a valid configuration.**
+
+ * [Device](#device): Device feature options.
+ * [Opener](#opener): Opener feature options.
+
+#### <A NAME="device"></A>Device feature options.
+
+These option(s) apply to: all myQ devices
+
+| Option                                           | Description
+|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| `Device`                                         | Make this device available in HomeKit. **(default: enabled)**.
+| `Device.SyncNames`                               | Synchronize the myQ name of this device with HomeKit. Synchronization is one-way only, syncing the device name from myQ to HomeKit. **(default: disabled)**.
+
+#### <A NAME="opener"></A>Opener feature options.
+
+These option(s) apply to: myQ garage door and gate openers
+
+| Option                                           | Description
+|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| `Opener.ReadOnly`                                | Make this opener read-only by ignoring open and close requests from HomeKit. **(default: disabled)**.
+| `Opener.BatteryInfo`                             | Display battery status information for myQ door position sensors. You may want to disable this if the myQ status information is incorrectly resulting in a potential notification annoyance in the Home app. **(default: enabled)**. <BR>*Supported on myQ devices that have a door position sensor.*
