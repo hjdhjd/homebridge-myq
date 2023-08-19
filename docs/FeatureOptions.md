@@ -38,7 +38,7 @@ Scoping rules:
 `homebridge-myq` will log all devices it discovers on startup, including serial numbers, which you can use to tailor the feature options you'd like to enable or disable on a per-device basis.
 
 ### Getting Started
-Before using these features, you should understand how feature options propagate to controllers and the devices attached to them. If you choose to disable a controller from being available to HomeKit, you will also disable all the cameras attached to that controller. If you've disabled a controller, you can selectively enable a single device associated with that controller by explicitly using the `Enable.` Feature Option with that device's serial number. This provides you a lot of richness in how you enable or disable devices for HomeKit use.
+Before using these features, you should understand how feature options propagate the devices attached to them. If you've disabled an option globally, you can selectively enable an option on a single device by explicitly using `Enable.` Feature Option with that device's serial number. This provides you a lot of richness in how you enable or disable devices for HomeKit use.
 
 The `options` setting is an array of strings used to customize Feature Options in your `config.json`. I would encourage most users, however, to use the [Homebridge webUI](https://github.com/homebridge/homebridge-config-ui-x), to configure Feature Options as well as other options in this plugin. It contains additional validation checking of parameters to ensure the configuration is always valid.
 
