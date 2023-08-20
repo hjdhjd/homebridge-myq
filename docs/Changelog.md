@@ -126,7 +126,7 @@ All notable changes to this project will be documented in this file. This projec
   * Support self-signed TLS certificates for MQTT brokers.
 
 ## 2.2.1 (2020-09-14)
-  * Feature: MQTT support. Read the [MQTT documentation](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md) for more information.
+  * Feature: MQTT support. Read the [MQTT documentation](https://github.com/hjdhjd/homebridge-myq/blob/main/docs/MQTT.md) for more information.
   * Improved responsiveness when we know certain events are happening.
   * Housekeeping and general improvements.
 

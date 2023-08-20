@@ -1,7 +1,7 @@
 <SPAN ALIGN="CENTER" STYLE="text-align:center">
 <DIV ALIGN="CENTER" STYLE="text-align:center">
 
-[![homebridge-myq: Native HomeKit support for myQ garage door openers and other devices](https://raw.githubusercontent.com/hjdhjd/homebridge-myq/master/homebridge-myq.svg)](https://github.com/hjdhjd/homebridge-myq)
+[![homebridge-myq: Native HomeKit support for myQ garage door openers and other devices](https://raw.githubusercontent.com/hjdhjd/homebridge-myq/main/homebridge-myq.svg)](https://github.com/hjdhjd/homebridge-myq)
 
 # Homebridge myQ
 
@@ -43,7 +43,7 @@ What does *just work* mean in practice? It means that this plugin will discover 
 
 - **The ability to [selectively hide and show](#feature-options) specific myQ devices.** For those who only want to show particular devices in HomeKit, or particular homes, a flexible and intuitive way to configure device availability at a granular level is available.
 
-- **Full MQTT support.** For those who use MQTT, this plugin provides full MQTT support with a rich set of options. [Read the MQTT documentation](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md) for more details.
+- **Full MQTT support.** For those who use MQTT, this plugin provides full MQTT support with a rich set of options. [Read the MQTT documentation](https://github.com/hjdhjd/homebridge-myq/blob/main/docs/MQTT.md) for more details.
 
 ### <A NAME="myq-contribute"></A>How you can contribute and make this plugin even better
 The myQ API is undocumented and implementing a plugin like this one is the result of many hours of reverse engineering, trial and error, and community support. This work stands on the shoulders of other myQ API projects out there and this project attempts to contribute back to that community base of knowledge to further improve myQ support for everyone.
@@ -62,10 +62,10 @@ Additional device types will be added as time allows. It's unlikely I will add s
   * [Additional Notes](#notes): some things you should be aware of, including myQ-specific quirks.
 
 * Advanced Topics
-  * [Feature Options](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/FeatureOptions.md): granular options to allow you to show or hide specific garage door openers and more.
-  * [MQTT](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/MQTT.md): how to configure MQTT support.
-  * [Advanced Configuration](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/AdvancedOptions.md): complete list of configuration options available in this plugin.
-  * [Changelog](https://github.com/hjdhjd/homebridge-myq/blob/master/docs/Changelog.md): changes and release history of this plugin, starting with v2.0.
+  * [Feature Options](https://github.com/hjdhjd/homebridge-myq/blob/main/docs/FeatureOptions.md): granular options to allow you to show or hide specific garage door openers and more.
+  * [MQTT](https://github.com/hjdhjd/homebridge-myq/blob/main/docs/MQTT.md): how to configure MQTT support.
+  * [Advanced Configuration](https://github.com/hjdhjd/homebridge-myq/blob/main/docs/AdvancedOptions.md): complete list of configuration options available in this plugin.
+  * [Changelog](https://github.com/hjdhjd/homebridge-myq/blob/main/docs/Changelog.md): changes and release history of this plugin, starting with v2.0.
 
 ## Installation
 If you are new to Homebridge, please first read the [Homebridge](https://homebridge.io) [documentation](https://github.com/homebridge/homebridge/wiki) and installation instructions before proceeding.
@@ -100,7 +100,7 @@ For most people, I recommend using [Homebridge Configuration web UI](https://git
 ## Plugin Development Dashboard
 This is mostly of interest to the true developer nerds amongst us.
 
-[![License](https://img.shields.io/npm/l/homebridge-myq?color=%230559C9&logo=open%20source%20initiative&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/blob/master/LICENSE.md)
+[![License](https://img.shields.io/npm/l/homebridge-myq?color=%230559C9&logo=open%20source%20initiative&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/blob/main/LICENSE.md)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/hjdhjd/homebridge-myq/ci.yml?branch=main&color=%230559C9&logo=github-actions&logoColor=%23FFFFFF&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/actions?query=workflow%3A%22Continuous+Integration%22)
 [![Dependencies](https://img.shields.io/librariesio/release/npm/homebridge-myq?color=%230559C9&logo=dependabot&style=for-the-badge)](https://libraries.io/npm/homebridge-myq)
-[![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/hjdhjd/homebridge-myq/latest?color=%230559C9&logo=github&sort=semver&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/commits/master)
+[![GitHub commits since latest release (by SemVer)](https://img.shields.io/github/commits-since/hjdhjd/homebridge-myq/latest?color=%230559C9&logo=github&sort=semver&style=for-the-badge)](https://github.com/hjdhjd/homebridge-myq/commits/main)
