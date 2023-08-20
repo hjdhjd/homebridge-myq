@@ -14,6 +14,9 @@ export const MYQ_ACTIVE_DEVICE_REFRESH_DURATION = 60 * 5;
 // How long, in seconds, should we alert a user to an obstruction.
 export const MYQ_OBSTRUCTION_ALERT_DURATION = 30;
 
+// Default duration, in seconds, before triggering occupancy on an opener in the open state.
+export const MYQ_OCCUPANCY_DURATION = 300;
+
 // How often, in seconds, should we try to reconnect with an MQTT broker, if we have one configured.
 export const MYQ_MQTT_RECONNECT_INTERVAL = 60;
 

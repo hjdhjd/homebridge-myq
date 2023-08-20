@@ -3,7 +3,7 @@
  * myq-device.ts: Base class for all myQ devices.
  */
 import { API, HAP, PlatformAccessory } from "homebridge";
-import { isOptionEnabled, myQOptions } from "./myq-options.js";
+import { getOptionFloat, getOptionNumber, getOptionValue, isOptionEnabled, myQOptions } from "./myq-options.js";
 import { myQApi, myQDevice } from "@hjdhjd/myq";
 import { myQPlatform } from "./myq-platform.js";
 import util from "node:util";
@@ -20,8 +20,10 @@ interface myQLogging {
 // Device-specific options and settings.
 interface myQHints {
 
-  showBatteryInfo: boolean,
+  occupancyDuration: number,
+  occupancySensor: boolean,
   readOnly: boolean,
+  showBatteryInfo: boolean,
   syncNames: boolean
 }
 
@@ -85,7 +87,10 @@ export abstract class myQAccessory {
     }
 
     // Execute the command.
-    await this.myQApi.execute(this.myQ, myQCommand);
+    if(!(await this.myQApi.execute(this.myQ, myQCommand))) {
+
+      return false;
+    }
 
     // Increase the frequency of our polling for state updates to catch any updates from myQ.
     // This will trigger polling at activeRefreshInterval until activeRefreshDuration is hit. If you
@@ -123,6 +128,18 @@ export abstract class myQAccessory {
     }
 
     return true;
+  }
+
+  // Utility function to return a floating point configuration parameter on a device.
+  public getFeatureFloat(option: string): number | undefined {
+
+    return getOptionFloat(getOptionValue(this.platform.configOptions, this.myQ, option));
+  }
+
+  // Utility function to return an integer configuration parameter on a device.
+  public getFeatureNumber(option: string): number | undefined {
+
+    return getOptionNumber(getOptionValue(this.platform.configOptions, this.myQ, option));
   }
 
   // Utility for checking feature options on a device.
