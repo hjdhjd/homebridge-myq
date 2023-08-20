@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 3.1.0 (2023-08-20)
+  * New feature: open state occupancy sensor support. This is a useful feature to those who want to create automations based on the opener being **open** for an extended duration of time. By default, the duration is 5 minutes, but it is configurable within the myQ webUI. See the feature option tab for all the goodies.
+  * Improvement: commands to offline myQ garage door openers are more gracefully handled.
+
 ## 3.0.0 (2023-08-19)
   * New feature: updated and modernized webUI to be inline with my other plugins. **Please note: there are several breaking changes to feature option names in this release. Please use the webUI to configure feature options.** For those familiar with one of my other plugins, `homebridge-unifi-protect` the webUI will look quite familiar to you.
   * New feature: you can now synchronize names of your myQ devices with HomeKit. Synchronization is one-way and it will always view the myQ name as the source. The option is disabled by default.
