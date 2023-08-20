@@ -1,25 +1,47 @@
-/* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* jshint node: true,esversion: 9, -W014, -W033 */
-/* eslint-disable new-cap */
-'use strict';
+/* Copyright(C) 2017-2023, HJD (https://github.com/hjdhjd). All rights reserved.
+ *
+ * server.js: homebridge-myq webUI server API.
+ *
+ * This module is heavily inspired by the homebridge-config-ui-x source code and borrows from both.
+ * Thank you oznu for your contributions to the HomeKit world.
+ */
+"use strict";
 
 import { featureOptionCategories, featureOptions, isOptionEnabled } from "../dist/myq-options.js";
 import { HomebridgePluginUiServer } from "@homebridge/plugin-ui-utils";
 import { myQApi } from "@hjdhjd/myq";
-import * as fs from "node:fs";
 
 class PluginUiServer extends HomebridgePluginUiServer {
   constructor () {
     super();
+
+    // Register getDevices() with the Homebridge server API.
+    this.#registerGetDevices();
+
+    // Register getOptions() with the Homebridge server API.
+    this.#registerGetOptions();
+
+    this.ready();
+  }
+
+  // Register the getDevices() webUI server API endpoint.
+  #registerGetDevices() {
 
     // Return the list of myQ devices.
     this.onRequest("/getDevices", async (myQCredentials) => {
 
       try {
 
+        const log = {
+
+          debug: (message, parameters) => {},
+          error: (message, parameters) => console.error(util.format(message, ...parameters)),
+          info: (message, parameters) => {},
+          warn: (message, parameters) => console.log(util.format(message, ...parameters))
+        };
+
         // Connect to the myQ API.
-        const myQ = new myQApi(myQCredentials.email, myQCredentials.password, undefined, myQCredentials.myQRegion);
+        const myQ = new myQApi(myQCredentials.email, myQCredentials.password, log, myQCredentials.myQRegion);
 
         // Retrieve the list of myQ devices.
         if(!(await myQ.refreshDevices())) {
@@ -63,6 +85,10 @@ class PluginUiServer extends HomebridgePluginUiServer {
         return [ -1 ];
       }
     });
+  }
+
+  // Register the getOptions() webUI server API endpoint.
+  #registerGetOptions() {
 
     // Return the list of options configured for a given myQ device.
     this.onRequest("/getOptions", async(request) => {
@@ -91,8 +117,6 @@ class PluginUiServer extends HomebridgePluginUiServer {
         return {};
       }
     });
-
-    this.ready();
   }
 }
 
