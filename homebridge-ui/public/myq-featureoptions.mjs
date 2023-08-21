@@ -77,6 +77,7 @@ export class myQFeatureOptions extends FeatureOptions {
     if(!this.currentConfig[0]?.email?.length || !this.currentConfig[0]?.password?.length) {
 
       document.getElementById("headerInfo").innerHTML = "Please configure your myQ login credentials in the main settings tab before configuring feature options.";
+      document.getElementById("headerInfo").style.display = "";
       homebridge.hideSpinner();
 
       return;
@@ -245,18 +246,16 @@ export class myQFeatureOptions extends FeatureOptions {
     // Ensure we have a controller or device. The only time this won't be the case is when we're looking at global options.
     if(myQDevice) {
 
-      document.getElementById("deviceStatsHeader").style.display = "";
       document.getElementById("device_model").classList.remove("text-center");
       document.getElementById("device_model").colSpan = 1;
       document.getElementById("device_model").style.fontWeight = "normal";
       document.getElementById("device_model").innerHTML = myQDevice.hwInfo ? myQDevice.hwInfo.brand + " " + myQDevice.hwInfo.product : "Unknown";
       document.getElementById("device_serial").innerHTML = myQDevice.serial_number;
       document.getElementById("device_online").innerHTML = myQDevice.state.online ? "Online" : "Offline";
-      document.getElementById("deviceStatsTable").style.display = "inline-table";
+      document.getElementById("deviceStatsTable").style.display = "";
     } else {
 
       document.getElementById("deviceStatsTable").style.display = "none";
-      document.getElementById("deviceStatsHeader").style.display = "none";
       document.getElementById("device_model").classList.remove("text-center");
       document.getElementById("device_model").colSpan = 1;
       document.getElementById("device_model").style.fontWeight = "normal";
