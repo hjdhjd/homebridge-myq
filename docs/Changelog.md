@@ -2,8 +2,13 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 3.2.0 (2023-08-21)
+  * New feature: automation switch support. This feature is intended for automation scenarios where you have a need to bypass the very sensible security precautions HomeKit has placed on how you can automate the opening and closing of garage door openers. This feature will allow you to control the garage door opener through a switch accessory. Disabled by default, and configurable in the myQ webUI.
+  * Improvement: further refinements to the webUI and first run experience.
+  * Housekeeping.
+
 ## 3.1.0 (2023-08-20)
-  * New feature: open state occupancy sensor support. This is a useful feature to those who want to create automations based on the opener being **open** for an extended duration of time. By default, the duration is 5 minutes, but it is configurable within the myQ webUI. See the feature option tab for all the goodies.
+  * New feature: open state occupancy sensor support. This is a useful feature to those who want to create automations based on the opener being **open** for an extended duration of time. By default, the duration is 5 minutes, but it is configurable within the myQ webUI. See the feature option tab for all the goodies. Disabled by default.
   * Improvement: commands to offline myQ garage door openers are more gracefully handled.
 
 ## 3.0.0 (2023-08-19)
