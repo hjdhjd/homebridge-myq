@@ -20,6 +20,7 @@ interface myQLogging {
 // Device-specific options and settings.
 interface myQHints {
 
+  automationSwitch: boolean,
   occupancyDuration: number,
   occupancySensor: boolean,
   readOnly: boolean,

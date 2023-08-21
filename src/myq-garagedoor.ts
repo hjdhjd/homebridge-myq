@@ -33,6 +33,7 @@ export class myQGarageDoor extends myQAccessory {
     this.configureInfo();
     this.configureGarageDoor();
     this.configureBatteryInfo();
+    this.configureSwitch();
     this.configureOccupancySensor();
     this.configureMqtt();
   }
@@ -44,6 +45,7 @@ export class myQGarageDoor extends myQAccessory {
     super.configureHints();
 
     // Configure our device-class specific hints.
+    this.hints.automationSwitch = this.hasFeature("Opener.Switch");
     this.hints.occupancySensor = this.hasFeature("Opener.OccupancySensor");
     this.hints.occupancyDuration = this.getFeatureNumber("Opener.OccupancySensor.Duration") ?? MYQ_OCCUPANCY_DURATION;
     this.hints.readOnly = this.hasFeature("Opener.ReadOnly");
@@ -175,14 +177,80 @@ export class myQGarageDoor extends myQAccessory {
     return true;
   }
 
+  // Configure a switch to automate open and close events in HomeKit beyond what HomeKit might allow for a native garage opener service.
+  private configureSwitch(): boolean {
+
+    // Find the switch service, if it exists.
+    let switchService = this.accessory.getService(this.hap.Service.Switch);
+
+    // The switch is disabled by default and primarily exists for automation purposes.
+    if(!this.hints.automationSwitch) {
+
+      if(switchService) {
+
+        this.accessory.removeService(switchService);
+        this.log.info("Disabling automation switch.");
+      }
+
+      return false;
+    }
+
+    // Add the switch to the opener, if needed.
+    if(!switchService) {
+
+      switchService = new this.hap.Service.Switch(this.name + " Automation Switch");
+
+      if(!switchService) {
+
+        this.log.error("Unable to add automation switch.");
+        return false;
+      }
+
+      this.accessory.addService(switchService);
+    }
+
+    // Return the current state of the opener.
+    switchService.getCharacteristic(this.hap.Characteristic.On)?.onGet(() => {
+
+      // We're on if we are in any state other than closed (specifically open or stopped).
+      return this.doorCurrentStateBias(this.status) !== this.hap.Characteristic.CurrentDoorState.CLOSED;
+    });
+
+    // Open or close the opener.
+    switchService.getCharacteristic(this.hap.Characteristic.On)?.onSet((isOn: CharacteristicValue) => {
+
+      // Inform the user.
+      this.log.info("Automation switch: %s.", isOn ? "open" : "close" );
+
+      // Send the command.
+      if(!this.setDoorState(isOn ? this.hap.Characteristic.TargetDoorState.OPEN : this.hap.Characteristic.TargetDoorState.CLOSED)) {
+
+        // Something went wrong. Let's make sure we revert the switch to it's prior state.
+        setTimeout(() => {
+
+          switchService?.updateCharacteristic(this.hap.Characteristic.On, !isOn);
+        }, 50);
+      }
+    });
+
+    // Initialize the switch.
+    switchService.addOptionalCharacteristic(this.hap.Characteristic.ConfiguredName);
+    switchService.updateCharacteristic(this.hap.Characteristic.ConfiguredName, this.name + " Automation Switch");
+    switchService.updateCharacteristic(this.hap.Characteristic.On, this.doorCurrentStateBias(this.status) !== this.hap.Characteristic.CurrentDoorState.CLOSED);
+
+    this.log.info("Enabling automation switch.");
+
+    return true;
+  }
+
   // Configure the myQ open door occupancy sensor for HomeKit.
-  protected configureOccupancySensor(isEnabled = true, isInitialized = false): boolean {
+  protected configureOccupancySensor(): boolean {
 
     // Find the occupancy sensor service, if it exists.
     let occupancyService = this.accessory.getService(this.hap.Service.OccupancySensor);
 
     // The occupancy sensor is disabled by default and primarily exists for automation purposes.
-    if(!isEnabled || !this.hints.occupancySensor) {
+    if(!this.hints.occupancySensor) {
 
       if(occupancyService) {
 
@@ -208,26 +276,21 @@ export class myQGarageDoor extends myQAccessory {
       this.accessory.addService(occupancyService);
     }
 
-    // Have we previously initialized this sensor? We assume not by default, but this allows for scenarios where you may be dynamically reconfiguring a sensor at
-    // runtime.
-    if(!isInitialized) {
+    // Ensure we can configure the name of the occupancy sensor.
+    occupancyService.addOptionalCharacteristic(this.hap.Characteristic.ConfiguredName);
+    occupancyService.updateCharacteristic(this.hap.Characteristic.ConfiguredName, this.name + " Open");
 
-      // Ensure we can configure the name of the occupancy sensor.
-      occupancyService.addOptionalCharacteristic(this.hap.Characteristic.ConfiguredName);
-      occupancyService.updateCharacteristic(this.hap.Characteristic.ConfiguredName, this.name + " Open");
+    // Initialize the state of the occupancy sensor.
+    occupancyService.updateCharacteristic(this.hap.Characteristic.OccupancyDetected, false);
+    occupancyService.updateCharacteristic(this.hap.Characteristic.StatusActive, this.isOnline);
 
-      // Initialize the state of the occupancy sensor.
-      occupancyService.updateCharacteristic(this.hap.Characteristic.OccupancyDetected, false);
-      occupancyService.updateCharacteristic(this.hap.Characteristic.StatusActive, this.isOnline);
+    occupancyService.getCharacteristic(this.hap.Characteristic.StatusActive).onGet(() => {
 
-      occupancyService.getCharacteristic(this.hap.Characteristic.StatusActive).onGet(() => {
+      return this.isOnline;
+    });
 
-        return this.isOnline;
-      });
-
-      this.log.info("Enabling the open indicator occupancy sensor. Occupancy will be triggered when the opener has been continuously open for more than %s seconds.",
-        this.hints.occupancyDuration);
-    }
+    this.log.info("Enabling the open indicator occupancy sensor. Occupancy will be triggered when the opener has been continuously open for more than %s seconds.",
+      this.hints.occupancyDuration);
 
     return true;
   }
@@ -381,11 +444,8 @@ export class myQGarageDoor extends myQAccessory {
   // Update our HomeKit status.
   public updateState(): boolean {
 
-    // Update battery status only if it's supported by the device.
-    if(this.batteryDeviceSupport) {
-
-      this.accessory.getService(this.hap.Service.Battery)?.updateCharacteristic(this.hap.Characteristic.StatusLowBattery, this.dpsBatteryStatus);
-    }
+    // Update our active status.
+    this.accessory.getService(this.hap.Service.GarageDoorOpener)?.updateCharacteristic(this.hap.Characteristic.StatusActive, this.isOnline);
 
     // Update our configured name, if requested.
     if(this.hints.syncNames) {
@@ -398,8 +458,11 @@ export class myQGarageDoor extends myQAccessory {
       }
     }
 
-    // Update our active status.
-    this.accessory.getService(this.hap.Service.GarageDoorOpener)?.updateCharacteristic(this.hap.Characteristic.StatusActive, this.isOnline);
+    // Update battery status only if it's supported by the device.
+    if(this.batteryDeviceSupport) {
+
+      this.accessory.getService(this.hap.Service.Battery)?.updateCharacteristic(this.hap.Characteristic.StatusLowBattery, this.dpsBatteryStatus);
+    }
 
     // Trigger our occupancy timer, if configured to do so.
     if(this.hints.occupancySensor) {
@@ -449,8 +512,7 @@ export class myQGarageDoor extends myQAccessory {
     // in order to work around some notification quirks HomeKit occasionally has.
     if(this.status !== this.hap.Characteristic.CurrentDoorState.STOPPED) {
 
-      this.accessory.getService(this.hap.Service.GarageDoorOpener)?.
-        updateCharacteristic(this.hap.Characteristic.TargetDoorState, this.doorTargetStateBias(this.status));
+      this.accessory.getService(this.hap.Service.GarageDoorOpener)?.updateCharacteristic(this.hap.Characteristic.TargetDoorState, this.doorTargetStateBias(this.status));
     }
 
     this.accessory.getService(this.hap.Service.GarageDoorOpener)?.updateCharacteristic(this.hap.Characteristic.CurrentDoorState, this.status);
@@ -459,12 +521,15 @@ export class myQGarageDoor extends myQAccessory {
     this.platform.pollOptions.count = 0;
     this.platform.poll(this.config.refreshInterval * -1);
 
-
     // Inform the user of the state change.
     this.log.info("%s.", this.translateDoorState(this.status));
 
     // Publish to MQTT, if the user has configured it.
     this.platform.mqtt?.publish(this.accessory, "garagedoor", this.translateDoorState(this.status).toLowerCase());
+
+    // Update our automation switch, if it exists.
+    this.accessory.getService(this.hap.Service.Switch)
+      ?.updateCharacteristic(this.hap.Characteristic.On, this.doorCurrentStateBias(this.status) !== this.hap.Characteristic.CurrentDoorState.CLOSED);
 
     return true;
   }

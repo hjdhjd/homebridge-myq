@@ -44,6 +44,7 @@ export const featureOptions: { [index: string]: FeatureOption[] } = {
 
     { default: false, description: "Make this opener read-only by ignoring open and close requests from HomeKit.", name: "ReadOnly" },
     { default: true, description: "Display battery status information for myQ door position sensors. You may want to disable this if the myQ status information is incorrectly resulting in a potential notification annoyance in the Home app.", hasProperty: [ "dps_low_battery_mode" ], name: "BatteryInfo" },
+    { default: false, description: "Add a switch accessory to control the opener. This can be useful in automation scenarios where you want to work around HomeKit's security restrictions for controlling garage door openers.", name: "Switch" },
     { default: false, description: "Add an occupancy sensor accessory using the open state of the opener to determine occupancy. This can be useful in automation scenarios where you want to trigger an action based on the opener being open for an extended period of time.", name: "OccupancySensor" },
     { default: false, defaultValue: MYQ_OCCUPANCY_DURATION, description: "Duration, in seconds, to wait once the opener has reached the open state before indicating occupancy.", group: "OccupancySensor", name: "OccupancySensor.Duration" }
   ]
