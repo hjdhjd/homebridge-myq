@@ -10,7 +10,7 @@
     "properties": {
 
       "email": {
-        "title": "myQ Username",
+        "title": "myQ Email",
         "type": "string",
         "required": true,
         "placeholder": "user@example.com",
@@ -117,16 +117,15 @@
   "layout": [
     {
       "type": "section",
-      "title": "General Options",
+      "title": "myQ Login Credentials",
       "expandable": true,
       "expanded": false,
       "items": [
         {
-          "description": "Enter your myQ username and password below.",
+          "description": "Enter your myQ email and password below.",
           "items": [
             "email",
-            "password",
-            "name"
+            "password"
           ]
         }
       ]
@@ -177,6 +176,7 @@
         {
           "description": "These settings should be rarely used or needed by most people. Use these with caution.",
           "items": [
+            "name",
             "myQRegion",
             "refreshInterval",
             "activeRefreshInterval",

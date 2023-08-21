@@ -3,13 +3,31 @@
         alt="homebridge-myq logo" style="width: 60%;" />
 </p>
 <div id="pageIntro" style="display: none;">
-    <p class="lead text-center">Thank you for installing <strong>homebridge-myq</strong></p>
-    <div class="text-center">
-       To optimize performance and responsiveness, please make this plugin a <a target="_blank" href="https://github.com/homebridge/homebridge/wiki/Child-Bridges">child bridge</a> once you've completed configuration.
-       <br>
-       <button type="button" class="btn btn-primary" id="introLink">Continue &rarr;</button>
-    </div>
- </div>
+  <div class="text-center">
+    <p>Please enter your myQ login credentials to get started with <strong>homebridge-myq</strong>.</p>
+    <table class="table table-sm table-borderless">
+      <tr>
+        <td>
+          <input type="email" placeholder="myQ email address" size="30" id="email"></input>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <input type="password" placeholder="myQ password" size="30" id="password"></input>
+        </td>
+      </tr>
+      <tr>
+        <td class="text-danger" id="loginError">
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+    <br>
+      <button type="button" class="btn btn-primary" id="firstRun">Login to myQ &rarr;</button>
+    <br>
+      To optimize performance and responsiveness, please make this plugin a <a target="_blank" href="https://github.com/homebridge/homebridge/wiki/Child-Bridges">child bridge</a> once you've completed configuration.
+  </div>
+</div>
 <div id="menuWrapper" class="btn-group w-100 mb-0" role="group" aria-label="UI Menu" style="display: none;">
     <button type="button" class="btn btn-primary" id="menuSettings">
         Settings
@@ -19,12 +37,6 @@
     </button>
     <button type="button" class="btn btn-primary mr-0" id="menuHome">
         Support
-    </button>
-</div>
-<div id="disabledBanner" class="alert alert-secondary mb-0 mt-3" role="alert" style="display: none;">
-    Plugin is currently disabled
-    <button id="disabledEnable" type="button" class="btn btn-link p-0 m-0 float-right">
-        Enable
     </button>
 </div>
 <div id="pageFeatureOptions" class="mt-4" style="display: none;">

@@ -10,8 +10,10 @@
 import { featureOptionCategories, featureOptions, isOptionEnabled } from "../dist/myq-options.js";
 import { HomebridgePluginUiServer } from "@homebridge/plugin-ui-utils";
 import { myQApi } from "@hjdhjd/myq";
+import util from "node:util";
 
 class PluginUiServer extends HomebridgePluginUiServer {
+
   constructor () {
     super();
 
@@ -35,9 +37,9 @@ class PluginUiServer extends HomebridgePluginUiServer {
         const log = {
 
           debug: (message, parameters) => {},
-          error: (message, parameters) => console.error(util.format(message, ...parameters)),
+          error: (message, parameters = []) => console.error(util.format(message, ...parameters)),
           info: (message, parameters) => {},
-          warn: (message, parameters) => console.log(util.format(message, ...parameters))
+          warn: (message, parameters = []) => console.log(util.format(message, ...parameters))
         };
 
         // Connect to the myQ API.
