@@ -299,7 +299,7 @@ export class myQGarageDoor extends myQAccessory {
   private configureMqtt(): void {
 
     // Return the current status of the garage door.
-    this.platform.mqtt?.subscribe(this.accessory, "garagedoor/get", (message: Buffer) => {
+    this.platform.mqtt?.subscribe(this.accessory, this.myQ, "garagedoor/get", (message: Buffer) => {
 
       const value = message?.toString()?.toLowerCase();
 
@@ -314,7 +314,7 @@ export class myQGarageDoor extends myQAccessory {
     });
 
     // Return the current status of the garage door.
-    this.platform.mqtt?.subscribe(this.accessory, "garagedoor/set", (message: Buffer) => {
+    this.platform.mqtt?.subscribe(this.accessory, this.myQ, "garagedoor/set", (message: Buffer) => {
 
       const value = message?.toString()?.toLowerCase();
       let targetName;

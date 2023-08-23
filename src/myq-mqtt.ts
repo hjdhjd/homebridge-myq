@@ -16,20 +16,21 @@ export class myQMqtt {
   private isConnected: boolean;
   private log: Logging;
   private mqtt: MqttClient | null;
-  private myq: myQPlatform;
+  private platform: myQPlatform;
   private subscriptions: { [index: string]: (cbBuffer: Buffer) => void };
 
-  constructor(myq: myQPlatform) {
+  constructor(platform: myQPlatform) {
 
-    this.config = myq.config;
-    this.debug = myq.debug.bind(myq);
+    this.config = platform.config;
+    this.debug = platform.debug.bind(platform);
     this.isConnected = false;
-    this.log = myq.log;
+    this.log = platform.log;
     this.mqtt = null;
-    this.myq = myq;
+    this.platform = platform;
     this.subscriptions = {};
 
     if(!this.config.mqttUrl) {
+
       return;
     }
 
@@ -143,17 +144,23 @@ export class myQMqtt {
       return;
     }
 
-    // Grab the accessory's serial number.
-    const serial = (accessory.context.device as myQDevice).serial_number;
+    // Expand our topic.
+    const expandedTopic = this.expandTopic(topic, accessory);
 
-    this.debug("MQTT publish: %s Message: %s.", this.config.mqttTopic + "/" + serial + "/" + topic, message);
+    // No valid topic returned, we're done.
+    if(!expandedTopic) {
 
-    // By default, we publish as: myq/serial/event
-    this.mqtt?.publish(this.config.mqttTopic + "/" + serial + "/" + topic, message);
+      return;
+    }
+
+    this.debug("MQTT publish: %s Message: %s.", expandedTopic, message);
+
+    // By default, we publish as: myq/serial/event.
+    this.mqtt?.publish(expandedTopic, message);
   }
 
   // Subscribe to an MQTT topic.
-  public subscribe(accessory: PlatformAccessory, topic: string, callback: (cbBuffer: Buffer) => void): void {
+  public subscribe(accessory: PlatformAccessory, device: myQDevice, topic: string, callback: (cbBuffer: Buffer) => void): void {
 
     // No accessory, we're done.
     if(!accessory) {
@@ -161,10 +168,14 @@ export class myQMqtt {
       return;
     }
 
-    // Grab the accessory's serial number.
-    const serial = (accessory.context.device as myQDevice).serial_number;
+    // Expand our topic.
+    const expandedTopic = this.expandTopic(topic, accessory, device);
 
-    const expandedTopic = this.config.mqttTopic + "/" + serial + "/" + topic;
+    // No valid topic returned, we're done.
+    if(!expandedTopic) {
+
+      return;
+    }
 
     this.debug("MQTT subscribe: %s.", expandedTopic);
 
@@ -174,5 +185,20 @@ export class myQMqtt {
     // Tell MQTT we're subscribing to this event.
     // By default, we subscribe as: myq/serial/event.
     this.mqtt?.subscribe(expandedTopic);
+  }
+
+  // Expand a topic to a unique, fully formed one.
+  private expandTopic(topic: string, accessory: PlatformAccessory, device?: myQDevice) : string | null {
+
+    // No accessory, we're done.
+    if(!accessory) {
+
+      return null;
+    }
+
+    // Use the myQ device information that's passed to us, or what's already configured on the accessory.
+    const myQ = device ?? this.platform.configuredDevices[accessory.UUID]?.myQ;
+
+    return this.config.mqttTopic + "/" + (myQ?.serial_number ?? (myQ?.name ?? "Unknown myQ Device")) + "/" + topic;
   }
 }

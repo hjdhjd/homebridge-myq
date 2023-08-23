@@ -72,7 +72,7 @@ export class myQLamp extends myQAccessory {
   private configureMqtt(): void {
 
     // Return the current status of the lamp device.
-    this.platform.mqtt?.subscribe(this.accessory, "lamp/get", (message: Buffer) => {
+    this.platform.mqtt?.subscribe(this.accessory, this.myQ, "lamp/get", (message: Buffer) => {
 
       const value = message?.toString()?.toLowerCase();
 
@@ -88,7 +88,7 @@ export class myQLamp extends myQAccessory {
     });
 
     // Return the current status of the lamp device.
-    this.platform.mqtt?.subscribe(this.accessory, "lamp/set", (message: Buffer) => {
+    this.platform.mqtt?.subscribe(this.accessory, this.myQ, "lamp/set", (message: Buffer) => {
 
       const value = message?.toString()?.toLowerCase();
       let targetName;

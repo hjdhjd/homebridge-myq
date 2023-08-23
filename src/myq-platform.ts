@@ -26,7 +26,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
   private featureOptionDefaults: { [index: string]: boolean };
   public config!: myQOptions;
   public readonly configOptions: string[];
-  private readonly configuredAccessories: { [index: string]: myQAccessory };
+  public readonly configuredDevices: { [index: string]: myQAccessory };
   public readonly hap: HAP;
   public readonly log: Logging;
   public readonly mqtt!: myQMqtt;
@@ -40,7 +40,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.accessories = [];
     this.api = api;
     this.configOptions = [];
-    this.configuredAccessories = {};
+    this.configuredDevices = {};
     this.featureOptionDefaults = {};
     this.hap = api.hap;
     this.log = log;
@@ -233,9 +233,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
       }
 
       // If we've already configured this accessory, update it's state and we're done here.
-      if(this.configuredAccessories[accessory.UUID]) {
+      if(this.configuredDevices[accessory.UUID]) {
 
-        this.configuredAccessories[accessory.UUID].myQ = device;
+        this.configuredDevices[accessory.UUID].myQ = device;
         continue;
       }
 
@@ -245,13 +245,13 @@ export class myQPlatform implements DynamicPlatformPlugin {
         case (device.device_family.indexOf("garagedoor") !== -1):
 
           // We have a garage door.
-          this.configuredAccessories[accessory.UUID] = new myQGarageDoor(this, accessory, device);
+          this.configuredDevices[accessory.UUID] = new myQGarageDoor(this, accessory, device);
           break;
 
         case (device.device_family === "lamp"):
 
           // We have a lamp.
-          this.configuredAccessories[accessory.UUID] = new myQLamp(this, accessory, device);
+          this.configuredDevices[accessory.UUID] = new myQLamp(this, accessory, device);
           break;
 
         default:
@@ -268,7 +268,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Remove myQ devices that are no longer found in the myQ API, but we still have in HomeKit.
     for(const oldAccessory of this.accessories) {
 
-      const device = this.configuredAccessories[oldAccessory.UUID];
+      const device = this.configuredDevices[oldAccessory.UUID];
 
       // We found this accessory in myQ. Figure out if we really want to see it in HomeKit.
       if(device?.hasFeature("Device")) {
@@ -278,7 +278,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
 
       this.log.info("%s: Removing myQ device from HomeKit.", device?.name ?? oldAccessory.displayName);
 
-      delete this.configuredAccessories[oldAccessory.UUID];
+      delete this.configuredDevices[oldAccessory.UUID];
       this.accessories.splice(this.accessories.indexOf(oldAccessory), 1);
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [oldAccessory]);
     }
@@ -299,9 +299,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.discoverAndSyncAccessories();
 
     // Iterate through our accessories and update its status with the corresponding myQ status.
-    for(const key in this.configuredAccessories) {
+    for(const key in this.configuredDevices) {
 
-      this.configuredAccessories[key].updateState();
+      this.configuredDevices[key].updateState();
     }
 
     return true;
