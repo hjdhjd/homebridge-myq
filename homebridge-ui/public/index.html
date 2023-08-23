@@ -1,8 +1,7 @@
 <p class="text-center">
-    <img src="https://raw.githubusercontent.com/hjdhjd/homebridge-myq/main/homebridge-myq.svg"
-        alt="homebridge-myq logo" class="w-50" />
+  <img src="https://raw.githubusercontent.com/hjdhjd/homebridge-myq/main/homebridge-myq.svg" alt="homebridge-myq logo" class="w-50" />
 </p>
-<div id="pageIntro" style="display: none;">
+<div id="pageFirstRun" style="display: none;">
   <div class="text-center">
     <p>Please enter your myQ login credentials to get started with <strong>homebridge-myq</strong>.</p>
     <table class="table table-sm table-borderless">
@@ -29,127 +28,109 @@
   </div>
 </div>
 <div id="menuWrapper" class="btn-group w-100 mb-0" role="group" aria-label="UI Menu" style="display: none;">
-    <button type="button" class="btn btn-primary" id="menuSettings">
-        Settings
-    </button>
-    <button type="button" class="btn btn-primary" id="menuFeatureOptions">
-        Feature Options
-    </button>
-    <button type="button" class="btn btn-primary mr-0" id="menuHome">
-        Support
-    </button>
+  <button type="button" class="btn btn-primary" id="menuSettings">Settings</button>
+  <button type="button" class="btn btn-primary" id="menuFeatureOptions">Feature Options</button>
+  <button type="button" class="btn btn-primary mr-0" id="menuHome">Support</button>
 </div>
 <div id="pageFeatureOptions" class="mt-4" style="display: none;">
-    <div id="deviceInfo">
-        <table class="table table-sm table-borderless">
-          <tr class="align-center">
-            <td id="headerInfo" colspan="2" class="m-0 p-2 text-center font-weight-bold"></td>
-          </tr>
-          <tr class="align-top">
-            <td rowspan="3" class="w-25">
-              <table id="sidebar" class="table table-sm table-bordered m-0 p-0">
-                <tr>
-                  <td>
-                    <table class="table table-sm table-borderless m-0 p-0" id="controllersTable">
-                    </table>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <table class="table table-sm table-borderless m-0 p-0" id="devicesTable">
-                    </table>
-                  </td>
-                </tr>
-              </table>
-            </td>
-            <td id="deviceStatsTable">
-              <table class="table table-sm table-borderless border-bottom m-0 p-0">
-                <tr id="deviceStatsHeader">
-                    <th class="m-0 p-0 w-50"><B>Model<B></th>
-                    <th class="m-0 p-0 w-20"><B>Serial</B></th>
-                    <th class="m-0 p-0 w-25"><B>Status</B></th>
-                </tr>
-                <tr>
-                    <td id="device_model" class="m-0 p-0"></td>
-                    <td id="device_serial" class="m-0 p-0"></td>
-                    <td id="device_online" class="m-0 p-0"></td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td id="configTable" class="w-100">
-            </td>
-          </tr>
-        </table>
-    </div>
+  <div id="deviceInfo">
+    <table class="table table-sm table-borderless">
+      <tr class="align-center">
+        <td id="headerInfo" colspan="2" class="m-0 p-2 text-center font-weight-bold"></td>
+      </tr>
+      <tr class="align-top">
+        <td rowspan="3" class="w-25">
+          <table id="sidebar" class="table table-sm table-bordered m-0 p-0">
+            <tr>
+              <td>
+                <table class="table table-sm table-borderless m-0 p-0" id="controllersTable"></table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table class="table table-sm table-borderless m-0 p-0" id="devicesTable"></table>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td id="deviceStatsTable">
+          <table class="table table-sm table-borderless border-bottom m-0 p-0">
+            <tr id="deviceStatsHeader">
+              <th class="m-0 p-0 w-50"><B>Model<B></th>
+              <th class="m-0 p-0" style="width: 20%;"><B>Serial</B></th>
+              <th class="m-0 p-0 w-25"><B>Status</B></th>
+            </tr>
+            <tr>
+              <td id="device_model" class="m-0 p-0"></td>
+              <td id="device_serial" class="m-0 p-0"></td>
+              <td id="device_online" class="m-0 p-0"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td id="configTable" class="w-100"></td>
+      </tr>
+    </table>
+  </div>
 </div>
 <div id="pageSupport" class="mt-4" style="display: none;">
-    <p class="text-center lead">Thank you for using <strong>homebridge-myq</strong>.</p>
+  <p class="text-center lead">Thank you for using <strong>homebridge-myq</strong>.</p>
 
-    <p>Other plugins by <a target="_blank" href="https://github.com/hjdhjd">HJD</a>: </p>
+  <p>Other plugins by <a target="_blank" href="https://github.com/hjdhjd">HJD</a>: </p>
 
-    <ul dir="auto">
-      <li><a target="_blank" href="https://github.com/hjdhjd/homebridge-unifi-protect">homebridge-unifi-protect: Complete HomeKit integration for the entire UniFi Protect ecosystem</a></li>
-    </ul>
+  <ul dir="auto">
+    <li><a target="_blank" href="https://github.com/hjdhjd/homebridge-unifi-protect">homebridge-unifi-protect: Complete HomeKit integration for the entire UniFi Protect ecosystem</a></li>
+  </ul>
 
-    <p class="text-center lead">Documentation Reference</p>
+  <p class="text-center lead">Documentation Reference</p>
 
-    <h5>Features</h5>
-    <ul dir="auto">
+  <h5>Features</h5>
+  <ul dir="auto">
+    <li>
+      Getting Started
+      <ul dir="auto">
         <li>
-            Getting Started
-            <ul dir="auto">
-                <li>
-                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#installation">Installation</a>
-                    : installing this plugin, including system requirements.
-                </li>
-                <li>
-                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#plugin-configuration">Plugin Configuration</a>
-                    : how to quickly get up and running.
-                </li>
-                <li>
-                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#notes">Additional Notes</a>
-                    : some things you should be aware of, including myQ-specific quirks.
-                </li>
-            </ul>
+          <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#installation">Installation</a>: installing this plugin, including system requirements.
         </li>
         <li>
-            Advanced Topics
-            <ul dir="auto">
-                <li>
-                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/FeatureOptions.md">Feature Options</a>
-                    : granular options to allow you to show or hide specific garage door and gate openers, and more.
-                </li>
-                <li>
-                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/MQTT.md">MQTT</a>
-                    : how to configure MQTT support.
-                </li>
-                <li>
-                    <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/AdvancedOptions.md">Advanced Configuration</a>
-                    : complete list of configuration options available in this plugin.
-                </li>
-            </ul>
+          <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#plugin-configuration">Plugin Configuration</a>: how to quickly get up and running.
         </li>
-    </ul>
+        <li>
+          <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq#notes">Additional Notes</a>: some things you should be aware of, including myQ-specific quirks.
+        </li>
+      </ul>
+    </li>
+    <li>
+      Advanced Topics
+      <ul dir="auto">
+        <li>
+          <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/FeatureOptions.md">Feature Options</a>: granular options to allow you to show or hide specific garage door and gate openers, and more.
+        </li>
+        <li>
+          <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/MQTT.md">MQTT</a>: how to configure MQTT support.
+        </li>
+        <li>
+          <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/AdvancedOptions.md">Advanced Configuration</a>: complete list of configuration options available in this plugin.
+        </li>
+      </ul>
+    </li>
+  </ul>
 
-    <h5>Help/About</h5>
+  <h5>Help/About</h5>
 
-    <div>The myQ API has largely stabilized in recent years, particularly with the advent of the v6 version of the API. However, the myQ cloud can (and does) have occasional reliability challenges that can manifest through connectivity issues that you will see in the Homebridge logs related to this plugin. These are not bugs in homebridge-myq and there's not much we can do it aside from attempt to gracefully handle the errors when they occur. The myQ cloud is quite reliable the large majority (~93-95% by my estimate) of the time.<br><br><strong class="text-danger">Please do not open bug reports related to API issues - they'll be closed summarily unless it's a new API-specific issue that's emerged as a result of changes to the undocumented myQ API.</strong></div>
-    <br>
-    <ul>
-        <li>
-            <a href="https://discord.gg/QXqfHEW"
-                target="_blank">Discord Support Channel</a>
-        </li>
-        <li>
-            <a href="https://github.com/hjdhjd/homebridge-myq/issues/new/choose"
-                target="_blank">Create a Developer Support Request</a>
-        </li>
-        <li>
-            <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/Changelog.md">Changelog and Release Notes</a>
-        </li>
-    </ul>
+  <div>The myQ API has largely stabilized in recent years, particularly with the advent of the v6 version of the API. However, the myQ cloud can (and does) have occasional reliability challenges that can manifest through connectivity issues that you will see in the Homebridge logs related to this plugin. These are not bugs in homebridge-myq and there's not much we can do it aside from attempt to gracefully handle the errors when they occur. The myQ cloud is quite reliable the large majority (~93-95% by my estimate) of the time.<br><br><strong class="text-danger">Please do not open bug reports related to API issues - they'll be closed summarily unless it's a new API-specific issue that's emerged as a result of changes to the undocumented myQ API.</strong></div>
+  <br>
+  <ul>
+    <li>
+      <a target="_blank" href="https://discord.gg/QXqfHEW">Discord Support Channel</a>
+    </li>
+    <li>
+      <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/issues/new/choose">Create a Developer Support Request</a>
+    </li>
+    <li>
+      <a target="_blank" href="https://github.com/hjdhjd/homebridge-myq/blob/main/docs/Changelog.md">Changelog and Release Notes</a>
+    </li>
+  </ul>
 </div>
-<script src="./ui.mjs" type="module">
-</script>
+<script src="./ui.mjs" type="module"></script>

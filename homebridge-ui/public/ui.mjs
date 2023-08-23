@@ -17,6 +17,7 @@ async function showFirstRun () {
   const inputPassword = document.getElementById("password");
   const tdLoginError = document.getElementById("loginError");
 
+  // Pre-populate with anything we might already have in our configuration.
   inputEmail.value = featureOptions.currentConfig[0].email ?? "";
   inputPassword.value = featureOptions.currentConfig[0].password ?? "";
 
@@ -44,7 +45,7 @@ async function showFirstRun () {
 
     if(!email?.length || !password?.length) {
 
-      tdLoginError.appendChild(document.createTextNode("You haven't entered in a valid email address or password."));
+      tdLoginError.appendChild(document.createTextNode("You haven't entered a valid email address and password."));
       homebridge.hideSpinner();
       return;
     }
@@ -65,7 +66,7 @@ async function showFirstRun () {
     await homebridge.updatePluginConfig(featureOptions.currentConfig);
 
     // Create our UI.
-    document.getElementById("pageIntro").style.display = "none";
+    document.getElementById("pageFirstRun").style.display = "none";
     document.getElementById("menuWrapper").style.display = "inline-flex";
     featureOptions.showUI();
 
@@ -73,7 +74,7 @@ async function showFirstRun () {
     // homebridge.hideSpinner();
   });
 
-  document.getElementById("pageIntro").style.display = "block";
+  document.getElementById("pageFirstRun").style.display = "block";
 }
 
 // Show the main plugin configuration tab.
@@ -135,7 +136,7 @@ async function launchWebUI() {
   // If we've got a valid myQ email address and password configured, we launch our feature option UI. Otherwise, we launch our first run UI.
   if(featureOptions.currentConfig.length && featureOptions.currentConfig[0]?.email?.length && featureOptions.currentConfig[0]?.password?.length) {
 
-    document.getElementById("menuWrapper").style.display = "inline-flex"
+    document.getElementById("menuWrapper").style.display = "inline-flex";
     featureOptions.showUI();
     return;
   }
@@ -159,7 +160,7 @@ async function launchWebUI() {
 try {
 
   launchWebUI();
-} catch (err) {
+} catch(err) {
 
   // If we had an error instantiating or updating the UI, notify the user.
   homebridge.toast.error(err.message, "Error");
