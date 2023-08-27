@@ -155,9 +155,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
   // for device discovery.
   public configureAccessory(accessory: PlatformAccessory): void {
 
-    // Zero out the myQ device pointer on startup. This will be set by device discovery.
-    delete accessory.context.device;
-
     // Add this to the accessory array so we can track it.
     this.accessories.push(accessory);
   }
