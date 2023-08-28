@@ -55,7 +55,7 @@ async function showFirstRun () {
     // Couldn't connect to the myQ API for some reason.
     if((myQDevices?.length === 1) && myQDevices[0] === -1) {
 
-      tdLoginError.appendChild(document.createTextNode("Unable to login to the myQ API. Please check your email address and password."));
+      tdLoginError.innerHTML = "Unable to login to the myQ API.<br>Please check your email address and password.<br><code class=\"text-danger\">" + (await homebridge.request("/getErrorMessage")) + "</code>";
       homebridge.hideSpinner();
       return;
     }

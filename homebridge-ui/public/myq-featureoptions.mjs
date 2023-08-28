@@ -76,7 +76,7 @@ export class myQFeatureOptions extends FeatureOptions {
     // We haven't configured anything yet - we're done.
     if(!this.currentConfig[0]?.email?.length || !this.currentConfig[0]?.password?.length) {
 
-      document.getElementById("headerInfo").innerHTML = "Please configure your myQ login credentials in the main settings tab before configuring feature options.";
+      document.getElementById("headerInfo").innerHTML = "Please configure your myQ login credentials in the settings tab before configuring feature options.";
       document.getElementById("headerInfo").style.display = "";
       homebridge.hideSpinner();
 
@@ -143,8 +143,7 @@ export class myQFeatureOptions extends FeatureOptions {
       document.getElementById("deviceStatsTable").style.display = "none";
       document.getElementById("sidebar").style.display = "none";
 
-      document.getElementById("headerInfo").innerHTML = "Unable to connect to the myQ API. Check your username and password in the main settings tab to verify they are correct, or try again later if the myQ API is currently having difficulties.";
-
+      document.getElementById("headerInfo").innerHTML = "Unable to connect to the myQ API.<br>Check your username and password in the settings tab to verify they are correct, or try again later if the myQ API is currently having difficulties.<br><code class=\"text-danger\">" + (await homebridge.request("/getErrorMessage")) + "</code>";
       document.getElementById("headerInfo").style.display = "";
 
       homebridge.hideSpinner();
