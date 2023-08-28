@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 3.3.0 (2023-08-27)
+  * Improvement: new first run user experience in the webUI for new users, improved API error reporting in the webUI.
+  * Housekeeping.
+
 ## 3.2.1 (2023-08-22)
   * Fix: address MQTT regressions.
   * Housekeeping.
