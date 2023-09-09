@@ -118,17 +118,13 @@ export class myQLamp extends myQAccessory {
       }
 
       // Move the lamp to the desired position.
-      if(this.setLampState(targetState)) {
-        this.log.info("%s command received via MQTT.", targetName);
-        return;
-      }
-
-      this.log.error("Error executing lamp command via MQTT: %s.", targetName);
+      this.log.info("%s command received via MQTT.", targetName);
+      this.setLampState(targetState);
     });
   }
 
   // Turn on or off the lamp.
-  private setLampState(value: CharacteristicValue): boolean {
+  private setLampState(value: CharacteristicValue): void {
 
     if((this.accessory.context.lampState as boolean) !== value) {
 
@@ -141,8 +137,6 @@ export class myQLamp extends myQAccessory {
 
     // Execute the command.
     void this.lampCommand(value);
-
-    return true;
   }
 
   // Update our HomeKit status.
