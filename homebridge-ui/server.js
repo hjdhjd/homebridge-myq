@@ -66,18 +66,25 @@ class PluginUiServer extends HomebridgePluginUiServer {
           error: (message, parameters = []) => {
 
             // Save the error to inform the user in the webUI.
-            this.errorInfo = util.format(message, ...parameters);
-            console.log(this.errorInfo);
+            if(!!parameters?.[Symbol.iterator]) {
+
+              this.errorInfo = util.format(message, ...parameters);
+            } else {
+
+              this.errorInfo = util.format(message, parameters);
+            }
+
+            console.error(this.errorInfo);
           },
           info: (message, parameters) => {},
-          warn: (message, parameters = []) => console.log(util.format(message, ...parameters))
+          warn: (message, parameters = []) => {}
         };
 
         // Connect to the myQ API.
-        const myQ = new myQApi(myQCredentials.email, myQCredentials.password, log, myQCredentials.myQRegion);
+        const myQ = new myQApi(log);
 
         // Retrieve the list of myQ devices.
-        if(!(await myQ.refreshDevices())) {
+        if(!(await myQ.login(myQCredentials.email, myQCredentials.password))) {
 
           // Either invalid login credentials or an API issue has occurred.
           return [ -1 ];
