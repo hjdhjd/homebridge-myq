@@ -14,7 +14,6 @@ export interface myQOptions {
   email: string,
   mqttTopic: string,
   mqttUrl: string,
-  myQRegion: string,
   name: string,
   options: string[],
   password: string,

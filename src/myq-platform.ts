@@ -70,7 +70,6 @@ export class myQPlatform implements DynamicPlatformPlugin {
       email: config.email as string,
       mqttTopic: config.mqttTopic as string ?? MYQ_MQTT_TOPIC,
       mqttUrl: config.mqttUrl as string,
-      myQRegion: config.myQRegion as string,
       name: config.name as string,
       options: config.options as string[],
       password: config.password as string,
@@ -135,7 +134,7 @@ export class myQPlatform implements DynamicPlatformPlugin {
     };
 
     // Initialize our connection to the myQ API.
-    this.myQApi = new myQApi(this.config.email, this.config.password, this.log, this.config.myQRegion);
+    this.myQApi = new myQApi(this.log);
 
     // Create an MQTT connection, if needed.
     if(!this.mqtt && this.config.mqttUrl) {
@@ -143,20 +142,32 @@ export class myQPlatform implements DynamicPlatformPlugin {
       this.mqtt = new myQMqtt(this);
     }
 
-    // Avoid a prospective race condition by waiting to begin our polling until Homebridge is done
-    // loading all the cached accessories it knows about, and calling configureAccessory() on each.
+    // Avoid a prospective race condition by waiting to begin our polling until Homebridge is done loading all the cached accessories it knows about, and calling
+    // configureAccessory() on each.
     //
     // Fire off our polling, with an immediate status refresh to begin with to provide us that responsive feeling.
-    api.on(APIEvent.DID_FINISH_LAUNCHING, this.poll.bind(this, this.config.refreshInterval * -1));
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    api.on(APIEvent.DID_FINISH_LAUNCHING, this.login.bind(this));
   }
 
-  // This gets called when homebridge restores cached accessories at startup. We
-  // intentionally avoid doing anything significant here, and save all that logic
+  // This gets called when homebridge restores cached accessories at startup. We intentionally avoid doing anything significant here, and save all that logic
   // for device discovery.
   public configureAccessory(accessory: PlatformAccessory): void {
 
     // Add this to the accessory array so we can track it.
     this.accessories.push(accessory);
+  }
+
+  private async login(): Promise<boolean> {
+
+    // Whether we login successfully or not here, we're going to continue forward. The API isn't always reliable and simply stopping at this stage would leave users
+    // who might have valid credentials unable to access the API.
+    await this.myQApi.login(this.config.email, this.config.password);
+
+    // Fire off our polling, with an immediate status refresh to begin with to provide us that responsive feeling.
+    this.poll(this.config.refreshInterval * -1);
+
+    return true;
   }
 
   // Discover new myQ devices and sync existing ones with the myQ API.
@@ -312,9 +323,9 @@ export class myQPlatform implements DynamicPlatformPlugin {
     // Clear the last polling interval out.
     clearTimeout(this.pollingTimer);
 
-    // Normally, count just increments on each call. However, when we want to increase our polling frequency, count is set to 0 (elsewhere in the plugin)
-    // to put us in a more frequent polling mode. This is determined by the values configured for activeRefreshDuration and activeRefreshInterval which
-    // specify the maximum length of time for this increased polling frequency (activeRefreshDuration) and the actual frequency of each update (activeRefreshInterval).
+    // Normally, count just increments on each call. However, when we want to increase our polling frequency, count is set to 0 (elsewhere in the plugin) to put us in a
+    // more frequent polling mode. This is determined by the values configured for activeRefreshDuration and activeRefreshInterval which specify the maximum length of
+    // time for this increased polling frequency (activeRefreshDuration) and the actual frequency of each update (activeRefreshInterval).
     if(this.pollOptions.count < this.pollOptions.maxCount) {
 
       refresh = this.config.activeRefreshInterval + delay;
