@@ -55,7 +55,7 @@ export class myQLamp extends myQAccessory {
     });
 
     switchService.getCharacteristic(this.hap.Characteristic.On).onSet(this.setLampState.bind(this));
-    switchService.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState as boolean);
+    switchService.updateCharacteristic(this.hap.Characteristic.On, (this.accessory.context.lampState as boolean) === true);
 
     // Add the configured name for this device.
     switchService.addOptionalCharacteristic(this.hap.Characteristic.ConfiguredName);
@@ -179,7 +179,7 @@ export class myQLamp extends myQAccessory {
       }
 
       this.accessory.context.lampState = myQState === true;
-      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, this.accessory.context.lampState as boolean);
+      this.accessory.getService(this.hap.Service.Switch)?.updateCharacteristic(this.hap.Characteristic.On, (this.accessory.context.lampState as boolean) === true);
 
       // eslint-disable-next-line camelcase
       this.myQ.state.lamp_state = this.accessory.context.lampState ? "on" : "off";
