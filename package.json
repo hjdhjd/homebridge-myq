@@ -1,6 +1,6 @@
 {
   "name": "homebridge-myq",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "displayName": "Homebridge myQ",
   "description": "HomeKit integration for myQ enabled devices such as those from LiftMaster and Chamberlain.",
   "author": {
@@ -47,7 +47,7 @@
   },
   "main": "dist/index.js",
   "devDependencies": {
-    "@types/node": "20.6.1",
+    "@types/node": "20.6.2",
     "@types/readable-stream": "4.0.2",
     "@types/ws": "8.5.5",
     "@typescript-eslint/eslint-plugin": "6.7.0",
@@ -59,7 +59,7 @@
     "typescript": "5.2.2"
   },
   "dependencies": {
-    "@hjdhjd/myq": "7.5.0",
+    "@hjdhjd/myq": "7.5.1",
     "@homebridge/plugin-ui-utils": "0.1.0",
     "mqtt": "5.0.5"
   }

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 3.4.1 (2023-09-17)
+  * Fix: address lamp regressions.
+  * Housekeeping.
+
 ## 3.4.0 (2023-09-15)
   * Improvement: to improve resilience, the API will automatically retry across regions when myQ API issues are encountered. The `region` advanced setting is no longer available and has been removed. HBMQ will automatically retry the API until it finds a path that works.
   * Housekeeping.
