@@ -7,7 +7,7 @@ on:
   pull_request:
   push:
     tags-ignore:
-      - v*
+      - v123
   release:
     types: [ published ]
   workflow_dispatch:
