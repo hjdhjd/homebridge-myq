@@ -13,7 +13,7 @@ export class myQLamp extends myQAccessory {
   protected configureDevice(): void {
 
     // Save our context information before we wipe it out.
-    const lampInitialState = this.accessory.context.lampState as boolean;
+    const lampInitialState = (this.accessory.context.lampState as boolean) === true;
 
     // Clean out the context object.
     this.accessory.context = {};
