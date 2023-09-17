@@ -6,8 +6,6 @@ name: "Continuous Integration"
 on:
   pull_request:
   push:
-    tags-ignore:
-      - v**
   release:
     types: [ published ]
   workflow_dispatch:
