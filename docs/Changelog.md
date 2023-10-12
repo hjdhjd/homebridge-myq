@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 3.4.2 (2023-10-12)
+  * Fix: myQ login shenanigans. Looks like myQ is starting to get a lot more strict on API access - let's see how things go.
+
 ## 3.4.1 (2023-09-17)
   * Fix: address lamp regressions.
   * Housekeeping.
