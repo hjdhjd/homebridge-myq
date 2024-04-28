@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file. This project uses [semantic versioning](https://semver.org/).
 
+## 3.4.4 (2024-04-28)
+  * Retirement announcement. `homebridge-myq` is officially retired, for now. For those interested in an alternative solution, I would highly recommend looking into [Ratgdo](https://paulwieland.github.io/ratgdo/) and my [homebridge-ratgdo](https://github.com/hjdhjd/homebridge-ratgdo) plugin that provides all the capabilities of `homebridge-myq` and more capabilities that were never possible due to the myQ API constraints. Thank you for all the support and to the members of the community I've gotten to know over the years.
+
 ## 3.4.3 (2023-10-15)
   * Improvement: further enhancements to the robustness of our myQ connectivity.
 
