@@ -47,6 +47,17 @@ export class myQPlatform implements DynamicPlatformPlugin {
     this.log.debug = this.debug.bind(this);
     this.unsupportedDevices = {};
 
+    // Inform users this plugin has been retired...for now.
+    this.log.info("Unfortunately, this plugin is being retired for the time being. Liftmaster/Chamberlain has decided to eliminate access to their API to the open " +
+      "source community. Until this situation changes, homebridge-myq will be retired. For those in the Liftmaster/Chamberlain ecosystem, I recommend you try my " +
+      "homebridge-ratgdo plugin. Ratgdo is an open source hardware solution that provides all the same functionality as myQ, and more.");
+
+    this.log.error("Unfortunately, this plugin is being retired for the time being. Liftmaster/Chamberlain has decided to eliminate access to their API to the open " +
+      "source community. Until this situation changes, homebridge-myq will be retired. For those in the Liftmaster/Chamberlain ecosystem, I recommend you try my " +
+      "homebridge-ratgdo plugin. Ratgdo is an open source hardware solution that provides all the same functionality as myQ, and more.");
+
+    return;
+
     // Build our list of default values for our feature options.
     for(const category of featureOptionCategories) {
 

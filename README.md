@@ -14,9 +14,11 @@
 </DIV>
 </SPAN>
 
-`homebridge-myq` is a [Homebridge](https://homebridge.io) plugin that makes myQ-enabled devices available to [Apple's](https://www.apple.com) [HomeKit](https://www.apple.com/ios/home) smart home platform. myQ-enabled devices include many smart garage door openers made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door or other device is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
+### `homebridge-myq` is officially retired, for now. For those interested in an alternative solution, I would highly recommend looking into [Ratgdo](https://paulwieland.github.io/ratgdo/) and my [homebridge-ratgdo](https://github.com/hjdhjd/homebridge-ratgdo) plugin that provides all the capabilities of `homebridge-myq` and more capabilities that were never possible due to the myQ API constraints. Thank you for all the support and to the members of the community I've gotten to know over the years.
 
-There are two ways to control a myQ-compatible garage door opener through [HomeKit](https://www.apple.com/ios/home):
+`homebridge-myq` ~~is~~was a [Homebridge](https://homebridge.io) plugin that makes myQ-enabled devices available to [Apple's](https://www.apple.com) [HomeKit](https://www.apple.com/ios/home) smart home platform. myQ-enabled devices include many smart garage door openers made primarily by Liftmaster, Chamberlain, and Craftsman, but includes other brands as well. You can determine if your garage door or other device is myQ-enabled by checking the [myQ compatibility check tool](https://www.myq.com/myq-compatibility) on the myQ website.
+
+There ~~are~~were two ways to control a myQ-compatible garage door opener through [HomeKit](https://www.apple.com/ios/home):
 
 1. Liftmaster and Chamberlain make a hardware HomeKit bridge also called [Home Bridge](https://www.liftmaster.com/myq-home-bridge/p/G819LMB) (not to be confused with the open source [Homebridge project](https://homebridge.io)).
 Unfortunately, some of us have encountered significant issues with the hardware bridge in a real world setting, where it either stops working or hangs for extended periods of time. That said, other users have encountered no issues and this hardware solution works well.
